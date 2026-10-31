@@ -17,6 +17,8 @@ namespace WASender
         private Label lblTest;
         private DataGridView gridOverride, gridSegmen;
         private ListBox lstFaq;
+        private TabControl tc;
+
 
         public AiSettingsForm(Form main)
         {
@@ -66,7 +68,7 @@ namespace WASender
 
         private void BuildUi()
         {
-            TabControl tc = new TabControl();
+            tc = new TabControl();
             tc.Dock = DockStyle.Fill;
             Controls.Add(tc);
 
@@ -101,8 +103,9 @@ namespace WASender
             MkBtn(tCache, "Simpan", 150, 95, delegate { SaveConnCache(); MessageBox.Show("Disimpan.", "AI Setup"); });
             MkBtn(tCache, "Muat FAQ", 320, 95, delegate { LoadFaq(); });
             MkBtn(tCache, "Bersihkan Cache", 490, 95, delegate { AiResponder.ClearCache(); LoadFaq(); MessageBox.Show("Cache dikosongkan.", "AI Setup"); });
+            MkBtn(tCache, "Jadikan Override", 10, 445, delegate { FaqToOverride(); });
             lstFaq = new ListBox();
-            lstFaq.Left = 10; lstFaq.Top = 130; lstFaq.Width = 650; lstFaq.Height = 300;
+            lstFaq.Left = 10; lstFaq.Top = 130; lstFaq.Width = 650; lstFaq.Height = 305;
             tCache.Controls.Add(lstFaq);
 
             TabPage tOvr = NewTab(tc, "Override");
@@ -278,6 +281,30 @@ namespace WASender
             }
             catch (Exception ex) { MessageBox.Show("Gagal simpan: " + ex.Message, "AI Setup"); }
         }
+
+        private void FaqToOverride()
+        {
+            try
+            {
+                if (lstFaq.SelectedItem == null) { MessageBox.Show("Pilih dulu satu FAQ.", "AI Setup"); return; }
+                string s = lstFaq.SelectedItem.ToString();
+                int b = s.IndexOf("] ");
+                string q = (b >= 0 ? s.Substring(b + 2) : s).Trim();
+                if (string.IsNullOrEmpty(q)) return;
+                foreach (DataGridViewRow r in gridOverride.Rows)
+                {
+                    if (r.IsNewRow) continue;
+                    string eq = r.Cells[0].Value != null ? r.Cells[0].Value.ToString() : "";
+                    if (string.Equals(eq.Trim(), q, StringComparison.OrdinalIgnoreCase)) { tc.SelectedTab = tc.TabPages[2]; MessageBox.Show("Sudah ada di Override, tinggal isi jawaban.", "AI Setup"); return; }
+                }
+                gridOverride.Rows.Add(q, "", true);
+                tc.SelectedTab = tc.TabPages[2];
+                MessageBox.Show("Ditambahkan ke Override. Isi kolom answer lalu Simpan.", "AI Setup");
+            }
+            catch (Exception ex) { MessageBox.Show(ex.Message, "AI Setup"); }
+        }
+
+
 
         private void SaveSegmen()
         {

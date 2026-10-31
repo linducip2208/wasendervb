@@ -535,7 +535,8 @@
     <Compile Include="WaMonitor.cs" />
     <Compile Include="WaReporter.cs" />
     <Compile Include="AiSettingsForm.cs" />
-    <Compile Include="HealthForm.cs" />
+    <Compile Include="HealthForm.cs" />
+    <Compile Include="SendGovernor.cs" />
     <Compile Include="ContactGrabber.cs">
       <SubType>Form</SubType>
     </Compile>

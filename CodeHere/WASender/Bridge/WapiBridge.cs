@@ -9045,7 +9045,73 @@ namespace WASender
 
 
 
-        public static void sendButtonWithMessage(object driver, object model, string number, string msg)
+                private static string BtnProp(object o, string n)
+        {
+            try
+            {
+                var p = o.GetType().GetProperty(n);
+                if (p == null) return null;
+                var v = p.GetValue(o, null);
+                return v != null ? v.ToString() : null;
+            }
+            catch (Exception) { return null; }
+        }
+
+        private static void BtnAdd(System.Collections.Generic.List<System.Collections.Generic.Dictionary<string, string>> out_, object b)
+        {
+            try
+            {
+                string id = BtnProp(b, "id") ?? BtnProp(b, "Id") ?? "";
+                string tx = BtnProp(b, "text") ?? BtnProp(b, "Text") ?? BtnProp(b, "ButtonText") ?? BtnProp(b, "buttonText") ?? BtnProp(b, "Title") ?? BtnProp(b, "title") ?? "";
+                string url = BtnProp(b, "url") ?? BtnProp(b, "Url") ?? "";
+                string ph = BtnProp(b, "phoneNumber") ?? BtnProp(b, "PhoneNumber") ?? "";
+                if (string.IsNullOrWhiteSpace(tx) && string.IsNullOrWhiteSpace(url) && string.IsNullOrWhiteSpace(ph)) return;
+                var d = new System.Collections.Generic.Dictionary<string, string>();
+                if (!string.IsNullOrWhiteSpace(url)) { d["url"] = url; d["text"] = tx; }
+                else if (!string.IsNullOrWhiteSpace(ph)) { d["phoneNumber"] = ph; d["text"] = tx; }
+                else { d["id"] = string.IsNullOrEmpty(id) ? Guid.NewGuid().ToString("N").Substring(0, 8) : id; d["text"] = tx; }
+                out_.Add(d);
+            }
+            catch (Exception) { }
+        }
+
+        private static System.Collections.Generic.List<System.Collections.Generic.Dictionary<string, string>> ExtractButtons(object model)
+        {
+            var out_ = new System.Collections.Generic.List<System.Collections.Generic.Dictionary<string, string>>();
+            try
+            {
+                if (model == null) return out_;
+                var bp = model.GetType().GetProperty("buttons");
+                if (bp == null) return out_;
+                var items = bp.GetValue(model, null) as System.Collections.IEnumerable;
+                if (items == null) return out_;
+                foreach (var it in items)
+                {
+                    if (it == null || out_.Count >= 3) break;
+                    System.Collections.IEnumerable inner = null;
+                    try
+                    {
+                        var ip = it.GetType().GetProperty("buttons");
+                        if (ip != null) inner = ip.GetValue(it, null) as System.Collections.IEnumerable;
+                    }
+                    catch (Exception) { }
+                    if (inner != null)
+                    {
+                        foreach (var x in inner)
+                        {
+                            if (out_.Count >= 3 || x == null) break;
+                            BtnAdd(out_, x);
+                        }
+                        continue;
+                    }
+                    BtnAdd(out_, it);
+                }
+            }
+            catch (Exception) { }
+            return out_;
+        }
+
+public static void sendButtonWithMessage(object driver, object model, string number, string msg)
 
 
 
@@ -9094,6 +9160,19 @@ namespace WASender
 
 
                 string body = msg ?? "";
+                try
+                {
+                    var _wbtns = ExtractButtons(model);
+                    if (_wbtns.Count > 0 && EnsureWpp(driver))
+                    {
+                        string _wmb = "__sbw" + Guid.NewGuid().ToString("N").Substring(0, 6);
+                        string _wgid = (number ?? "").Contains("@") ? number : number + "@c.us";
+                        RawEval(driver, "window." + _wmb + "='PENDING';(function(){try{WPP.chat.sendTextMessage(" + JsonConvert.SerializeObject(_wgid) + "," + JsonConvert.SerializeObject(msg ?? "") + ",{buttons:" + JsonConvert.SerializeObject(_wbtns) + ",waitForAck:true}).then(function(r){window." + _wmb + "='OK:'+JSON.stringify(r).substring(0,300);}).catch(function(e){window." + _wmb + "='FAIL:'+((e&&e.message)||e);});}catch(e){window." + _wmb + "='EX';}})();'x';");
+                        string _wres = Mailbox(driver, _wmb, 20);
+                        if (_wres != null && _wres.StartsWith("OK:{")) return;
+                    }
+                }
+                catch (Exception) { }
 
 
 

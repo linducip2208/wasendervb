@@ -2120,10 +2120,26 @@ namespace WASender
                         else
                         {
                             bool IsError = false;
+                            try
+                            {
+                                var _gov = await SendGovernor.CanSendAsync(wv, driver, generalSettingsModel.browserType);
+                                if (!_gov.Item1)
+                                {
+                                    item.sendStatusModel.isDone = true;
+                                    item.sendStatusModel.sendStatusEnum = SendStatusEnum.Failed;
+                                    try { item.sendStatusModel.message = _gov.Item2; } catch (Exception) { }
+                                    counter++;
+                                    totalCounter++;
+                                    updateGrid();
+                                    continue;
+                                }
+                            }
+                            catch (Exception) { }
                             if (wASenderSingleTransModel.IsRotateMessages)
                             {
                                 var random = new Random();
                                 var list = wASenderSingleTransModel.messages.Where(x => x != null).ToList();
+                                if (list.Count == 0) { item.sendStatusModel.isDone = true; item.sendStatusModel.sendStatusEnum = SendStatusEnum.Failed; try { item.sendStatusModel.message = "Tidak ada template pesan"; } catch (Exception) { } counter++; totalCounter++; updateGrid(); continue; }
                                 int index = random.Next(list.Count);
                                 MesageModel mesageModel = list[index];
 
@@ -2503,6 +2519,7 @@ namespace WASender
                                 var _percentage = totalCounter * 100 / __count;
                                 item.sendStatusModel.isDone = true;
                                 item.sendStatusModel.sendStatusEnum = SendStatusEnum.Success;
+                                try { await SendGovernor.RecordSentAsync(wv, driver, generalSettingsModel.browserType); } catch (Exception) { }
                                 //worker.ReportProgress(_percentage);
                             }
                             else

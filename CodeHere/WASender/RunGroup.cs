@@ -793,6 +793,19 @@ namespace WASender
                     {
                         return;
                     }
+                    try
+                    {
+                        var _gov = await SendGovernor.CanSendAsync(wv, driver, generalSettingsModel.browserType);
+                        if (!_gov.Item1)
+                        {
+                            item.sendStatusModel.isDone = true;
+                            item.sendStatusModel.sendStatusEnum = SendStatusEnum.Failed;
+                            try { item.sendStatusModel.message = _gov.Item2; } catch (Exception) { }
+                            totalCounter++;
+                            continue;
+                        }
+                    }
+                    catch (Exception) { }
 
                     if (generalSettingsModel.browserType == 1)
                     {
@@ -861,6 +874,7 @@ namespace WASender
                         {
                             var random = new Random();
                             var list = wASenderGroupTransModel.messages.Where(x => x != null).ToList();
+                            if (list.Count == 0) { item.sendStatusModel.isDone = true; item.sendStatusModel.sendStatusEnum = SendStatusEnum.Failed; totalCounter++; continue; }
                             int index = random.Next(list.Count);
                             MesageModel mesageModel = list[index];
                             bool gRotateOk = true;
@@ -896,6 +910,7 @@ namespace WASender
                             var _percentage = totalCounter * 100 / __count;
                             item.sendStatusModel.isDone = true;
                             item.sendStatusModel.sendStatusEnum = gRotateOk ? SendStatusEnum.Success : SendStatusEnum.Failed;
+                            if (gRotateOk) { try { await SendGovernor.RecordSentAsync(wv, driver, generalSettingsModel.browserType); } catch (Exception) { } }
                             worker.ReportProgress(_percentage);
                         }
 

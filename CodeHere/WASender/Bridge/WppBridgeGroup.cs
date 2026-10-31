@@ -2074,6 +2074,72 @@ namespace WASender
 
 
 
+        private static string BtnProp(object o, string n)
+        {
+            try
+            {
+                var p = o.GetType().GetProperty(n);
+                if (p == null) return null;
+                var v = p.GetValue(o, null);
+                return v != null ? v.ToString() : null;
+            }
+            catch (Exception) { return null; }
+        }
+
+        private static void BtnAdd(System.Collections.Generic.List<System.Collections.Generic.Dictionary<string, string>> out_, object b)
+        {
+            try
+            {
+                string id = BtnProp(b, "id") ?? BtnProp(b, "Id") ?? "";
+                string tx = BtnProp(b, "text") ?? BtnProp(b, "Text") ?? BtnProp(b, "ButtonText") ?? BtnProp(b, "buttonText") ?? BtnProp(b, "Title") ?? BtnProp(b, "title") ?? "";
+                string url = BtnProp(b, "url") ?? BtnProp(b, "Url") ?? "";
+                string ph = BtnProp(b, "phoneNumber") ?? BtnProp(b, "PhoneNumber") ?? "";
+                if (string.IsNullOrWhiteSpace(tx) && string.IsNullOrWhiteSpace(url) && string.IsNullOrWhiteSpace(ph)) return;
+                var d = new System.Collections.Generic.Dictionary<string, string>();
+                if (!string.IsNullOrWhiteSpace(url)) { d["url"] = url; d["text"] = tx; }
+                else if (!string.IsNullOrWhiteSpace(ph)) { d["phoneNumber"] = ph; d["text"] = tx; }
+                else { d["id"] = string.IsNullOrEmpty(id) ? Guid.NewGuid().ToString("N").Substring(0, 8) : id; d["text"] = tx; }
+                out_.Add(d);
+            }
+            catch (Exception) { }
+        }
+
+        private static System.Collections.Generic.List<System.Collections.Generic.Dictionary<string, string>> ExtractButtons(object model)
+        {
+            var out_ = new System.Collections.Generic.List<System.Collections.Generic.Dictionary<string, string>>();
+            try
+            {
+                if (model == null) return out_;
+                var bp = model.GetType().GetProperty("buttons");
+                if (bp == null) return out_;
+                var items = bp.GetValue(model, null) as System.Collections.IEnumerable;
+                if (items == null) return out_;
+                foreach (var it in items)
+                {
+                    if (it == null || out_.Count >= 3) break;
+                    System.Collections.IEnumerable inner = null;
+                    try
+                    {
+                        var ip = it.GetType().GetProperty("buttons");
+                        if (ip != null) inner = ip.GetValue(it, null) as System.Collections.IEnumerable;
+                    }
+                    catch (Exception) { }
+                    if (inner != null)
+                    {
+                        foreach (var x in inner)
+                        {
+                            if (out_.Count >= 3 || x == null) break;
+                            BtnAdd(out_, x);
+                        }
+                        continue;
+                    }
+                    BtnAdd(out_, it);
+                }
+            }
+            catch (Exception) { }
+            return out_;
+        }
+
         public static void sendButtonWithMessage(object driverOrWv, object model, string to, string text)
 
 
@@ -2128,7 +2194,29 @@ namespace WASender
 
 
 
-                var _ = WppSendTextNoWait(wv, to, text ?? "", "__sbtn" + Guid.NewGuid().ToString("N").Substring(0, 6));
+                var btns = ExtractButtons(model);
+                if (btns.Count > 0)
+                {
+                    var _ = System.Threading.Tasks.Task.Run(async () =>
+                    {
+                        try
+                        {
+                            if (!await EnsureWpp(wv)) return;
+                            string mbox = "__sbtn" + Guid.NewGuid().ToString("N").Substring(0, 6);
+                            string js = "window." + mbox + "='PENDING';"
+                                + "WPP.chat.sendTextMessage(" + JsonConvert.SerializeObject(ChatId(to)) + "," + JsonConvert.SerializeObject(text ?? "")
+                                + ",{buttons:" + JsonConvert.SerializeObject(btns) + ",waitForAck:true})"
+                                + ".then(function(r){window." + mbox + "='OK:'+JSON.stringify(r).substring(0,300);}).catch(function(e){window." + mbox + "='FAIL:'+((e&&e.message)||e);});'DISPATCHED';";
+                            await Eval(wv, js);
+                            string res = await Mailbox(wv, mbox, 20);
+                            if (res != null && res.StartsWith("OK:{")) return;
+                        }
+                        catch (Exception) { }
+                        try { await WppSendTextNoWait(wv, to, text ?? "", "__sbf" + Guid.NewGuid().ToString("N").Substring(0, 6)); } catch (Exception) { }
+                    });
+                    return;
+                }
+                var _2 = WppSendTextNoWait(wv, to, text ?? "", "__sbtn" + Guid.NewGuid().ToString("N").Substring(0, 6));
 
 
 
@@ -2437,6 +2525,29 @@ namespace WASender
 
 
 
+                var gbtns = ExtractButtons(model);
+                if (gbtns.Count > 0)
+                {
+                    string _gid = (groupId ?? "").Contains("@") ? groupId : groupId + "@g.us";
+                    var _g = System.Threading.Tasks.Task.Run(async () =>
+                    {
+                        try
+                        {
+                            if (!await EnsureWpp(wv)) return;
+                            string mbox = "__sbg" + Guid.NewGuid().ToString("N").Substring(0, 6);
+                            string js = "window." + mbox + "='PENDING';"
+                                + "WPP.chat.sendTextMessage(" + JsonConvert.SerializeObject(_gid) + "," + JsonConvert.SerializeObject(text ?? "")
+                                + ",{buttons:" + JsonConvert.SerializeObject(gbtns) + ",waitForAck:true})"
+                                + ".then(function(r){window." + mbox + "='OK:'+JSON.stringify(r).substring(0,300);}).catch(function(e){window." + mbox + "='FAIL:'+((e&&e.message)||e);});'DISPATCHED';";
+                            await Eval(wv, js);
+                            string res = await Mailbox(wv, mbox, 20);
+                            if (res != null && res.StartsWith("OK:{")) return;
+                        }
+                        catch (Exception) { }
+                        try { await WppSendTextNoWait(wv, groupId, body, "__sbfg" + Guid.NewGuid().ToString("N").Substring(0, 6)); } catch (Exception) { }
+                    });
+                    return;
+                }
                 var _ = WppSendTextNoWait(wv, groupId, body, "__sbtn" + Guid.NewGuid().ToString("N").Substring(0, 6));
 
 
