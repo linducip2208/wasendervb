@@ -1774,7 +1774,7 @@ namespace WASender
             {
                 bool dllOk = await SendMessageSync(mesageModel, isFirstMessage, item, wv);
                 writetrace("REWRITE DLL result=" + dllOk);
-                if (dllOk && await SendEngine.OutboxIncreased(wv, before, 10)) { isDOne = true; }
+                if (dllOk) { string _cfT = ""; try { _cfT = ProjectCommon.ReplaceKeyMarker(mesageModel.longMessage ?? "", item.parameterModelList); } catch (Exception) { } string _cfD = System.Text.RegularExpressions.Regex.Replace(item.number ?? "", "[^0-9]", ""); var _cf = await SendEngine.ConfirmDelivered(wv, _cfD, _cfT); writetrace("REWRITE DLL confirm=" + _cf.Item1 + " " + _cf.Item2); if (_cf.Item1) { isDOne = true; } }
             }
             catch (Exception ex) { writetrace("REWRITE DLL EX " + ex.Message); }
             if (!isDOne && generalSettingsModel.browserType == 2)
@@ -2330,7 +2330,7 @@ namespace WASender
                                                     {
                                                         bool dllOk = await SendMessageSync(mesageModel, isFirstMessage, item, wv);
                                                         writetrace("REWRITE DLL result=" + dllOk);
-                                                        if (dllOk && await SendEngine.OutboxIncreased(wv, before, 10)) { isDOne = true; }
+                                                        if (dllOk) { string _cfT = ""; try { _cfT = ProjectCommon.ReplaceKeyMarker(mesageModel.longMessage ?? "", item.parameterModelList); } catch (Exception) { } string _cfD = System.Text.RegularExpressions.Regex.Replace(item.number ?? "", "[^0-9]", ""); var _cf = await SendEngine.ConfirmDelivered(wv, _cfD, _cfT); writetrace("REWRITE DLL confirm=" + _cf.Item1 + " " + _cf.Item2); if (_cf.Item1) { isDOne = true; } }
                                                     }
                                                     catch (Exception ex) { writetrace("REWRITE DLL EX " + ex.Message); }
                                                     if (!isDOne)
@@ -2378,7 +2378,12 @@ namespace WASender
                                                                 writetrace("REWRITE WPP text=" + trw.Item1);
                                                                 wppTxtOk = trw.Item1;
                                                             }
-                                                            if (wppMediaOk && wppTxtOk && await SendEngine.OutboxIncreased(wv, before, 10)) { isDOne = true; }
+                                                            if (wppMediaOk && wppTxtOk)
+                                                            {
+                                                                var cf = await SendEngine.ConfirmDelivered(wv, digitsW, txtW);
+                                                                writetrace("REWRITE WPP confirm=" + cf.Item1 + " " + cf.Item2);
+                                                                if (cf.Item1) { isDOne = true; }
+                                                            }
                                                             writetrace("REWRITE WPP final=" + isDOne);
                                                         }
                                                         catch (Exception ex) { writetrace("REWRITE WPP EX " + ex.Message); }
@@ -2427,7 +2432,12 @@ namespace WASender
                                                                 writetrace("REWRITE FMARK text=" + tr.Item1);
                                                                 fmTxtOk = tr.Item1;
                                                             }
-                                                            if (fmMediaOk && fmTxtOk && await SendEngine.OutboxIncreased(wv, before, 10)) { isDOne = true; }
+                                                            if (fmMediaOk && fmTxtOk)
+                                                            {
+                                                                var cf2 = await SendEngine.ConfirmDelivered(wv, digitsOnly2, txt2);
+                                                                writetrace("REWRITE FMARK confirm=" + cf2.Item1 + " " + cf2.Item2);
+                                                                if (cf2.Item1) { isDOne = true; }
+                                                            }
                                                             writetrace("REWRITE FMARK final=" + isDOne);
                                                         }
                                                         catch (Exception ex) { writetrace("REWRITE FMARK EX " + ex.Message); }

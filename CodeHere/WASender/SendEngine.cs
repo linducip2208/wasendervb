@@ -314,6 +314,38 @@ namespace WASender
             catch (Exception ex) { Log("fmarktext EX " + ex.Message); return Tuple.Create(false, "ex"); }
         }
 
+        /// <summary>Verifikasi TERKIRIM via API resmi WPP (baca pesan terakhir di chat).</summary>
+        public static async Task<Tuple<bool, string>> ConfirmDelivered(WebView2 wv, string digits, string text)
+        {
+            try
+            {
+                string chatIdJs = JsonConvert.SerializeObject(digits + "@c.us");
+                string snippet = JsonConvert.SerializeObject((text ?? "").Length > 20 ? text.Substring(0, 20) : (text ?? ""));
+                string js = "window.__verify='PENDING';"
+                    + "WPP.chat.getMessages(" + chatIdJs + ",{count:10})"
+                    + ".then(function(ms){try{"
+                    + "var list=(ms&&ms.map)?ms:((ms&&ms.models)?ms.models:[]);"
+                    + "for(var i=list.length-1;i>=0;i--){var m=list[i]||{};var body='';try{body=m.body||m.caption||'';}catch(e){}"
+                    + "var ack=0;try{ack=m.ack||0;}catch(e){}"
+                    + "var fromme=false;try{fromme=!!(m.fromMe||(m.id&&m.id.fromMe));}catch(e){}"
+                    + "if(body&&body.indexOf(" + snippet + ")>-1&&fromme){window.__verify='FOUND ack='+ack;return;}}"
+                    + "window.__verify='NOTFOUND n='+list.length;"
+                    + "}catch(e){window.__verify='ERR:'+e.message;}})"
+                    + ".catch(function(e){window.__verify='FAIL:'+(e&&e.message);});'DISPATCHED';";
+                await Eval(wv, js);
+                string res = await PollMailbox(wv, "__verify", 8);
+                Log("confirm -> " + res);
+                if (res.StartsWith("FOUND"))
+                {
+                    int ack = 0;
+                    try { ack = int.Parse(new string(res.SkipWhile(c => !char.IsDigit(c)).TakeWhile(char.IsDigit).ToArray())); } catch (Exception) { }
+                    return Tuple.Create(ack >= 1, res);
+                }
+                return Tuple.Create(false, res);
+            }
+            catch (Exception ex) { Log("confirm EX " + ex.Message); return Tuple.Create(false, "ex"); }
+        }
+
         /// <summary>Kirim teks via WPP (wa-js terbaru, ganti FMARK yg basi). Return (ok, detail).</summary>
         public static async Task<Tuple<bool, string>> SendTextWpp(WebView2 wv, string digits, string text)
         {
