@@ -40,6 +40,11 @@ const api = {
 
   message_log: async (accId, limit) => (await _call('message_log')(accId, limit || 200)).data || [],
   stats: async () => (await _call('stats')()).data,
+  accounts_overview: async () => (await _call('accounts_overview')()).data || [],
+  send_chart: async (days) => (await _call('send_chart')(days || 14)).data || [],
+  leads_by_source: async () => (await _call('leads_by_source')()).data || [],
+  fail_reasons: async (limit) => (await _call('fail_reasons')(limit || 5)).data || [],
+  warmer_progress: async () => (await _call('warmer_progress')()).data || [],
 
   feature_run: _call('feature_run'),
   feature_list: async () => (await _call('feature_list')()).data || [],

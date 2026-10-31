@@ -40,7 +40,7 @@ def run(params: dict) -> dict:
 
             db.insert("message_log", {
                 "account_id": account_id, "phone": phone, "message": text,
-                "media_path": media_path, "status": "sent",
+                "media_path": media_path, "status": "sent", "kind": "bulk",
             })
             increment_sent(account_id)
             sent += 1
@@ -49,7 +49,7 @@ def run(params: dict) -> dict:
             failed += 1
             db.insert("message_log", {
                 "account_id": account_id, "phone": phone, "message": template,
-                "status": "failed", "error": str(e),
+                "status": "failed", "error": str(e), "kind": "bulk",
             })
             log.append({"phone": phone, "ok": False, "error": str(e)})
 

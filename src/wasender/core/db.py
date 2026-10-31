@@ -46,6 +46,7 @@ CREATE TABLE IF NOT EXISTS message_log (
     media_path TEXT,
     status TEXT NOT NULL,
     error TEXT,
+    kind TEXT DEFAULT 'bulk',
     sent_at TEXT DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -103,10 +104,19 @@ def _init_if_needed() -> None:
         conn = sqlite3.connect(db_path())
         conn.row_factory = sqlite3.Row
         conn.executescript(SCHEMA_SQL)
+        _migrate(conn)
         conn.commit()
         conn.close()
         _INITIALIZED = True
         logger.debug("DB schema initialized at %s", db_path())
+
+
+def _migrate(conn: sqlite3.Connection) -> None:
+    """Lightweight migrations for DBs created by older versions."""
+    cols = {r["name"] for r in conn.execute("PRAGMA table_info(message_log)")}
+    if "kind" not in cols:
+        conn.execute("ALTER TABLE message_log ADD COLUMN kind TEXT DEFAULT 'bulk'")
+        logger.info("DB migration: message_log.kind added")
 
 
 def _conn() -> sqlite3.Connection:

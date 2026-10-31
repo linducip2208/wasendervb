@@ -182,6 +182,98 @@ class Api:
         return {"messages_total": total, "sent": ok, "failed": fail, "contacts": contacts, "leads": leads}
 
     @_wrap
+    def accounts_overview(self) -> list[dict]:
+        from ..core.ratelimit import reset_daily_counters_if_needed
+        out = []
+        for acc in account_manager.list_accounts():
+            try:
+                reset_daily_counters_if_needed(int(acc["id"]))
+            except Exception:
+                pass
+            row = db.query_one(
+                "SELECT sent_today, daily_quota FROM accounts WHERE id = ?", (acc["id"],)
+            ) or {}
+            sess = account_manager.get_session(int(acc["id"]))
+            quota = row.get("daily_quota") or 200
+            sent = row.get("sent_today") or 0
+            out.append({
+                "id": acc["id"],
+                "label": acc.get("label", ""),
+                "open": sess is not None,
+                "wapi_ready": bool(sess and sess._wapi_loaded),
+                "sent_today": sent,
+                "daily_quota": quota,
+                "quota_pct": min(100, round(sent / quota * 100)) if quota else 0,
+            })
+        return out
+
+    @_wrap
+    def send_chart(self, days: int = 14) -> list[dict]:
+        from datetime import date, timedelta
+        days = max(1, min(int(days or 14), 90))
+        since = (date.today() - timedelta(days=days - 1)).isoformat()
+        rows = db.query_all(
+            "SELECT date(sent_at) AS day, "
+            "SUM(CASE WHEN status='sent' THEN 1 ELSE 0 END) AS sent, "
+            "SUM(CASE WHEN status='failed' THEN 1 ELSE 0 END) AS failed "
+            "FROM message_log WHERE date(sent_at) >= date(?) "
+            "GROUP BY date(sent_at) ORDER BY day",
+            (since,),
+        )
+        by_day = {r["day"]: r for r in rows}
+        out = []
+        for i in range(days):
+            d = (date.today() - timedelta(days=days - 1 - i)).isoformat()
+            r = by_day.get(d, {})
+            out.append({"day": d, "sent": r.get("sent", 0), "failed": r.get("failed", 0)})
+        return out
+
+    @_wrap
+    def leads_by_source(self) -> list[dict]:
+        return db.query_all(
+            "SELECT COALESCE(NULLIF(source, ''), 'unknown') AS source, COUNT(*) AS count "
+            "FROM leads GROUP BY source ORDER BY count DESC"
+        )
+
+    @_wrap
+    def fail_reasons(self, limit: int = 5) -> list[dict]:
+        limit = max(1, min(int(limit or 5), 20))
+        return db.query_all(
+            "SELECT COALESCE(NULLIF(substr(error, 1, 80), ''), 'unknown error') AS error, "
+            "COUNT(*) AS count FROM message_log WHERE status='failed' "
+            "GROUP BY error ORDER BY count DESC LIMIT ?",
+            (limit,),
+        )
+
+    @_wrap
+    def warmer_progress(self) -> list[dict]:
+        cfg = config.load()
+        target = max(1, cfg.warmup_days * cfg.warmup_messages_per_day)
+        out = []
+        for acc in account_manager.list_accounts():
+            days = db.query_one(
+                "SELECT COUNT(DISTINCT date(sent_at)) AS d FROM message_log "
+                "WHERE account_id = ? AND kind = 'warmer' AND status = 'sent'",
+                (acc["id"],),
+            ) or {}
+            total = db.query_one(
+                "SELECT COUNT(*) AS n FROM message_log "
+                "WHERE account_id = ? AND kind = 'warmer' AND status = 'sent'",
+                (acc["id"],),
+            ) or {}
+            sent = total.get("n", 0)
+            out.append({
+                "id": acc["id"],
+                "label": acc.get("label", ""),
+                "days_active": days.get("d", 0),
+                "warmup_days": cfg.warmup_days,
+                "sent_total": sent,
+                "target_total": target,
+                "pct": min(100, round(sent / target * 100)),
+            })
+        return out
+
+    @_wrap
     def feature_run(self, feature_key: str, params: dict) -> Any:
         return features.run(feature_key, params)
 

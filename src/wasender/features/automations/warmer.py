@@ -48,6 +48,7 @@ def run(params: dict) -> dict:
             sent.append({"phone": phone, "text": text, "ok": True})
             db.insert("message_log", {
                 "account_id": account_id, "phone": phone, "message": text, "status": "sent",
+                "kind": "warmer",
             })
         except Exception as e:
             sent.append({"phone": phone, "text": text, "ok": False, "error": str(e)})
