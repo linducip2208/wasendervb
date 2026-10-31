@@ -1284,12 +1284,27 @@ namespace WASender
                 {
                     string alive = await wv.ExecuteScriptAsync("('ALIVE:' + location.href).substring(0,120)");
                     writetrace("SENDLINK pre=" + (alive ?? "null").Trim('"'));
-                    await wv.ExecuteScriptAsync("window.location.href = " + JsonConvert.SerializeObject("https://web.whatsapp.com/send?phone=" + digits) + "; 'NAV';");
+                    string navRes = await wv.ExecuteScriptAsync("window.location.href = " + JsonConvert.SerializeObject("https://web.whatsapp.com/send?phone=" + digits) + "; 'NAV:' + location.href;");
+                    writetrace("SENDLINK navres=" + (navRes ?? "null"));
                 }
                 catch (Exception ex)
                 {
                     writetrace("SENDLINK nav EX " + ex.GetType().Name + ": " + ex.Message);
                     return "FAIL";
+                }
+                // Probe: apakah scripting masih hidup pasca-navigasi?
+                for (int pi = 0; pi < 3; pi++)
+                {
+                    await Task.Delay(2000);
+                    try
+                    {
+                        string pb = await wv.ExecuteScriptAsync("('HREF:'+location.href+'|T:'+document.title+'|RS:'+document.readyState).substring(0,180)");
+                        writetrace("SENDLINK probe" + pi + "=" + (pb ?? "null"));
+                    }
+                    catch (Exception exPb)
+                    {
+                        writetrace("SENDLINK probe" + pi + " EX " + exPb.GetType().Name + ": " + (exPb.Message ?? "").Substring(0, System.Math.Min(150, (exPb.Message ?? "").Length)));
+                    }
                 }
                 for (int i = 0; i < 15; i++)
                 {
