@@ -58,6 +58,37 @@ namespace WASender
             return false;
         }
 
+        private static async Task<bool> EnsureWpp(WebView2 wv)
+        {
+            try
+            {
+                string has = await Eval(wv, "typeof window.WPP === 'object' && window.WPP.chat ? 'yes' : 'no'");
+                if (has != null && has.Contains("yes")) { return true; }
+                Log("WPP missing, injecting wppconnect-wa.js");
+                string[] cands = new string[]
+                {
+                    System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "wppconnect-wa.js"),
+                    System.IO.Path.Combine(Config.GetSysFolderPath(), "wppconnect-wa.js")
+                };
+                foreach (string p in cands)
+                {
+                    try
+                    {
+                        if (System.IO.File.Exists(p))
+                        {
+                            await wv.ExecuteScriptAsync(System.IO.File.ReadAllText(p));
+                            await Task.Delay(3000);
+                            has = await Eval(wv, "typeof window.WPP === 'object' && window.WPP.chat ? 'yes' : 'no'");
+                            if (has != null && has.Contains("yes")) { return true; }
+                        }
+                    }
+                    catch (Exception ex) { Log("WPP inject EX " + ex.Message); }
+                }
+                return false;
+            }
+            catch (Exception ex) { Log("WPP ensure EX " + ex.Message); return false; }
+        }
+
         private static async Task<bool> EnsureFmark(WebView2 wv)
         {
             try
@@ -126,9 +157,10 @@ namespace WASender
                     + "var opts=Array.from(document.querySelectorAll('#side [role=\"option\"]'));"
                     + "if(!opts.length){opts=Array.from(document.querySelectorAll('#side div[data-testid=\"cell-frame-container\"]'));} "
                     + "var num=q.replace(/\\D/g,'');"
+                    + "var all=opts.slice(0,5).map(function(o){return txt(o).substring(0,60);}).join(' || ');"
                     + "for(var i=0;i<opts.length;i++){try{var t=txt(opts[i]).replace(/\\D/g,'');"
-                    + "if(t&&num&&(t.indexOf(num)>-1||num.indexOf(t)>-1)){opts[i].click();return 'CLICKED:'+i;}}catch(e){}}"
-                    + "return 'NORESULT';})();";
+                    + "if(t&&num&&(t.indexOf(num)>-1||num.indexOf(t)>-1)){opts[i].click();return 'CLICKED:'+i+'/'+opts.length;}}catch(e){}}"
+                    + "return 'NORESULT opts='+opts.length+':'+all.substring(0,300);})();";
                 string clicked = await Eval(wv, clickJs);
                 Log("search click -> " + (clicked ?? "null"));
                 string clickedClean = ((clicked ?? "").Trim().Trim('"') ?? "");
@@ -266,6 +298,56 @@ namespace WASender
                 return Tuple.Create(res.StartsWith("OK:{"), res);
             }
             catch (Exception ex) { Log("fmarktext EX " + ex.Message); return Tuple.Create(false, "ex"); }
+        }
+
+        /// <summary>Kirim teks via WPP (wa-js terbaru, ganti FMARK yg basi). Return (ok, detail).</summary>
+        public static async Task<Tuple<bool, string>> SendTextWpp(WebView2 wv, string digits, string text)
+        {
+            try
+            {
+                if (!await EnsureWpp(wv)) { return Tuple.Create(false, "nowpp"); }
+                string chatIdJs = JsonConvert.SerializeObject(digits + "@c.us");
+                await Eval(wv, "try{WPP.chat.openChatBottom(" + chatIdJs + ").catch(function(){});}catch(e){}");
+                await Task.Delay(1500);
+                string js = "window.__wppText='PENDING';"
+                    + "WPP.chat.sendTextMessage(" + chatIdJs + "," + JsonConvert.SerializeObject(text ?? "")
+                    + ").then(function(r){window.__wppText='OK:'+JSON.stringify(r).substring(0,300);})"
+                    + ".catch(function(e){window.__wppText='FAIL:'+((e&&e.message)||e);});'DISPATCHED';";
+                await Eval(wv, js);
+                string res = await PollMailbox(wv, "__wppText", 16);
+                Log("wpp text -> " + res);
+                return Tuple.Create(res.StartsWith("OK:{"), res);
+            }
+            catch (Exception ex) { Log("wpptext EX " + ex.Message); return Tuple.Create(false, "ex"); }
+        }
+
+        /// <summary>Kirim 1 file via WPP (wa-js terbaru).</summary>
+        public static async Task<Tuple<bool, string>> SendMediaWpp(WebView2 wv, string digits, string filePath, string caption)
+        {
+            try
+            {
+                if (!System.IO.File.Exists(filePath)) { return Tuple.Create(false, "nofile"); }
+                if (!await EnsureWpp(wv)) { return Tuple.Create(false, "nowpp"); }
+                byte[] bytes = System.IO.File.ReadAllBytes(filePath);
+                string ext = (System.IO.Path.GetExtension(filePath) ?? "").ToLower();
+                string ct = System.Web.MimeMapping.GetMimeMapping(filePath);
+                if (ext == ".mp4") { ct = "video/mp4"; }
+                string b64 = "data:" + ct + ";base64," + System.Convert.ToBase64String(bytes);
+                string chatIdJs = JsonConvert.SerializeObject(digits + "@c.us");
+                await Eval(wv, "try{WPP.chat.openChatBottom(" + chatIdJs + ").catch(function(){});}catch(e){}");
+                await Task.Delay(1500);
+                string js = "window.__wppMedia='PENDING';"
+                    + "WPP.chat.sendFileMessage(" + chatIdJs + "," + JsonConvert.SerializeObject(b64)
+                    + ",{filename:" + JsonConvert.SerializeObject(System.IO.Path.GetFileName(filePath))
+                    + ",caption:" + JsonConvert.SerializeObject(caption ?? "") + "})"
+                    + ".then(function(r){window.__wppMedia='OK:'+JSON.stringify(r).substring(0,300);})"
+                    + ".catch(function(e){window.__wppMedia='FAIL:'+((e&&e.message)||e);});'DISPATCHED';";
+                await Eval(wv, js);
+                string res = await PollMailbox(wv, "__wppMedia", 20);
+                Log("wpp media -> " + (res ?? "").Substring(0, System.Math.Min(160, (res ?? "").Length)));
+                return Tuple.Create(res.StartsWith("OK:{"), res);
+            }
+            catch (Exception ex) { Log("wppmedia EX " + ex.Message); return Tuple.Create(false, "ex"); }
         }
 
         /// <summary>Kirim 1 file via FMARK internal.</summary>

@@ -1280,17 +1280,24 @@ namespace WASender
         {
             try
             {
+                string[] urlsToTry = new string[]
+                {
+                    "https://wa.me/" + digits,
+                    "https://web.whatsapp.com/send?phone=" + digits
+                };
+                foreach (string targetUrl in urlsToTry)
+                {
                 try
                 {
                     string alive = await wv.ExecuteScriptAsync("('ALIVE:' + location.href).substring(0,120)");
                     writetrace("SENDLINK pre=" + (alive ?? "null").Trim('"'));
-                    string navRes = await wv.ExecuteScriptAsync("window.location.href = " + JsonConvert.SerializeObject("https://web.whatsapp.com/send?phone=" + digits) + "; 'NAV:' + location.href;");
+                    string navRes = await wv.ExecuteScriptAsync("window.location.href = " + JsonConvert.SerializeObject(targetUrl) + "; 'NAV:' + location.href;");
                     writetrace("SENDLINK navres=" + (navRes ?? "null"));
                 }
                 catch (Exception ex)
                 {
                     writetrace("SENDLINK nav EX " + ex.GetType().Name + ": " + ex.Message);
-                    return "FAIL";
+                    continue;
                 }
                 // Probe: apakah scripting masih hidup pasca-navigasi?
                 for (int pi = 0; pi < 3; pi++)
@@ -1322,7 +1329,7 @@ namespace WASender
                             + "return 'WAIT:' + (document.title||'').substring(0,40);"
                             + "}catch(e){return 'ERR';}");
                         string s = ((st ?? "").Trim().Trim('"') ?? "");
-                        if (i % 4 == 0) { writetrace("SENDLINK poll " + i + "=" + s.Substring(0, Math.Min(60, s.Length))); }
+                        if (i % 4 == 0) { writetrace("SENDLINK poll " + i + "=" + s.Substring(0, Math.Min(80, s.Length))); }
                         if (s.StartsWith("CHAT")) { writetrace("SENDLINK chat open"); return "OK"; }
                         if (s.StartsWith("NOTONWA")) { writetrace("SENDLINK number not on WA"); return "NOTONWA"; }
                         if (s.StartsWith("LOGGEDOUT")) { writetrace("SENDLINK session logged out!"); return "LOGGEDOUT"; }
@@ -1332,7 +1339,8 @@ namespace WASender
                         writetrace("SENDLINK poll " + i + " EX " + exPoll.GetType().Name + ": " + exPoll.Message);
                     }
                 }
-                writetrace("SENDLINK timeout");
+                writetrace("SENDLINK timeout for this URL, coba URL berikut");
+                } // foreach urlsToTry
                 return "FAIL";
             }
             catch (Exception ex)
@@ -2311,6 +2319,56 @@ namespace WASender
                                                         if (dllOk && await SendEngine.OutboxIncreased(wv, before, 10)) { isDOne = true; }
                                                     }
                                                     catch (Exception ex) { writetrace("REWRITE DLL EX " + ex.Message); }
+                                                    if (!isDOne)
+                                                    {
+                                                        // Lapis 2: WPP wa-js terbaru (ganti FMARK yg basi).
+                                                        try
+                                                        {
+                                                            string digitsW = System.Text.RegularExpressions.Regex.Replace(item.number ?? "", "[^0-9]", "");
+                                                            string txtW = "";
+                                                            try { txtW = ProjectCommon.ReplaceKeyMarker(mesageModel.longMessage ?? "", item.parameterModelList); } catch (Exception) { }
+                                                            bool wppMediaOk = true;
+                                                            bool wppHasMedia = false;
+                                                            if (mesageModel.files != null)
+                                                            {
+                                                                foreach (FilesModel ff in mesageModel.files)
+                                                                {
+                                                                    if (ff == null || string.IsNullOrEmpty(ff.filePath) || !System.IO.File.Exists(ff.filePath)) { continue; }
+                                                                    if (ff.type != null && ff.type != "" && ff.type != StaticMethods.media) { wppMediaOk = false; break; }
+                                                                    wppHasMedia = true;
+                                                                    string capW = ff.attachWithMainMessage == true ? txtW : (ff.Caption ?? "");
+                                                                    try { if (!string.IsNullOrEmpty(ff.Caption) && ff.attachWithMainMessage != true) { capW = ProjectCommon.ReplaceKeyMarker(ff.Caption, item.parameterModelList); } } catch (Exception) { }
+                                                                    var mrw = await SendEngine.SendMediaWpp(wv, digitsW, ff.filePath, capW);
+                                                                    writetrace("REWRITE WPP media=" + mrw.Item1);
+                                                                    if (!mrw.Item1) { wppMediaOk = false; break; }
+                                                                }
+                                                            }
+                                                            bool wppNeedTxt = !string.IsNullOrEmpty(txtW);
+                                                            if (wppNeedTxt && wppHasMedia && mesageModel.files != null)
+                                                            {
+                                                                bool allAttached2 = true;
+                                                                foreach (FilesModel ff in mesageModel.files)
+                                                                {
+                                                                    if (ff == null) { continue; }
+                                                                    if (ff.type == null || ff.type == "" || ff.type == StaticMethods.media)
+                                                                    {
+                                                                        if (ff.attachWithMainMessage != true) { allAttached2 = false; break; }
+                                                                    }
+                                                                }
+                                                                if (allAttached2 && mesageModel.files.Count > 0) { wppNeedTxt = false; }
+                                                            }
+                                                            bool wppTxtOk = true;
+                                                            if (wppNeedTxt && wppMediaOk)
+                                                            {
+                                                                var trw = await SendEngine.SendTextWpp(wv, digitsW, txtW);
+                                                                writetrace("REWRITE WPP text=" + trw.Item1);
+                                                                wppTxtOk = trw.Item1;
+                                                            }
+                                                            if (wppMediaOk && wppTxtOk && await SendEngine.OutboxIncreased(wv, before, 10)) { isDOne = true; }
+                                                            writetrace("REWRITE WPP final=" + isDOne);
+                                                        }
+                                                        catch (Exception ex) { writetrace("REWRITE WPP EX " + ex.Message); }
+                                                        }
                                                     if (!isDOne)
                                                     {
                                                         try
