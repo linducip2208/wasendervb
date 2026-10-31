@@ -314,12 +314,37 @@ namespace WASender
             catch (Exception ex) { Log("fmarktext EX " + ex.Message); return Tuple.Create(false, "ex"); }
         }
 
-        /// <summary>Verifikasi TERKIRIM via API resmi WPP (baca pesan terakhir di chat).</summary>
+        /// <summary>Resolve chatId via WPP (LID-aware). Return JID string atau digits@c.us.</summary>
+    public static async Task<string> ResolveChatId(WebView2 wv, string digits)
+    {
+        try
+        {
+            if (!await EnsureWpp(wv)) { return digits + "@c.us"; }
+            string chatIdJs = JsonConvert.SerializeObject(digits + "@c.us");
+            string js = "window.__resolve='PENDING';"
+                + "(function(){try{"
+                + "if(WPP.contact&&WPP.contact.queryExists){WPP.contact.queryExists(" + chatIdJs + ").then(function(r){try{var w=r&&r.wid?r.wid:(r&&r.id?r.id:r);var s=(w&&(w._serialized||w.toString?w.toString():String(w)))||JSON.stringify(r);window.__resolve='OK:'+s;}catch(e){window.__resolve='OK:'+JSON.stringify(r);}}).catch(function(e){window.__resolve='FAIL:'+(e&&e.message);});}else{window.__resolve='NOAPI';}"
+                + "}catch(e){window.__resolve='EX:'+e.message;}})();'DISPATCHED';";
+            await Eval(wv, js);
+            string res = await PollMailbox(wv, "__resolve", 6);
+            Log("resolve=" + res);
+            if (res.StartsWith("OK:"))
+            {
+                string v = res.Substring(3);
+                if (v.Contains("@lid") || v.Contains("@c.us") || v.Contains("@g.us")) { return v.Trim().Trim('"'); }
+            }
+            return digits + "@c.us";
+        }
+        catch (Exception ex) { Log("resolve EX " + ex.Message); return digits + "@c.us"; }
+    }
+
+    /// <summary>Verifikasi TERKIRIM via API resmi WPP (baca pesan terakhir di chat).</summary>
         public static async Task<Tuple<bool, string>> ConfirmDelivered(WebView2 wv, string digits, string text)
         {
             try
             {
-                string chatIdJs = JsonConvert.SerializeObject(digits + "@c.us");
+                string chatId = await ResolveChatId(wv, digits);
+                string chatIdJs = JsonConvert.SerializeObject(chatId);
                 string snippet = JsonConvert.SerializeObject((text ?? "").Length > 20 ? text.Substring(0, 20) : (text ?? ""));
                 string js = "window.__verify='PENDING';"
                     + "WPP.chat.getMessages(" + chatIdJs + ",{count:10})"
@@ -362,7 +387,10 @@ namespace WASender
                 await Eval(wv, js);
                 string res = await PollMailbox(wv, "__wppText", 16);
                 Log("wpp text -> " + res);
-                return Tuple.Create(res.StartsWith("OK:{"), res);
+                if (!res.StartsWith("OK:{")) { return Tuple.Create(false, res); }
+                var cf = await ConfirmDelivered(wv, digits, text);
+                Log("wpp confirm=" + cf.Item1);
+                return Tuple.Create(cf.Item1, res + " | " + cf.Item2);
             }
             catch (Exception ex) { Log("wpptext EX " + ex.Message); return Tuple.Create(false, "ex"); }
         }
@@ -391,7 +419,10 @@ namespace WASender
                 await Eval(wv, js);
                 string res = await PollMailbox(wv, "__wppMedia", 20);
                 Log("wpp media -> " + (res ?? "").Substring(0, System.Math.Min(160, (res ?? "").Length)));
-                return Tuple.Create(res.StartsWith("OK:{"), res);
+                if (!res.StartsWith("OK:{")) { return Tuple.Create(false, res); }
+                var cfm = await ConfirmDelivered(wv, digits, caption);
+                Log("wpp media confirm=" + cfm.Item1);
+                return Tuple.Create(cfm.Item1, res + " | " + cfm.Item2);
             }
             catch (Exception ex) { Log("wppmedia EX " + ex.Message); return Tuple.Create(false, "ex"); }
         }
