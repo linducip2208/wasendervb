@@ -1,5 +1,6 @@
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Text;
@@ -101,7 +102,69 @@ namespace WASender
             catch (Exception) { return new AiSettings { Enabled = false }; }
         }
 
-        public static async Task<string> ReplyAsync(string incomingText, string extraInstruction = null)
+        public static bool IsConfigured()
+        {
+            try
+            {
+                AiSettings cfg = LoadSettings();
+                return cfg != null && cfg.Enabled
+                    && !string.IsNullOrWhiteSpace(cfg.ApiKey)
+                    && cfg.ApiKey != "ISI_DENGAN_API_KEY_ANDA";
+            }
+            catch (Exception) { return false; }
+        }
+
+        private static readonly object _histLock = new object();
+        private static readonly Dictionary<string, List<KeyValuePair<string, string>>> _history =
+            new Dictionary<string, List<KeyValuePair<string, string>>>();
+
+        private static List<object> BuildMessages(string systemPrompt, string chatId, string incomingText)
+        {
+            var msgs = new List<object>();
+            msgs.Add(new { role = "system", content = systemPrompt });
+            try
+            {
+                if (!string.IsNullOrEmpty(chatId))
+                {
+                    lock (_histLock)
+                    {
+                        List<KeyValuePair<string, string>> h;
+                        if (_history.TryGetValue(chatId, out h))
+                        {
+                            foreach (var kv in h)
+                            {
+                                string c = kv.Value ?? "";
+                                if (c.Length > 800) c = c.Substring(0, 800);
+                                msgs.Add(new { role = kv.Key, content = c });
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception) { }
+            msgs.Add(new { role = "user", content = incomingText });
+            return msgs;
+        }
+
+        private static void PushHistory(string chatId, string user, string assistant)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(chatId)) return;
+                lock (_histLock)
+                {
+                    List<KeyValuePair<string, string>> h;
+                    if (!_history.TryGetValue(chatId, out h)) { h = new List<KeyValuePair<string, string>>(); _history[chatId] = h; }
+                    h.Add(new KeyValuePair<string, string>("user", user ?? ""));
+                    h.Add(new KeyValuePair<string, string>("assistant", assistant ?? ""));
+                    while (h.Count > 6) h.RemoveAt(0);
+                    if (_history.Count > 500) _history.Clear();
+                }
+            }
+            catch (Exception) { }
+        }
+
+        public static async Task<string> ReplyAsync(string incomingText, string extraInstruction = null, string chatId = null)
         {
             try
             {
@@ -116,11 +179,7 @@ namespace WASender
                 var payload = new
                 {
                     model = cfg.Model,
-                    messages = new object[]
-                    {
-                        new { role = "system", content = systemPrompt },
-                        new { role = "user", content = incomingText }
-                    },
+                    messages = BuildMessages(systemPrompt, chatId, incomingText).ToArray(),
                     temperature = cfg.Temperature,
                     max_tokens = cfg.MaxTokens
                 };
@@ -149,7 +208,7 @@ namespace WASender
                 try
                 {
                     string content = (string)obj.choices[0].message.content;
-                    if (!string.IsNullOrWhiteSpace(content)) return content.Trim();
+                    if (!string.IsNullOrWhiteSpace(content)) { PushHistory(chatId, incomingText, content.Trim()); return content.Trim(); }
                 }
                 catch (Exception) { }
                 try

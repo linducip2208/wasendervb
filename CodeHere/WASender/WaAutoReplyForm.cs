@@ -564,26 +564,26 @@ namespace WaAutoReplyBot
                 if (ExactStartsWith(startFromMessageList, lastMessageText).Count() > 0)
                 {
                     RuleTransactionModel model = ExactStartsWith(startFromMessageList, lastMessageText).LastOrDefault();
-                    sendMessage(model, incommingMessageModel.from);
+                    sendMessage(model, incommingMessageModel.from, incommingMessageModel.body);
                     sendMessagesList.Add(incommingMessageModel);
                 }
                 else if (ExactEndsWith(endsWithFromMessageList, lastMessageText).Count() > 0)
                 {
 
                     RuleTransactionModel model = ExactEndsWith(endsWithFromMessageList, lastMessageText).LastOrDefault();
-                    sendMessage(model, incommingMessageModel.from);
+                    sendMessage(model, incommingMessageModel.from, incommingMessageModel.body);
                     sendMessagesList.Add(incommingMessageModel);
                 }
                 else if (exactMessageList.Where(x => x.userInput.ToUpper() == lastMessageText.ToUpper()).Count() > 0)
                 {
 
                     RuleTransactionModel model = exactMessageList.Where(x => x.userInput.ToUpper() == lastMessageText.ToUpper()).LastOrDefault();
-                    sendMessage(model, incommingMessageModel.from);
+                    sendMessage(model, incommingMessageModel.from, incommingMessageModel.body);
                     sendMessagesList.Add(incommingMessageModel);
                 }
                 else if (foundContains)
                 {
-                    sendMessage(containstmodel, incommingMessageModel.from);
+                    sendMessage(containstmodel, incommingMessageModel.from, incommingMessageModel.body);
                     sendMessagesList.Add(incommingMessageModel);
                 }
                 else
@@ -594,7 +594,7 @@ namespace WaAutoReplyBot
                     {
                         if (splitter.Contains(itemo.userInput.ToUpper()))
                         {
-                            sendMessage(itemo, incommingMessageModel.from);
+                            sendMessage(itemo, incommingMessageModel.from, incommingMessageModel.body);
                             sendMessagesList.Add(incommingMessageModel);
                             found = true;
                         }
@@ -605,7 +605,12 @@ namespace WaAutoReplyBot
                         if (fallbackMesageList.Count > 0)
                         {
                             RuleTransactionModel model = fallbackMesageList[Utils.getRandom(0, fallbackMesageList.Count() - 1)];
-                            sendMessage(model, incommingMessageModel.from);
+                            sendMessage(model, incommingMessageModel.from, incommingMessageModel.body);
+                            sendMessagesList.Add(incommingMessageModel);
+                        }
+                        else
+                        {
+                            sendAiFallback(incommingMessageModel.from, lastMessageText);
                             sendMessagesList.Add(incommingMessageModel);
                         }
 
@@ -717,21 +722,21 @@ namespace WaAutoReplyBot
                                         {
                                             logger.WriteLog("Match with ExactStartsWith");
                                             RuleTransactionModel model = ExactStartsWith(startFromMessageList, lastMessageText).LastOrDefault();
-                                            sendMessage(model, item.chatId);
+                                            sendMessage(model, item.chatId, item.body);
                                             sendMessagesList.Add(item);
                                         }
                                         else if (ExactEndsWith(endsWithFromMessageList, lastMessageText).Count() > 0)
                                         {
                                             logger.WriteLog("Match with ExactEndsWith");
                                             RuleTransactionModel model = ExactEndsWith(endsWithFromMessageList, lastMessageText).LastOrDefault();
-                                            sendMessage(model, item.chatId);
+                                            sendMessage(model, item.chatId, item.body);
                                             sendMessagesList.Add(item);
                                         }
                                         else if (exactMessageList.Where(x => x.userInput.ToUpper() == lastMessageText.ToUpper()).Count() > 0)
                                         {
                                             logger.WriteLog("Match with exactMessage");
                                             RuleTransactionModel model = exactMessageList.Where(x => x.userInput.ToUpper() == lastMessageText.ToUpper()).LastOrDefault();
-                                            sendMessage(model, item.chatId);
+                                            sendMessage(model, item.chatId, item.body);
                                             sendMessagesList.Add(item);
                                         }
                                         //else if (containsMessageList.Where(x => x.userInput.ToUpper().Contains(lastMessageText.ToUpper())).Count() > 0)
@@ -739,7 +744,7 @@ namespace WaAutoReplyBot
                                         {
                                             logger.WriteLog("Match with contains");
                                             RuleTransactionModel model = containsMessageList.Where(x => x.userInput.ToUpper().Contains(lastMessageText.ToUpper())).LastOrDefault();
-                                            sendMessage((RuleTransactionModel)contaisModel, item.chatId);
+                                            sendMessage((RuleTransactionModel)contaisModel, item.chatId, item.body);
                                             sendMessagesList.Add(item);
                                         }
                                         else
@@ -750,7 +755,7 @@ namespace WaAutoReplyBot
                                             {
                                                 if (splitter.Contains(itemo.userInput.ToUpper()))
                                                 {
-                                                    sendMessage(itemo, item.chatId);
+                                                    sendMessage(itemo, item.chatId, item.body);
                                                     sendMessagesList.Add(item);
                                                     found = true;
                                                 }
@@ -762,11 +767,12 @@ namespace WaAutoReplyBot
                                                 if (fallbackMesageList.Count > 0)
                                                 {
                                                     RuleTransactionModel model = fallbackMesageList[Utils.getRandom(0, fallbackMesageList.Count() - 1)];
-                                                    sendMessage(model, item.chatId);
+                                                    sendMessage(model, item.chatId, item.body);
                                                     sendMessagesList.Add(item);
                                                 }
                                                 else
                                                 {
+                                                    await tryAiFallbackAsync(item.chatId, lastMessageText);
                                                     if (generalSettingsModel.browserType == 1)
                                                     {
                                                         WAPIHelper.markIsRead(driver, item.chatId);
@@ -793,7 +799,7 @@ namespace WaAutoReplyBot
                                 {
                                     logger.WriteLog("Fallback Found");
                                     RuleTransactionModel model = fallbackMesageList[Utils.getRandom(0, fallbackMesageList.Count() - 1)];
-                                    sendMessage(model, item.chatId);
+                                    sendMessage(model, item.chatId, item.body);
                                     sendMessagesList.Add(item);
                                 }
                                 else
@@ -817,7 +823,7 @@ namespace WaAutoReplyBot
             }
         }
 
-        private async void sendMessage(RuleTransactionModel model, string number = "")
+        private async void sendMessage(RuleTransactionModel model, string number = "", string incomingText = "")
         {
             if (1 == 2)
             {
@@ -917,6 +923,20 @@ namespace WaAutoReplyBot
                     //var messages = mesageModel.LongMessage.Split('\n');
                     string NewMessage = ProjectCommon.ReplaceKeyMarker(mesageModel.LongMessage);
 
+                    if (AiResponder.IsAiMessage(NewMessage))
+                    {
+                        string _extra = AiResponder.GetExtraInstruction(NewMessage);
+                        string _ai = null;
+                        try { _ai = await AiResponder.ReplyAsync(incomingText, _extra, number); }
+                        catch (Exception ex) { try { logger.WriteLog("AI-" + ex.Message); } catch (Exception) { } }
+                        if (string.IsNullOrEmpty(_ai))
+                        {
+                            try { logger.WriteLog("AI belum dikonfigurasi utk " + number + " - balasan [AI] dilewati."); } catch (Exception) { }
+                            continue;
+                        }
+                        NewMessage = _ai;
+                    }
+
 
                     if (mesageModel.polls != null && mesageModel.polls.Count() > 0)
                     {
@@ -1005,6 +1025,45 @@ namespace WaAutoReplyBot
             }
         }
 
+
+        private async Task<bool> tryAiFallbackAsync(string number, string incomingText)
+        {
+            try
+            {
+                if (!AiResponder.IsConfigured()) return false;
+                if (string.IsNullOrWhiteSpace(incomingText)) return false;
+                string reply = null;
+                try { reply = await AiResponder.ReplyAsync(incomingText, null, number); }
+                catch (Exception) { return false; }
+                if (string.IsNullOrWhiteSpace(reply)) return false;
+                if (generalSettingsModel.browserType == 1)
+                {
+                    WAPIHelper.SendMessage(driver, number, reply);
+                }
+                else if (generalSettingsModel.browserType == 2)
+                {
+                    WPPHelper.SendMessage(wv, number, reply);
+                }
+                Thread.Sleep(300);
+                if (generalSettingsModel.browserType == 1)
+                {
+                    WAPIHelper.sendSeen(driver, number);
+                }
+                else if (generalSettingsModel.browserType == 2)
+                {
+                    WPPHelper.sendSeen(wv, number);
+                }
+                try { WaAutoReplyForm.WriteLogg(number + "\t-- AI Fallback -- " + Strings.ReplySend + "!"); } catch (Exception) { }
+                return true;
+            }
+            catch (Exception) { return false; }
+        }
+
+        private async void sendAiFallback(string number, string incomingText)
+        {
+            try { await tryAiFallbackAsync(number, incomingText); }
+            catch (Exception) { }
+        }
 
         private async void RunNow()
         {
