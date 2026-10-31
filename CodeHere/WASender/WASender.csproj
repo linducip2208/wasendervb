@@ -531,6 +531,7 @@
       <DependentUpon>ChooseGroup.cs</DependentUpon>
     </Compile>
     <Compile Include="Config.cs" />
+    <Compile Include="SendEngine.cs" />
     <Compile Include="ContactGrabber.cs">
       <SubType>Form</SubType>
     </Compile>

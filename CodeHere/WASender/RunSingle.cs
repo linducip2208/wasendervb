@@ -2046,8 +2046,30 @@ namespace WASender
                             {
                                 int msgIdx = 0;
                                 int msgTotal = wASenderSingleTransModel.messages.Where(x => x != null).Count();
+                                bool linkChatOk = false;
+                                bool linkChecked = false;
+                                if (generalSettingsModel.browserType == 2)
+                                {
+                                    try
+                                    {
+                                        string digitsOnly0 = System.Text.RegularExpressions.Regex.Replace(item.number ?? "", "[^0-9]", "");
+                                        writetrace("LINKOPEN for " + digitsOnly0);
+                                        string linkRes0 = await OpenChatViaSendLink(wv, digitsOnly0);
+                                        linkChecked = true;
+                                        if (linkRes0 == "OK") { linkChatOk = true; }
+                                        else if (linkRes0 == "NOTONWA") { writetrace("LINKOPEN not on WA"); }
+                                        else if (linkRes0 == "LOGGEDOUT") { writetrace("LINKOPEN logged out!"); }
+                                    }
+                                    catch (Exception ex0) { writetrace("LINKOPEN EX " + ex0.Message); }
+                                }
                                 foreach (MesageModel mesageModel in wASenderSingleTransModel.messages.Where(x => x != null).ToList())
                                 {
+                                    if (linkChecked && !linkChatOk)
+                                    {
+                                        writetrace("MSG skipped (link open failed)");
+                                        IsError = true;
+                                        continue;
+                                    }
                                     msgIdx++;
                                     writetrace("MSG " + msgIdx + "/" + msgTotal + " to " + item.number + " files=" + (mesageModel.files == null ? "null" : mesageModel.files.Count.ToString()) + " textLen=" + (mesageModel.longMessage == null ? 0 : mesageModel.longMessage.Length));
                                     bool chatOpened = true;
@@ -2076,7 +2098,7 @@ namespace WASender
                                                 result = await WPPHelper.findChatLongSync(wv, item.number);
                                                 writetrace("findChat " + msgIdx + " try2=" + result);
                                             }
-                                            chatOpened = result;
+                                            chatOpened = result || linkChatOk;
                                         }
 
                                     }
@@ -2121,72 +2143,94 @@ namespace WASender
                                             }
                                             if (isAuthenticated)
                                             {
-                                                writetrace("SendMessageSync 1618 start--- chatOpened=" + chatOpened);
+                                                writetrace("SendMessageSync 1618 start--- chatOpened=" + chatOpened + " link=" + linkChatOk);
                                                 bool isDOne = false;
-                                                if (!chatOpened)
+                                                if (!chatOpened && !linkChatOk)
                                                 {
-                                                    // PIPELINE TULIS ULANG: buka chat via link resmi, lalu
-                                                    // coba DLL -> FMARK -> DOM, tiap lapis diverifikasi outbox.
-                                                    writetrace("REWRITE pipeline for " + item.number);
-                                                    string digitsOnly = System.Text.RegularExpressions.Regex.Replace(item.number ?? "", "[^0-9]", "");
-                                                    string linkRes = await OpenChatViaSendLink(wv, digitsOnly);
-                                                    if (linkRes == "NOTONWA")
-                                                    {
-                                                        writetrace("REWRITE nomor tidak terdaftar WA");
-                                                        isDOne = false;
-                                                    }
-                                                    else if (linkRes != "OK")
-                                                    {
-                                                        writetrace("REWRITE sendlink gagal");
-                                                        isDOne = false;
-                                                    }
-                                                    else
-                                                    {
-                                                        int before = await OutboxCount(wv);
-                                                        try
-                                                        {
-                                                            bool dllOk = await SendMessageSync(mesageModel, isFirstMessage, item, wv);
-                                                            writetrace("REWRITE DLL result=" + dllOk);
-                                                            if (dllOk && await OutboxIncreased(wv, before, 10)) { isDOne = true; }
-                                                        }
-                                                        catch (Exception ex) { writetrace("REWRITE DLL EX " + ex.Message); }
-                                                        if (!isDOne)
-                                                        {
-                                                            try
-                                                            {
-                                                                bool fmOk = await SendViaFmark(wv, item.number, mesageModel, item);
-                                                                writetrace("REWRITE FMARK result=" + fmOk);
-                                                                if (fmOk && await OutboxIncreased(wv, before, 10)) { isDOne = true; }
-                                                            }
-                                                            catch (Exception ex) { writetrace("REWRITE FMARK EX " + ex.Message); }
-                                                        }
-                                                        if (!isDOne)
-                                                        {
-                                                            bool hasMedia = false;
-                                                            try { hasMedia = mesageModel.files != null && mesageModel.files.Any(f => f != null && !string.IsNullOrEmpty(f.filePath) && System.IO.File.Exists(f.filePath)); } catch (Exception) { }
-                                                            if (!hasMedia)
-                                                            {
-                                                                try
-                                                                {
-                                                                    string domText = "";
-                                                                    try { domText = ProjectCommon.ReplaceKeyMarker(mesageModel.longMessage, item.parameterModelList); } catch (Exception) { }
-                                                                    bool domOk = await DomTypeAndSend(wv, domText);
-                                                                    writetrace("REWRITE DOM result=" + domOk);
-                                                                    if (domOk && await OutboxIncreased(wv, before, 10)) { isDOne = true; }
-                                                                }
-                                                                catch (Exception ex) { writetrace("REWRITE DOM EX " + ex.Message); }
-                                                            }
-                                                            else
-                                                            {
-                                                                writetrace("REWRITE media butuh API internal, DOM dilewati");
-                                                            }
-                                                        }
-                                                    }
-                                                    writetrace("REWRITE final=" + isDOne);
+                                                    writetrace("REWRITE chat tak terbuka, skip kirim");
+                                                    isDOne = false;
                                                 }
                                                 else
                                                 {
-                                                    isDOne = await SendMessageSync(mesageModel, isFirstMessage, item, wv);
+                                                    int before = await SendEngine.OutboxCount(wv);
+                                                    try
+                                                    {
+                                                        bool dllOk = await SendMessageSync(mesageModel, isFirstMessage, item, wv);
+                                                        writetrace("REWRITE DLL result=" + dllOk);
+                                                        if (dllOk && await SendEngine.OutboxIncreased(wv, before, 10)) { isDOne = true; }
+                                                    }
+                                                    catch (Exception ex) { writetrace("REWRITE DLL EX " + ex.Message); }
+                                                    if (!isDOne)
+                                                    {
+                                                        try
+                                                        {
+                                                            string digitsOnly2 = System.Text.RegularExpressions.Regex.Replace(item.number ?? "", "[^0-9]", "");
+                                                            string txt2 = "";
+                                                            try { txt2 = ProjectCommon.ReplaceKeyMarker(mesageModel.longMessage ?? "", item.parameterModelList); } catch (Exception) { }
+                                                            bool fmMediaOk = true;
+                                                            bool hasMedia2 = false;
+                                                            if (mesageModel.files != null)
+                                                            {
+                                                                foreach (FilesModel ff in mesageModel.files)
+                                                                {
+                                                                    if (ff == null || string.IsNullOrEmpty(ff.filePath) || !System.IO.File.Exists(ff.filePath)) { continue; }
+                                                                    if (ff.type != null && ff.type != "" && ff.type != StaticMethods.media) { fmMediaOk = false; break; }
+                                                                    hasMedia2 = true;
+                                                                    string cap2 = ff.attachWithMainMessage == true ? txt2 : (ff.Caption ?? "");
+                                                                    try { if (!string.IsNullOrEmpty(ff.Caption) && ff.attachWithMainMessage != true) { cap2 = ProjectCommon.ReplaceKeyMarker(ff.Caption, item.parameterModelList); } } catch (Exception) { }
+                                                                    var mr = await SendEngine.SendMediaFmark(wv, digitsOnly2, ff.filePath, cap2);
+                                                                    writetrace("REWRITE FMARK media=" + mr.Item1);
+                                                                    if (!mr.Item1) { fmMediaOk = false; break; }
+                                                                }
+                                                            }
+                                                            bool needTxt2 = !string.IsNullOrEmpty(txt2);
+                                                            if (needTxt2 && hasMedia2 && mesageModel.files != null)
+                                                            {
+                                                                bool allAttached = true;
+                                                                foreach (FilesModel ff in mesageModel.files)
+                                                                {
+                                                                    if (ff == null) { continue; }
+                                                                    if (ff.type == null || ff.type == "" || ff.type == StaticMethods.media)
+                                                                    {
+                                                                        if (ff.attachWithMainMessage != true) { allAttached = false; break; }
+                                                                    }
+                                                                }
+                                                                if (allAttached && mesageModel.files.Count > 0) { needTxt2 = false; }
+                                                            }
+                                                            bool fmTxtOk = true;
+                                                            if (needTxt2 && fmMediaOk)
+                                                            {
+                                                                var tr = await SendEngine.SendTextFmark(wv, digitsOnly2, txt2);
+                                                                writetrace("REWRITE FMARK text=" + tr.Item1);
+                                                                fmTxtOk = tr.Item1;
+                                                            }
+                                                            if (fmMediaOk && fmTxtOk && await SendEngine.OutboxIncreased(wv, before, 10)) { isDOne = true; }
+                                                            writetrace("REWRITE FMARK final=" + isDOne);
+                                                        }
+                                                        catch (Exception ex) { writetrace("REWRITE FMARK EX " + ex.Message); }
+                                                    }
+                                                    if (!isDOne)
+                                                    {
+                                                        bool hasMedia = false;
+                                                        try { hasMedia = mesageModel.files != null && mesageModel.files.Any(f => f != null && !string.IsNullOrEmpty(f.filePath) && System.IO.File.Exists(f.filePath)); } catch (Exception) { }
+                                                        if (!hasMedia)
+                                                        {
+                                                            try
+                                                            {
+                                                                string domText = "";
+                                                                try { domText = ProjectCommon.ReplaceKeyMarker(mesageModel.longMessage, item.parameterModelList); } catch (Exception) { }
+                                                                bool domOk = await DomTypeAndSend(wv, domText);
+                                                                writetrace("REWRITE DOM result=" + domOk);
+                                                                if (domOk && await SendEngine.OutboxIncreased(wv, before, 10)) { isDOne = true; }
+                                                            }
+                                                            catch (Exception ex) { writetrace("REWRITE DOM EX " + ex.Message); }
+                                                        }
+                                                        else
+                                                        {
+                                                            writetrace("REWRITE media butuh API internal, DOM dilewati");
+                                                        }
+                                                    }
+                                                    writetrace("REWRITE final=" + isDOne);
                                                 }
                                                 writetrace("SendMessageSync 1618 end--- result=" + isDOne);
                                                 if (!isDOne)
