@@ -1313,6 +1313,19 @@ namespace WASender
                         writetrace("SENDLINK probe" + pi + " EX " + exPb.GetType().Name + ": " + (exPb.Message ?? "").Substring(0, System.Math.Min(150, (exPb.Message ?? "").Length)));
                     }
                 }
+                // Halaman perantara api.whatsapp.com butuh 1x klik "continue" (#action-button).
+                for (int ci = 0; ci < 4; ci++)
+                {
+                    try
+                    {
+                        string clk = await wv.ExecuteScriptAsync("(function(){var b=document.getElementById('action-button');if(!b)return 'NO_BTN';try{b.click();return 'CLICKED';}catch(e){return 'ERR';}})();");
+                        string cl = ((clk ?? "").Trim().Trim('"') ?? "");
+                        writetrace("SENDLINK actionbtn=" + cl);
+                        if (cl.Contains("CLICKED")) { await Task.Delay(4000); break; }
+                    }
+                    catch (Exception exC) { writetrace("SENDLINK actionbtn EX " + exC.GetType().Name); }
+                    await Task.Delay(2500);
+                }
                 for (int i = 0; i < 15; i++)
                 {
                     await Task.Delay(2000);
