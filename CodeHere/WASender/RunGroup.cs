@@ -311,8 +311,9 @@ namespace WASender
         }
 
 
-        private void SendMessagetoGroup(MesageModel mesageModel, GroupModel item, WebView2 wv, bool isFirstMessage)
+        private bool SendMessagetoGroup(MesageModel mesageModel, GroupModel item, WebView2 wv, bool isFirstMessage)
         {
+            bool ok = true;
             bool AutoSend = false;
             bool isAlreadySent = false;
             if (mesageModel.buttons != null && mesageModel.buttons.Count() > 0)
@@ -406,7 +407,10 @@ namespace WASender
 
                         }
                         catch (Exception)
-                        { }
+                        {
+                            ok = false;
+                            SendEngine.Log("GRP mp4 EX " + item.GroupId);
+                        }
                     }
                     else if (ext == ".ogg")
                     {
@@ -461,6 +465,8 @@ namespace WASender
                         }
                         catch (Exception eeex)
                         {
+                            ok = false;
+                            SendEngine.Log("GRP ogg EX " + eeex.Message);
                             logger.WriteLog("Is Number Valid-" + eeex.Message);
                         }
                     }
@@ -538,6 +544,7 @@ namespace WASender
                     else if (generalSettingsModel.browserType == 2)
                     {
                         bool isDone =  WPPHelper.sendAudioFileSync(wv, item.GroupId, fullBase64);
+                        if (!isDone) { ok = false; SendEngine.Log("GRP audio returned false"); }
                     }
                 }
                 else if (file.type == StaticMethods.videoNote)
@@ -554,6 +561,7 @@ namespace WASender
                     else if (generalSettingsModel.browserType == 2)
                     {
                         bool isDone = WPPHelper.sendVideoNoteSync(wv, item.GroupId, fullBase64);
+                        if (!isDone) { ok = false; SendEngine.Log("GRP videonote returned false"); }
                     }
                 }
                 else if (file.type == StaticMethods.sticker)
@@ -570,6 +578,7 @@ namespace WASender
                     else if (generalSettingsModel.browserType == 2)
                     {
                         bool isDone =  WPPHelper.sendStickerSync(wv, item.GroupId, fullBase64);
+                        if (!isDone) { ok = false; SendEngine.Log("GRP sticker returned false"); }
                     }
                 }
                 else if (file.type == StaticMethods.location && file.locationMessageModel != null)
@@ -581,6 +590,7 @@ namespace WASender
                     else if (generalSettingsModel.browserType == 2)
                     {
                         bool isDone = WPPHelper.SendLocationMessageSync(wv, item.GroupId, file.locationMessageModel.lat, file.locationMessageModel.lng, file.locationMessageModel.name, file.locationMessageModel.address, file.locationMessageModel.url);
+                        if (!isDone) { ok = false; SendEngine.Log("GRP location returned false"); }
                     }
                 }
                 else if (file.type == StaticMethods.contact && file.contactMessageModel != null)
@@ -592,6 +602,7 @@ namespace WASender
                     else if (generalSettingsModel.browserType == 2)
                     {
                         bool isDone = WPPHelper.SendsendVCardContactMessageSync(wv, item.GroupId, file.contactMessageModel.number, file.contactMessageModel.name);
+                        if (!isDone) { ok = false; SendEngine.Log("GRP contact returned false"); }
                     }
                 }
 
@@ -705,7 +716,8 @@ namespace WASender
                     }
                     catch (Exception ex)
                     {
-
+                        ok = false;
+                        SendEngine.Log("GRP poll EX " + ex.Message);
                     }
                 }
             }
@@ -713,6 +725,8 @@ namespace WASender
 
 
 
+
+            return ok;
 
         }
 
@@ -846,14 +860,16 @@ namespace WASender
                             var list = wASenderGroupTransModel.messages.Where(x => x != null).ToList();
                             int index = random.Next(list.Count);
                             MesageModel mesageModel = list[index];
+                            bool gRotateOk = true;
                             try
                             {
-                                SendMessagetoGroup(mesageModel, item, wv, isFirstMessage);
+                                gRotateOk = SendMessagetoGroup(mesageModel, item, wv, isFirstMessage);
                                 isFirstMessage = false;
                             }
                             catch (Exception ex)
                             {
-
+                                gRotateOk = false;
+                                SendEngine.Log("GRP rotate EX " + ex.Message);
                             }
 
                             Thread.Sleep(Utils.getRandom(wASenderGroupTransModel.settings.delayAfterEveryMessageFrom * 1000, wASenderGroupTransModel.settings.delayAfterEveryMessageTo * 1000));
@@ -876,22 +892,28 @@ namespace WASender
                             var __count = wASenderGroupTransModel.groupList.Count();
                             var _percentage = totalCounter * 100 / __count;
                             item.sendStatusModel.isDone = true;
-                            item.sendStatusModel.sendStatusEnum = SendStatusEnum.Success;
+                            item.sendStatusModel.sendStatusEnum = gRotateOk ? SendStatusEnum.Success : SendStatusEnum.Failed;
                             worker.ReportProgress(_percentage);
                         }
 
                         else
                         {
+                            bool grpError = false;
+                            int grpMsgIdx = 0;
                             foreach (MesageModel mesageModel in wASenderGroupTransModel.messages.Where(x => x != null).ToList())
                             {
+                                grpMsgIdx++;
+                                SendEngine.Log("GRP MSG " + grpMsgIdx + " to " + item.GroupId);
                                 try
                                 {
-                                    SendMessagetoGroup(mesageModel, item, wv, isFirstMessage);
+                                    bool gOk = SendMessagetoGroup(mesageModel, item, wv, isFirstMessage);
+                                    if (!gOk) { grpError = true; }
                                     isFirstMessage = false;
                                 }
                                 catch (Exception ex)
                                 {
-
+                                    grpError = true;
+                                    SendEngine.Log("GRP MSG EX " + ex.Message);
                                 }
 
                                 Thread.Sleep(Utils.getRandom(wASenderGroupTransModel.settings.delayAfterEveryMessageFrom * 1000, wASenderGroupTransModel.settings.delayAfterEveryMessageTo * 1000));
@@ -914,7 +936,7 @@ namespace WASender
                                 var __count = wASenderGroupTransModel.groupList.Count();
                                 var _percentage = totalCounter * 100 / __count;
                                 item.sendStatusModel.isDone = true;
-                                item.sendStatusModel.sendStatusEnum = SendStatusEnum.Success;
+                                item.sendStatusModel.sendStatusEnum = grpError ? SendStatusEnum.Failed : SendStatusEnum.Success;
                                 worker.ReportProgress(_percentage);
                             }
                         }
@@ -933,7 +955,9 @@ namespace WASender
             string report = AutomationCommon.GenerateReport(this.wASenderGroupTransModel);
             try
             {
-                IJavaScriptExecutor js = (IJavaScriptExecutor)driver;
+                if (generalSettingsModel == null || generalSettingsModel.browserType == 1)
+                {
+                    IJavaScriptExecutor js = (IJavaScriptExecutor)driver;
                 string NavigateJS = "";
                 NavigateJS += report;
                 string _newFileName = Guid.NewGuid().ToString() + ".html";
@@ -945,6 +969,7 @@ namespace WASender
                     fs.Write(author, 0, NavigateJS.Length);
                 }
                 System.Diagnostics.Process.Start(tmpfile);
+                }
             }
             catch (Exception ex)
             {
