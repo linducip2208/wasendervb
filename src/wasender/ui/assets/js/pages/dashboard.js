@@ -4,6 +4,7 @@ router.register('dashboard', async (root) => {
   const [
     features, stats, accounts, chart,
     leads, fails, warmer, schedules, recent, lic,
+    heatmap, health, alerts, campaigns,
   ] = await Promise.all([
     api.feature_list().catch(() => []),
     api.stats().catch(() => ({})),
@@ -15,6 +16,10 @@ router.register('dashboard', async (root) => {
     api.list_schedules().catch(() => []),
     api.message_log(null, 10).catch(() => []),
     api.license_status().catch(() => null),
+    api.send_heatmap(30).catch(() => []),
+    api.account_health().catch(() => []),
+    api.alerts().catch(() => []),
+    api.campaigns().catch(() => []),
   ]);
 
   // Group features by category, preserving order
@@ -32,6 +37,10 @@ router.register('dashboard', async (root) => {
       </div>
       ${licenseChip(lic)}
     </div>
+
+    ${alerts.length ? `<div class="alert-banner">${alerts.map((a) => `
+      <div class="msg ${a.level === 'danger' ? 'error' : a.level === 'warn' ? 'warning' : 'info'}">⚠ ${escapeHtml(a.text)}</div>
+    `).join('')}</div>` : ''}
 
     <div class="stats-grid">
       <div class="stat-card"><div class="stat-value">${stats.messages_total ?? 0}</div><div class="stat-label">Total messages</div></div>
@@ -55,6 +64,25 @@ router.register('dashboard', async (root) => {
         <div class="card-title">Warmer progress</div>
         ${warmer.length ? warmer.map(warmerCard).join('') : '<div class="muted small">Belum ada aktivitas warmup.</div>'}
       </div>
+    </div>
+
+    <div class="dash-grid">
+      <div class="card">
+        <div class="card-title">Jam kirim tersibuk <span class="muted small">(30 hari)</span></div>
+        ${heatmapGrid(heatmap)}
+      </div>
+      <div class="card">
+        <div class="card-title">Health score akun <span class="muted small">(risiko ban)</span></div>
+        ${health.length ? health.map(healthCard).join('') : '<div class="muted small">Belum ada akun.</div>'}
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Campaigns &amp; reply-rate
+        <button class="btn btn-secondary btn-sm" id="export-report" style="float:right">⬇ Export CSV</button>
+      </div>
+      <div id="export-msg"></div>
+      ${campaignTable(campaigns)}
     </div>
 
     <div class="dash-grid">
@@ -98,6 +126,18 @@ router.register('dashboard', async (root) => {
   root.querySelectorAll('.feature-card').forEach(card => {
     card.querySelector('.feature-action').onclick = () => router.go('feature', { key: card.dataset.key });
   });
+  const expBtn = root.querySelector('#export-report');
+  if (expBtn) expBtn.onclick = async () => {
+    const msg = root.querySelector('#export-msg');
+    msg.innerHTML = '<div class="msg info">Membuat laporan…</div>';
+    try {
+      const res = await api.export_daily_report(30);
+      if (res.ok && res.data) msg.innerHTML = `<div class="msg success">Tersimpan: ${escapeHtml(res.data)}</div>`;
+      else msg.innerHTML = '<div class="msg warning">Belum ada data untuk diekspor.</div>';
+    } catch (e) {
+      msg.innerHTML = `<div class="msg error">${escapeHtml(String(e))}</div>`;
+    }
+  };
 });
 
 function licenseChip(lic) {
@@ -197,6 +237,72 @@ function feedItem(m) {
       <span class="phone">${escapeHtml(String(m.phone || ''))}</span>
       <span class="time">${escapeHtml(String(m.sent_at || '').slice(0, 16).replace('T', ' '))}</span>
     </div>`;
+}
+
+function healthCard(h) {
+  const cls = h.status === 'good' ? 'health-good' : h.status === 'warn' ? 'health-warn' : 'health-bad';
+  const badge = h.status === 'good' ? 'badge-success' : h.status === 'warn' ? 'badge-warn' : 'badge-error';
+  return `
+    <div class="quota-card">
+      <div class="quota-top">
+        <div><strong>${escapeHtml(h.label)}</strong>
+          <span class="muted small">gagal ${Math.round(h.fail_rate_7d * 100)}% (7h) · kuota ${Math.round(h.quota_usage * 100)}%${h.warming_penalty ? ' · warmup belum selesai' : ''}</span>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span class="health-score ${cls}">${h.score}</span>
+          <span class="badge ${badge}">${h.status}</span>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+const DOW_ID = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+
+function heatmapGrid(cells) {
+  if (!cells.length) return '<div class="muted small">Belum ada data.</div>';
+  const map = {};
+  let max = 1;
+  for (const c of cells) {
+    map[`${c.dow}:${c.hour}`] = c;
+    max = Math.max(max, c.sent + c.failed);
+  }
+  let html = '<div class="heatmap"><div></div>';
+  for (let h = 0; h < 24; h++) html += `<div class="hh">${h % 3 === 0 ? h : ''}</div>`;
+  for (let d = 0; d < 7; d++) {
+    html += `<div class="hd">${DOW_ID[d]}</div>`;
+    for (let h = 0; h < 24; h++) {
+      const c = map[`${d}:${h}`];
+      const v = c ? c.sent + c.failed : 0;
+      const alpha = c ? (0.15 + 0.85 * (v / max)) : 0;
+      const bg = c ? `background:rgba(18,140,126,${alpha.toFixed(2)})` : '';
+      const tip = c ? `${DOW_ID[d]} jam ${h}: ${c.sent} sent, ${c.failed} failed` : `${DOW_ID[d]} jam ${h}: -`;
+      html += `<div class="cell" style="${bg}" title="${escapeHtml(tip)}"></div>`;
+    }
+  }
+  return html + '</div>';
+}
+
+function campaignTable(campaigns) {
+  if (!campaigns.length) return '<div class="muted small">Belum ada campaign. Isi field campaign saat bulk send.</div>';
+  return `
+    <table class="table">
+      <thead><tr><th>Campaign</th><th>Terkirim</th><th>Gagal</th><th>Dibalas</th><th>Reply-rate</th></tr></thead>
+      <tbody>
+        ${campaigns.map((c) => `
+          <tr>
+            <td><strong>${escapeHtml(c.campaign)}</strong> <span class="muted small">(${c.phones} kontak)</span></td>
+            <td>${c.sent}</td>
+            <td>${c.failed}</td>
+            <td>${c.replies}</td>
+            <td>
+              <div class="progress" style="min-width:90px"><div style="width:${Math.round(c.reply_rate * 100)}%"></div></div>
+              <span class="small muted">${Math.round(c.reply_rate * 100)}%</span>
+            </td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>`;
 }
 
 function renderFeatureCard(f) {

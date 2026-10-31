@@ -19,6 +19,7 @@ def run(params: dict) -> dict:
     contacts = params["contacts"]  # [{phone, name, ...custom}, ...]
     template = params["message"]   # "Halo {name}, ada promo untuk kamu!"
     media_path = params.get("media_path")  # optional, path absolute
+    campaign = (params.get("campaign") or "").strip() or None
     sess = get_session(account_id)
 
     sent, failed = 0, 0
@@ -41,6 +42,7 @@ def run(params: dict) -> dict:
             db.insert("message_log", {
                 "account_id": account_id, "phone": phone, "message": text,
                 "media_path": media_path, "status": "sent", "kind": "bulk",
+                "direction": "out", "campaign": campaign,
             })
             increment_sent(account_id)
             sent += 1
@@ -50,6 +52,7 @@ def run(params: dict) -> dict:
             db.insert("message_log", {
                 "account_id": account_id, "phone": phone, "message": template,
                 "status": "failed", "error": str(e), "kind": "bulk",
+                "direction": "out", "campaign": campaign,
             })
             log.append({"phone": phone, "ok": False, "error": str(e)})
 

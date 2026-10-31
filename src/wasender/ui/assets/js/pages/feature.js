@@ -107,6 +107,10 @@ function renderFeatureForm(key, accounts) {
           <input id="f-media-path" placeholder="C:\\Users\\you\\Pictures\\promo.jpg" />
           <div class="field-hint small muted">Absolute path. Kosongkan untuk text-only.</div>
         </div>
+        <div class="form-group">
+          <label>Nama campaign <span class="muted small">(optional — untuk reply-rate di dashboard)</span></label>
+          <input id="f-campaign" placeholder="Promo-November" />
+        </div>
       `;
 
     case 'get_group_member':
@@ -409,7 +413,7 @@ function collectFeatureParams(key) {
       const mediaPath = val('f-media-path');
       if (!contacts.length) { toast('Contacts CSV kosong', 'error'); return null; }
       if (!message && !mediaPath) { toast('Message template atau media wajib diisi', 'error'); return null; }
-      return { account_id: accId, contacts, message, media_path: mediaPath || null };
+      return { account_id: accId, contacts, message, media_path: mediaPath || null, campaign: val('f-campaign') || null };
     }
     case 'get_group_member':
       return { account_id: accId, group_id: val('f-group') };

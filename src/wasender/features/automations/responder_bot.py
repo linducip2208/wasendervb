@@ -57,6 +57,20 @@ def on_message(payload: dict) -> None:
         if not body or not from_jid:
             return
 
+        # Measurement: catat semua pesan masuk individu (bukan grup) untuk
+        # reply-rate. Tidak boleh menggagalkan auto-reply → try terpisah.
+        try:
+            if "@g.us" not in str(from_jid):
+                phone = re.sub(r"\D", "", str(from_jid))
+                if phone:
+                    db.insert("message_log", {
+                        "account_id": int(account_id) if account_id else 0,
+                        "phone": phone, "message": body[:2000],
+                        "status": "received", "kind": "inbox", "direction": "in",
+                    })
+        except Exception as e:
+            logger.warning(f"Inbox log failed: {e}")
+
         rules = db.query_all(
             "SELECT * FROM auto_replies WHERE enabled=1 AND (account_id IS NULL OR account_id=?)",
             (account_id,),

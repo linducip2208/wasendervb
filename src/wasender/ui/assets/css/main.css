@@ -436,6 +436,17 @@ textarea { font-family: 'Consolas', 'Courier New', monospace; resize: vertical; 
 .feed-item .phone { font-family: Consolas, monospace; }
 .feed-item .time { margin-left: auto; color: var(--muted); font-size: 12px; white-space: nowrap; }
 
+.heatmap { display: grid; grid-template-columns: 34px repeat(24, 1fr); gap: 2px; align-items: center; }
+.heatmap .hh { font-size: 10px; color: var(--muted); text-align: center; }
+.heatmap .hd { font-size: 11px; color: var(--muted); font-weight: 600; }
+.heatmap .cell { aspect-ratio: 1; border-radius: 2px; background: #eef0f2; min-width: 0; }
+
+.alert-banner { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+.health-score { font-size: 28px; font-weight: 700; }
+.health-good { color: var(--success); }
+.health-warn { color: var(--warning); }
+.health-bad { color: var(--danger); }
+
 .lic-chip { font-size: 12px; padding: 6px 12px; border-radius: 12px; background: #d1fae5; color: #065f46; font-weight: 600; }
 .lic-chip.warn { background: #fef3c7; color: #92400e; }
 .lic-chip.none { background: #fee2e2; color: #991b1b; }

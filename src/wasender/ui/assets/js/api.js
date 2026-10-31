@@ -45,6 +45,11 @@ const api = {
   leads_by_source: async () => (await _call('leads_by_source')()).data || [],
   fail_reasons: async (limit) => (await _call('fail_reasons')(limit || 5)).data || [],
   warmer_progress: async () => (await _call('warmer_progress')()).data || [],
+  send_heatmap: async (days) => (await _call('send_heatmap')(days || 30)).data || [],
+  account_health: async () => (await _call('account_health')()).data || [],
+  alerts: async () => (await _call('alerts')()).data || [],
+  campaigns: async () => (await _call('campaigns')()).data || [],
+  export_daily_report: _call('export_daily_report'),
 
   feature_run: _call('feature_run'),
   feature_list: async () => (await _call('feature_list')()).data || [],

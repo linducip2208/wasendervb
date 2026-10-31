@@ -47,6 +47,8 @@ CREATE TABLE IF NOT EXISTS message_log (
     status TEXT NOT NULL,
     error TEXT,
     kind TEXT DEFAULT 'bulk',
+    direction TEXT DEFAULT 'out',
+    campaign TEXT DEFAULT NULL,
     sent_at TEXT DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -117,6 +119,12 @@ def _migrate(conn: sqlite3.Connection) -> None:
     if "kind" not in cols:
         conn.execute("ALTER TABLE message_log ADD COLUMN kind TEXT DEFAULT 'bulk'")
         logger.info("DB migration: message_log.kind added")
+    if "direction" not in cols:
+        conn.execute("ALTER TABLE message_log ADD COLUMN direction TEXT DEFAULT 'out'")
+        logger.info("DB migration: message_log.direction added")
+    if "campaign" not in cols:
+        conn.execute("ALTER TABLE message_log ADD COLUMN campaign TEXT DEFAULT NULL")
+        logger.info("DB migration: message_log.campaign added")
 
 
 def _conn() -> sqlite3.Connection:
