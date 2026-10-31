@@ -93,6 +93,66 @@ namespace WASender
             return "TIMEOUT";
         }
 
+        /// <summary>Buka chat via kotak SEARCH (tanpa navigasi/reload - anti hang). Return OK|NOTFOUND|FAIL.</summary>
+        public static async Task<string> OpenChatViaSearch(WebView2 wv, string digits)
+        {
+            try
+            {
+                string clean = System.Text.RegularExpressions.Regex.Replace(digits ?? "", "[^0-9]", "");
+                if (string.IsNullOrEmpty(clean)) { return "FAIL"; }
+                string findBox = "(function(){"
+                    + "var sels=['#side div[contenteditable=\"true\"][data-tab=\"3\"]','#side [contenteditable=\"true\"]'];"
+                    + "for(var i=0;i<sels.length;i++){try{var b=document.querySelector(sels[i]);if(b){b.scrollIntoView({block:'center'});b.focus();return 'BOX';}}catch(e){}}"
+                    + "return 'NOBOX';})();";
+                string found = await Eval(wv, findBox);
+                Log("search box -> " + (found ?? "null"));
+                if (found == null || !found.Contains("BOX")) { return "FAIL"; }
+                string typeJs = "(function(){var q=" + JsonConvert.SerializeObject(clean) + ";"
+                    + "var box=document.querySelector('#side div[contenteditable=\"true\"][data-tab=\"3\"]')||document.querySelector('#side [contenteditable=\"true\"]');"
+                    + "if(!box) return 'NOBOX2';box.focus();"
+                    + "try{document.execCommand('selectAll',false,null);}catch(e){}"
+                    + "var ok=false;try{ok=document.execCommand('insertText',false,q);}catch(e){}"
+                    + "if(!ok){try{box.textContent=q;box.dispatchEvent(new InputEvent('input',{bubbles:true}));}catch(e){}}"
+                    + "return 'TYPED';})();";
+                await Eval(wv, typeJs);
+                await Task.Delay(3500);
+                string clickJs = "(function(){var q=" + JsonConvert.SerializeObject(clean) + ";"
+                    + "function txt(el){return ((el.innerText||el.textContent)||'');}"
+                    + "var opts=Array.from(document.querySelectorAll('#side [role=\"option\"]'));"
+                    + "if(!opts.length){opts=Array.from(document.querySelectorAll('#side div[data-testid=\"cell-frame-container\"]'));} "
+                    + "var num=q.replace(/\\D/g,'');"
+                    + "for(var i=0;i<opts.length;i++){try{var t=txt(opts[i]).replace(/\\D/g,'');"
+                    + "if(t&&num&&(t.indexOf(num)>-1||num.indexOf(t)>-1)){opts[i].click();return 'CLICKED:'+i;}}catch(e){}}"
+                    + "return 'NORESULT';})();";
+                string clicked = await Eval(wv, clickJs);
+                Log("search click -> " + (clicked ?? "null"));
+                for (int i = 0; i < 5; i++)
+                {
+                    await Task.Delay(2000);
+                    string st = await Eval(wv, "(function(){var q=" + JsonConvert.SerializeObject(clean) + ";"
+                        + "var h=document.querySelector('#main header');var ht=h?((h.innerText||h.textContent)||''):'';"
+                        + "var box=document.querySelector('#main footer [contenteditable=\"true\"]')||document.querySelector('[data-lexical-editor]');"
+                        + "if(box&&(ht.replace(/\\D/g,'').indexOf(q)>-1||q.indexOf(ht.replace(/\\D/g,''))>-1&&ht.replace(/\\D/g,'').length>5))return 'OK:'+ht.substring(0,40);"
+                        + "return box?'OPEN-OTHER':'WAIT';})();");
+                    string s = ((st ?? "").Trim().Trim('"') ?? "");
+                    Log("search verify=" + s.Substring(0, System.Math.Min(50, s.Length)));
+                    if (s.StartsWith("OK:")) { await ClearSearch(wv); return "OK"; }
+                }
+                await ClearSearch(wv);
+                return (clicked != null && clicked.Contains("CLICKED")) ? "OK" : "NOTFOUND";
+            }
+            catch (Exception ex) { Log("search EX " + ex.Message); return "FAIL"; }
+        }
+
+        private static async Task ClearSearch(WebView2 wv)
+        {
+            try
+            {
+                await Eval(wv, "(function(){var box=document.querySelector('#side div[contenteditable=\"true\"][data-tab=\"3\"]')||document.querySelector('#side [contenteditable=\"true\"]');if(!box)return 'NOBOX';box.focus();try{document.execCommand('selectAll',false,null);document.execCommand('delete',false,null);}catch(e){box.textContent='';box.dispatchEvent(new InputEvent('input',{bubbles:true}));}box.blur();return 'CLEARED';})();");
+            }
+            catch (Exception) { }
+        }
+
         /// <summary>Buka chat via link resmi. Return OK | NOTONWA | LOGGEDOUT | FAIL</summary>
         public static async Task<string> OpenChat(WebView2 wv, string digits)
         {

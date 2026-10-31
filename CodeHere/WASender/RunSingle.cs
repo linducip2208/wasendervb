@@ -1718,6 +1718,98 @@ namespace WASender
             }
         }
 
+        // Satu pintu kirim 1 pesan: DLL -> FMARK -> DOM, tiap lapis diverifikasi outbox.
+        // True HANYA bila pesan benar masuk chat (sinkron ke HP). Dipakai mode rotate & multi.
+        private async Task<bool> SendOneMessageAsync(MesageModel mesageModel, ContactModel item, WebView2 wv, bool chatOpened, bool isFirstMessage)
+        {
+            bool isDOne = false;
+            if (!chatOpened)
+            {
+                writetrace("REWRITE chat tak terbuka, skip kirim");
+                return false;
+            }
+            int before = await SendEngine.OutboxCount(wv);
+            try
+            {
+                bool dllOk = await SendMessageSync(mesageModel, isFirstMessage, item, wv);
+                writetrace("REWRITE DLL result=" + dllOk);
+                if (dllOk && await SendEngine.OutboxIncreased(wv, before, 10)) { isDOne = true; }
+            }
+            catch (Exception ex) { writetrace("REWRITE DLL EX " + ex.Message); }
+            if (!isDOne && generalSettingsModel.browserType == 2)
+            {
+                try
+                {
+                    string digitsOnly2 = System.Text.RegularExpressions.Regex.Replace(item.number ?? "", "[^0-9]", "");
+                    string txt2 = "";
+                    try { txt2 = ProjectCommon.ReplaceKeyMarker(mesageModel.longMessage ?? "", item.parameterModelList); } catch (Exception) { }
+                    bool fmMediaOk = true;
+                    bool hasMedia2 = false;
+                    if (mesageModel.files != null)
+                    {
+                        foreach (FilesModel ff in mesageModel.files)
+                        {
+                            if (ff == null || string.IsNullOrEmpty(ff.filePath) || !System.IO.File.Exists(ff.filePath)) { continue; }
+                            if (ff.type != null && ff.type != "" && ff.type != StaticMethods.media) { fmMediaOk = false; break; }
+                            hasMedia2 = true;
+                            string cap2 = ff.attachWithMainMessage == true ? txt2 : (ff.Caption ?? "");
+                            try { if (!string.IsNullOrEmpty(ff.Caption) && ff.attachWithMainMessage != true) { cap2 = ProjectCommon.ReplaceKeyMarker(ff.Caption, item.parameterModelList); } } catch (Exception) { }
+                            var mr = await SendEngine.SendMediaFmark(wv, digitsOnly2, ff.filePath, cap2);
+                            writetrace("REWRITE FMARK media=" + mr.Item1);
+                            if (!mr.Item1) { fmMediaOk = false; break; }
+                        }
+                    }
+                    bool needTxt2 = !string.IsNullOrEmpty(txt2);
+                    if (needTxt2 && hasMedia2 && mesageModel.files != null)
+                    {
+                        bool allAttached = true;
+                        foreach (FilesModel ff in mesageModel.files)
+                        {
+                            if (ff == null) { continue; }
+                            if (ff.type == null || ff.type == "" || ff.type == StaticMethods.media)
+                            {
+                                if (ff.attachWithMainMessage != true) { allAttached = false; break; }
+                            }
+                        }
+                        if (allAttached && mesageModel.files.Count > 0) { needTxt2 = false; }
+                    }
+                    bool fmTxtOk = true;
+                    if (needTxt2 && fmMediaOk)
+                    {
+                        var tr = await SendEngine.SendTextFmark(wv, digitsOnly2, txt2);
+                        writetrace("REWRITE FMARK text=" + tr.Item1);
+                        fmTxtOk = tr.Item1;
+                    }
+                    if (fmMediaOk && fmTxtOk && await SendEngine.OutboxIncreased(wv, before, 10)) { isDOne = true; }
+                    writetrace("REWRITE FMARK final=" + isDOne);
+                }
+                catch (Exception ex) { writetrace("REWRITE FMARK EX " + ex.Message); }
+            }
+            if (!isDOne && generalSettingsModel.browserType == 2)
+            {
+                bool hasMedia = false;
+                try { hasMedia = mesageModel.files != null && mesageModel.files.Any(f => f != null && !string.IsNullOrEmpty(f.filePath) && System.IO.File.Exists(f.filePath)); } catch (Exception) { }
+                if (!hasMedia)
+                {
+                    try
+                    {
+                        string domText = "";
+                        try { domText = ProjectCommon.ReplaceKeyMarker(mesageModel.longMessage, item.parameterModelList); } catch (Exception) { }
+                        bool domOk = await DomTypeAndSend(wv, domText);
+                        writetrace("REWRITE DOM result=" + domOk);
+                        if (domOk && await SendEngine.OutboxIncreased(wv, before, 10)) { isDOne = true; }
+                    }
+                    catch (Exception ex) { writetrace("REWRITE DOM EX " + ex.Message); }
+                }
+                else
+                {
+                    writetrace("REWRITE media butuh API internal, DOM dilewati");
+                }
+            }
+            writetrace("REWRITE final=" + isDOne);
+            return isDOne;
+        }
+
         private async Task<bool> doStartWork()
         {
             int counter = 0;
@@ -1985,6 +2077,26 @@ namespace WASender
                                 int index = random.Next(list.Count);
                                 MesageModel mesageModel = list[index];
 
+                                bool rotChatOpened = false;
+                                bool rotLinkChecked = false;
+                                if (generalSettingsModel.browserType == 2)
+                                {
+                                    try
+                                    {
+                                        string rdigits = System.Text.RegularExpressions.Regex.Replace(item.number ?? "", "[^0-9]", "");
+                                        writetrace("ROTATE LINKOPEN for " + rdigits);
+                                        string rse = await SendEngine.OpenChatViaSearch(wv, rdigits);
+                                        rotLinkChecked = true;
+                                        if (rse == "OK") { rotChatOpened = true; }
+                                        else
+                                        {
+                                            string rlr = await OpenChatViaSendLink(wv, rdigits);
+                                            if (rlr == "OK") { rotChatOpened = true; }
+                                            else if (rlr == "LOGGEDOUT") { writetrace("ROTATE logged out!"); }
+                                        }
+                                    }
+                                    catch (Exception exr) { writetrace("ROTATE LINKOPEN EX " + exr.Message); }
+                                }
                                 if (generalSettingsModel.browserType == 2)
                                 {
                                     writetrace("isAuthenticated 2 start---");
@@ -2010,6 +2122,7 @@ namespace WASender
                                             result = await WPPHelper.findChatLongSync(wv, item.number);
                                             writetrace("findChatLongSync 2 end---");
                                         }
+                                        if (result) { rotChatOpened = true; }
                                     }
 
                                 }
@@ -2034,11 +2147,23 @@ namespace WASender
                                 {
                                     if (isAuthenticated == true)
                                     {
-                                        bool isDOne = await SendMessageSync(mesageModel, isFirstMessage, item, wv);
+                                        if (rotLinkChecked && !rotChatOpened)
+                                        {
+                                            writetrace("ROTATE skip (link open failed)");
+                                            IsError = true;
+                                        }
+                                        else
+                                        {
+                                            writetrace("ROTATE send chatOpened=" + rotChatOpened);
+                                            bool isDOne = await SendOneMessageAsync(mesageModel, item, wv, rotChatOpened, isFirstMessage);
+                                            writetrace("ROTATE end result=" + isDOne);
+                                            if (!isDOne) { IsError = true; }
+                                        }
                                     }
                                 }
                                 catch (Exception ex)
                                 {
+                                    writetrace("ROTATE EX " + ex.Message);
                                     IsError = true;
                                 }
                             }
@@ -2054,11 +2179,18 @@ namespace WASender
                                     {
                                         string digitsOnly0 = System.Text.RegularExpressions.Regex.Replace(item.number ?? "", "[^0-9]", "");
                                         writetrace("LINKOPEN for " + digitsOnly0);
-                                        string linkRes0 = await OpenChatViaSendLink(wv, digitsOnly0);
+                                        string srch = await SendEngine.OpenChatViaSearch(wv, digitsOnly0);
+                                        writetrace("LINKOPEN search=" + srch);
                                         linkChecked = true;
-                                        if (linkRes0 == "OK") { linkChatOk = true; }
-                                        else if (linkRes0 == "NOTONWA") { writetrace("LINKOPEN not on WA"); }
-                                        else if (linkRes0 == "LOGGEDOUT") { writetrace("LINKOPEN logged out!"); }
+                                        if (srch == "OK") { linkChatOk = true; }
+                                        else
+                                        {
+                                            string linkRes0 = await OpenChatViaSendLink(wv, digitsOnly0);
+                                            linkChecked = true;
+                                            if (linkRes0 == "OK") { linkChatOk = true; }
+                                            else if (linkRes0 == "NOTONWA") { writetrace("LINKOPEN not on WA"); }
+                                            else if (linkRes0 == "LOGGEDOUT") { writetrace("LINKOPEN logged out!"); }
+                                        }
                                     }
                                     catch (Exception ex0) { writetrace("LINKOPEN EX " + ex0.Message); }
                                 }
