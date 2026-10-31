@@ -1332,7 +1332,7 @@ namespace WASender
                     try
                     {
                         string st = await wv.ExecuteScriptAsync(
-                            "try{"
+                            "return (function(){ try{"
                             + "var box=document.querySelector('#main footer [contenteditable=\"true\"]')||document.querySelector('[data-lexical-editor]');"
                             + "if(box) return 'CHAT';"
                             + "if(document.querySelector('canvas[aria-label=\"Scan me!\"]')||document.querySelector('canvas[aria-label^=\"Scan\"]')) return 'LOGGEDOUT';"
@@ -1340,7 +1340,7 @@ namespace WASender
                             + "if(/not on WhatsApp|invalid phone|tidak valid|tidak terdaftar|tidak ada di WhatsApp/i.test(t)) return 'NOTONWA';"
                             + "if(/to use WhatsApp on your computer|scan.*qr|pindai.*qr|masuk.*telepon/i.test(t)) return 'LOGGEDOUT';"
                             + "return 'WAIT:' + (document.title||'').substring(0,40);"
-                            + "}catch(e){return 'ERR';}");
+                            + "}catch(e){return 'ERR:'+e.message;} })();");
                         string s = ((st ?? "").Trim().Trim('"') ?? "");
                         if (i % 4 == 0) { writetrace("SENDLINK poll " + i + "=" + s.Substring(0, Math.Min(80, s.Length))); }
                         if (s.StartsWith("CHAT")) { writetrace("SENDLINK chat open"); return "OK"; }
