@@ -829,7 +829,7 @@ namespace WASender
                         }
                         else if (generalSettingsModel.browserType == 2)
                         {
-                            canSend = WPPHelper.GetGroup__x_canSend(wv, item.GroupId);
+                            canSend = await WPPHelper.GetGroup__x_canSend(wv, item.GroupId);
                         }
                     }
                     else

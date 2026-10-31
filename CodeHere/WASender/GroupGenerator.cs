@@ -308,7 +308,7 @@ namespace WASender
                         logger.WriteLog("creating " + item.name);
                         try
                         {
-                            string _result = WPPHelper.CreateGroup(wv, item.name, groupGeneratorModel.DefaultNumberAdd);
+                            string _result = await WPPHelper.CreateGroup(wv, item.name, groupGeneratorModel.DefaultNumberAdd);
 
                             if (!string.IsNullOrEmpty(_result))
                             {

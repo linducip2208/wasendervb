@@ -260,12 +260,11 @@
       <HintPath>..\dlls\WebDriver.dll</HintPath>
     </Reference>
     <Reference Include="netstandard" />
-    <Reference Include="WPPHelper, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\dlls\WPPHelper.dll</HintPath>
-    </Reference>
+    <!-- Vendor WPPHelper.dll REMOVED: diganti implementasi sendiri di Bridge/ (lihat WppBridge*.cs).
+         Alasan: DLL tertutup dari vendor yg sudah tutup, tidak kompatibel dgn WhatsApp Web saat ini. -->
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Bridge\*.cs" />
     <Compile Include="About.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -532,6 +531,7 @@
     </Compile>
     <Compile Include="Config.cs" />
     <Compile Include="SendEngine.cs" />
+    <Compile Include="AiResponder.cs" />
     <Compile Include="ContactGrabber.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -947,10 +947,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="..\dlls\WPPHelper.dll.config">
-      <Link>WPPHelper.dll.config</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Content Include="..\dlls\ProjectCommon.dll.config">
       <Link>ProjectCommon.dll.config</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

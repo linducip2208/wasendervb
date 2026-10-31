@@ -605,7 +605,7 @@ namespace WASender
                                 bool isNumberAlreadyAvailableinGroup = await WPPHelper.checkNumberPreswentInGroup(wv, item.number, wAPI_SelectedGroup.GroupId);
                                 if (!isNumberAlreadyAvailableinGroup)
                                 {
-                                    string isJoiner = WPPHelper.addParticipants(wv, wAPI_SelectedGroup.GroupId, item.number, materialCheckbox3.Checked, "Follow this link to join my WhatsApp group:");
+                                    string isJoiner = await WPPHelper.addParticipants(wv, wAPI_SelectedGroup.GroupId, item.number, materialCheckbox3.Checked, "Follow this link to join my WhatsApp group:");
                                     item.sendStatusModel.message = isJoiner;
                                     item.sendStatusModel.isDone = true;
                                 }
