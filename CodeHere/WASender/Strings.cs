@@ -671,7 +671,7 @@ namespace WASender
 
 
         #region donnotchange
-        public readonly static string SoftwareVersion = "6.0.1"; /// Dont change this
+        public readonly static string SoftwareVersion = "6.1"; /// Dont change this
         public readonly static int CurrentInternalUpdateVersion = 4; //It Should be same as listed in onlie file 
         #endregion
 

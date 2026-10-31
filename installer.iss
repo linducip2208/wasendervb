@@ -7,11 +7,11 @@
 ;      - dist\WASender.exe sudah di-build via `python build.py`
 ;      - Inno Setup 6+ terpasang (https://jrsoftware.org/isdl.php)
 ;  Output:
-;      dist\installer\WASender-Setup-6.0.1.exe
+;      dist\installer\WASender-Setup-6.1.exe
 ; ===========================================================================
 
 #define MyAppName       "WASender"
-#define MyAppVersion    "6.0.1"
+#define MyAppVersion    "6.1"
 #define MyAppPublisher  "WASender"
 #define MyAppExeName    "WASender.exe"
 #define MyAppURL        "https://wasender.local"

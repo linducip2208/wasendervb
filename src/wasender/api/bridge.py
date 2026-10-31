@@ -213,11 +213,11 @@ class Api:
         days = max(1, min(int(days or 14), 90))
         since = (date.today() - timedelta(days=days - 1)).isoformat()
         rows = db.query_all(
-            "SELECT date(sent_at) AS day, "
+            "SELECT date(sent_at, 'localtime') AS day, "
             "SUM(CASE WHEN status='sent' THEN 1 ELSE 0 END) AS sent, "
             "SUM(CASE WHEN status='failed' THEN 1 ELSE 0 END) AS failed "
-            "FROM message_log WHERE date(sent_at) >= date(?) "
-            "GROUP BY date(sent_at) ORDER BY day",
+            "FROM message_log WHERE date(sent_at, 'localtime') >= date(?) "
+            "GROUP BY date(sent_at, 'localtime') ORDER BY day",
             (since,),
         )
         by_day = {r["day"]: r for r in rows}
@@ -252,7 +252,7 @@ class Api:
         out = []
         for acc in account_manager.list_accounts():
             days = db.query_one(
-                "SELECT COUNT(DISTINCT date(sent_at)) AS d FROM message_log "
+                "SELECT COUNT(DISTINCT date(sent_at, 'localtime')) AS d FROM message_log "
                 "WHERE account_id = ? AND kind = 'warmer' AND status = 'sent'",
                 (acc["id"],),
             ) or {}

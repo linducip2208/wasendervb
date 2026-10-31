@@ -48,7 +48,7 @@ router.register('dashboard', async (root) => {
 
     <div class="dash-grid">
       <div class="card">
-        <div class="card-title">Send activity <span class="muted small">(14 hari, UTC)</span></div>
+        <div class="card-title">Send activity <span class="muted small">(14 hari)</span></div>
         ${sendBars(chart)}
       </div>
       <div class="card">

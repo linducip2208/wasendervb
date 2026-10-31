@@ -6,6 +6,7 @@ import traceback
 
 import webview
 
+from .__init__ import __version__
 from .api.bridge import Api
 from .core import db
 from .core.license import load_active_license
@@ -36,7 +37,7 @@ def _start_main_window(api: Api, has_license: bool) -> None:
 def main() -> int:
     try:
         setup_logging()
-        logger.info("WASender v6.0.1 starting...")
+        logger.info(f"WASender v{__version__} starting...")
 
         db._init_if_needed()
         logger.info("DB initialized")
