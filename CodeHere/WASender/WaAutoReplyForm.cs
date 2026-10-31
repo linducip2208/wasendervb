@@ -689,6 +689,8 @@ namespace WaAutoReplyBot
                             }
                         }
 
+                        try { await WaMonitor.TickAsync(generalSettingsModel.browserType == 1 ? (object)driver : (object)wv, generalSettingsModel.browserType); }
+                        catch (Exception) { }
                         List<UnReadMessagesModel> UnReadMessages = new List<UnReadMessagesModel>();
                         if (generalSettingsModel.browserType == 1)
                         {

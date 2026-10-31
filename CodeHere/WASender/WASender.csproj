@@ -532,6 +532,7 @@
     <Compile Include="Config.cs" />
     <Compile Include="SendEngine.cs" />
     <Compile Include="AiResponder.cs" />
+    <Compile Include="WaMonitor.cs" />
     <Compile Include="ContactGrabber.cs">
       <SubType>Form</SubType>
     </Compile>

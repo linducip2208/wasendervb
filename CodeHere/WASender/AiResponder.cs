@@ -28,9 +28,20 @@ namespace WASender
         public int TimeoutSeconds { get; set; }
         public bool CacheEnabled { get; set; } = true;
         public bool CacheFuzzy { get; set; } = true;
+        public System.Collections.Generic.List<AiSegment> Segments { get; set; } = new System.Collections.Generic.List<AiSegment>();
         public int CacheTtlDays { get; set; } = 30;
         public int MaxCacheEntries { get; set; } = 1000;
         public string FallbackText { get; set; }
+    }
+
+    public class AiSegment
+    {
+        public string Name { get; set; }
+        public int HourFrom { get; set; }
+        public int HourTo { get; set; }
+        public string Keyword { get; set; }
+        public string Mode { get; set; }
+        public string Text { get; set; }
     }
 
     public static class AiResponder
@@ -91,6 +102,7 @@ namespace WASender
                         CacheEnabled = true,
                         CacheFuzzy = true,
                         CacheTtlDays = 30,
+                        Segments = new System.Collections.Generic.List<AiSegment>(),
                         MaxCacheEntries = 1000,
                         FallbackText = "Maaf, saya sedang tidak bisa menjawab. Coba lagi nanti."
                     };
@@ -242,7 +254,9 @@ namespace WASender
                             cmd.CommandText = "CREATE TABLE IF NOT EXISTS ai_cache(key TEXT PRIMARY KEY, question TEXT NOT NULL, norm TEXT NOT NULL, answer TEXT NOT NULL, model TEXT NOT NULL DEFAULT '', extra TEXT NOT NULL DEFAULT '', hits INTEGER NOT NULL DEFAULT 1, created_at INTEGER NOT NULL, last_hit INTEGER NOT NULL);"
                                 + "CREATE INDEX IF NOT EXISTS idx_ai_cache_norm ON ai_cache(norm);"
                                 + "CREATE TABLE IF NOT EXISTS ai_history(chat_id TEXT NOT NULL, seq INTEGER NOT NULL, role TEXT NOT NULL, content TEXT NOT NULL, PRIMARY KEY(chat_id, seq));"
-                                + "CREATE INDEX IF NOT EXISTS idx_ai_history_chat ON ai_history(chat_id, seq);";
+                                + "CREATE INDEX IF NOT EXISTS idx_ai_history_chat ON ai_history(chat_id, seq);"
+                                + "CREATE TABLE IF NOT EXISTS ai_override(nkey TEXT PRIMARY KEY, question TEXT NOT NULL, norm TEXT NOT NULL, answer TEXT NOT NULL, enabled INTEGER NOT NULL DEFAULT 1, updated_at INTEGER NOT NULL);"
+                                + "CREATE TABLE IF NOT EXISTS ai_stats(date TEXT NOT NULL, chat_id TEXT NOT NULL, questions INTEGER NOT NULL DEFAULT 0, cache_hits INTEGER NOT NULL DEFAULT 0, ai_calls INTEGER NOT NULL DEFAULT 0, overrides INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(date, chat_id));";
                             cmd.ExecuteNonQuery();
                         }
                         try
@@ -257,6 +271,7 @@ namespace WASender
                         catch (Exception) { _ftsOk = false; }
                     }
                     try { ImportJsonCache(); } catch (Exception) { }
+                    try { ImportJsonOverrides(); } catch (Exception) { }
                     _dbReady = true;
                 }
             }
@@ -338,6 +353,211 @@ namespace WASender
                 }
             }
             catch (Exception) { return true; }
+        }
+
+        private static void ImportJsonOverrides()
+        {
+            try
+            {
+                string dir = System.IO.Path.GetDirectoryName(GetCachePath());
+                string jp = System.IO.Path.Combine(dir ?? "", "ai_overrides.json");
+                if (!System.IO.File.Exists(jp)) return;
+                System.Collections.Generic.List<OverrideSeed> seeds = null;
+                try { seeds = JsonConvert.DeserializeObject<System.Collections.Generic.List<OverrideSeed>>(System.IO.File.ReadAllText(jp)); } catch (Exception) { }
+                if (seeds == null || seeds.Count == 0) return;
+                long now = NowUnix();
+                int n = 0;
+                using (var c = new SQLiteConnection("Data Source=" + GetCachePath() + ";Version=3;"))
+                {
+                    c.Open();
+                    using (var tx = c.BeginTransaction())
+                    {
+                        foreach (var s in seeds)
+                        {
+                            try
+                            {
+                                if (s == null || string.IsNullOrWhiteSpace(s.question) || string.IsNullOrWhiteSpace(s.answer)) continue;
+                                string norm = NormQ(s.question);
+                                if (norm.Length == 0) continue;
+                                using (var cmd = c.CreateCommand())
+                                {
+                                    cmd.CommandText = "INSERT OR REPLACE INTO ai_override(nkey,question,norm,answer,enabled,updated_at) VALUES(@k,@q,@n,@a,@e,@t);";
+                                    cmd.Parameters.AddWithValue("@k", "ovr|" + norm);
+                                    cmd.Parameters.AddWithValue("@q", s.question.Trim());
+                                    cmd.Parameters.AddWithValue("@n", norm);
+                                    cmd.Parameters.AddWithValue("@a", s.answer);
+                                    cmd.Parameters.AddWithValue("@e", (s.enabled == false) ? 0 : 1);
+                                    cmd.Parameters.AddWithValue("@t", now);
+                                    cmd.ExecuteNonQuery();
+                                    n++;
+                                }
+                            }
+                            catch (Exception) { }
+                        }
+                        tx.Commit();
+                    }
+                }
+                try { SendEngine.Log("AI override diimpor: " + n + " dari ai_overrides.json"); } catch (Exception) { }
+            }
+            catch (Exception) { }
+        }
+
+        private class OverrideSeed
+        {
+            public string question { get; set; }
+            public string answer { get; set; }
+            public bool? enabled { get; set; }
+        }
+
+        private static double Overlap(System.Collections.Generic.List<string> a, System.Collections.Generic.List<string> b)
+        {
+            try
+            {
+                if (a == null || b == null || a.Count == 0 || b.Count == 0) return 0;
+                int inter = 0;
+                foreach (string x in a) if (b.Contains(x)) inter++;
+                return (double)inter / (double)System.Math.Max(a.Count, b.Count);
+            }
+            catch (Exception) { return 0; }
+        }
+
+        private static string DbOverrideHit(string norm, System.Collections.Generic.List<string> toks)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(norm)) return null;
+                DbInit();
+                lock (_dbLock)
+                {
+                    using (var c = new SQLiteConnection("Data Source=" + GetCachePath() + ";Version=3;"))
+                    {
+                        c.Open();
+                        using (var cmd = c.CreateCommand())
+                        {
+                            cmd.CommandText = "SELECT answer FROM ai_override WHERE nkey=@k AND enabled=1 LIMIT 1;";
+                            cmd.Parameters.AddWithValue("@k", "ovr|" + norm);
+                            object o = cmd.ExecuteScalar();
+                            if (o != null && !string.IsNullOrWhiteSpace(o.ToString())) return o.ToString();
+                        }
+                        if (toks == null || toks.Count == 0) return null;
+                        string best = null;
+                        double bestScore = 0.5;
+                        try
+                        {
+                            var use = toks.Count > 3 ? toks.GetRange(0, 3) : toks;
+                            var sb = new System.Text.StringBuilder("SELECT norm,answer FROM ai_override WHERE enabled=1 AND (");
+                            for (int i = 0; i < use.Count; i++)
+                            {
+                                if (i > 0) sb.Append(" OR ");
+                                sb.Append("norm LIKE @t").Append(i);
+                            }
+                            sb.Append(") LIMIT 20;");
+                            using (var cmd = c.CreateCommand())
+                            {
+                                cmd.CommandText = sb.ToString();
+                                for (int i = 0; i < use.Count; i++) cmd.Parameters.AddWithValue("@t" + i, "%" + use[i] + "%");
+                                using (var r = cmd.ExecuteReader())
+                                {
+                                    while (r.Read())
+                                    {
+                                        string onorm = r.IsDBNull(0) ? "" : r.GetString(0);
+                                        string oans = r.IsDBNull(1) ? "" : r.GetString(1);
+                                        if (string.IsNullOrWhiteSpace(oans)) continue;
+                                        double s = Overlap(toks, Tokens(onorm));
+                                        if (s > bestScore) { bestScore = s; best = oans; }
+                                    }
+                                }
+                            }
+                        }
+                        catch (Exception) { }
+                        return best;
+                    }
+                }
+            }
+            catch (Exception) { return null; }
+        }
+
+        private static void DbBump(string chat, int q, int h, int a, int o)
+        {
+            try
+            {
+                DbInit();
+                string today = System.DateTime.Now.ToString("yyyy-MM-dd");
+                lock (_dbLock)
+                {
+                    using (var c = new SQLiteConnection("Data Source=" + GetCachePath() + ";Version=3;"))
+                    {
+                        c.Open();
+                        using (var cmd = c.CreateCommand())
+                        {
+                            cmd.CommandText = "INSERT INTO ai_stats(date,chat_id,questions,cache_hits,ai_calls,overrides) VALUES(@d,@c,@q,@h,@a,@o) ON CONFLICT(date,chat_id) DO UPDATE SET questions=questions+excluded.questions, cache_hits=cache_hits+excluded.cache_hits, ai_calls=ai_calls+excluded.ai_calls, overrides=overrides+excluded.overrides;";
+                            cmd.Parameters.AddWithValue("@d", today);
+                            cmd.Parameters.AddWithValue("@c", string.IsNullOrEmpty(chat) ? "?" : chat);
+                            cmd.Parameters.AddWithValue("@q", q);
+                            cmd.Parameters.AddWithValue("@h", h);
+                            cmd.Parameters.AddWithValue("@a", a);
+                            cmd.Parameters.AddWithValue("@o", o);
+                            cmd.ExecuteNonQuery();
+                        }
+                    }
+                }
+            }
+            catch (Exception) { }
+        }
+
+        private static void RefreshFaqFile()
+        {
+            try
+            {
+                DbInit();
+                var sb = new System.Text.StringBuilder();
+                sb.AppendLine("# FAQ populer (by hits) - " + System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+                lock (_dbLock)
+                {
+                    using (var c = new SQLiteConnection("Data Source=" + GetCachePath() + ";Version=3;"))
+                    {
+                        c.Open();
+                        using (var cmd = c.CreateCommand())
+                        {
+                            cmd.CommandText = "SELECT question,hits,last_hit FROM ai_cache ORDER BY hits DESC LIMIT 20;";
+                            using (var r = cmd.ExecuteReader())
+                            {
+                                int i = 1;
+                                while (r.Read())
+                                {
+                                    string qq = r.IsDBNull(0) ? "" : r.GetString(0);
+                                    long hh = r.IsDBNull(1) ? 0 : r.GetInt64(1);
+                                    sb.AppendLine((i++) + ". [" + hh + "x] " + qq);
+                                }
+                            }
+                        }
+                    }
+                }
+                string dir = System.IO.Path.GetDirectoryName(GetCachePath());
+                System.IO.File.WriteAllText(System.IO.Path.Combine(dir ?? "", "ai_faq.txt"), sb.ToString());
+            }
+            catch (Exception) { }
+        }
+
+        private static string ApplySegments(string ans, string incoming, AiSettings cfg)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(ans) || cfg == null || cfg.Segments == null) return ans;
+                int h = System.DateTime.Now.Hour;
+                foreach (var s in cfg.Segments)
+                {
+                    if (s == null || string.IsNullOrEmpty(s.Text)) continue;
+                    if (h < s.HourFrom || h >= s.HourTo) continue;
+                    if (!string.IsNullOrEmpty(s.Keyword) && (incoming ?? "").ToLowerInvariant().IndexOf(s.Keyword.ToLowerInvariant()) < 0) continue;
+                    string mode = (s.Mode ?? "append").ToLowerInvariant();
+                    if (mode == "prepend") ans = s.Text + "\n" + ans;
+                    else if (mode == "replace") ans = s.Text;
+                    else ans = ans + "\n" + s.Text;
+                }
+            }
+            catch (Exception) { }
+            return ans;
         }
 
         private static string DbExactHit(string ckey, int ttlDays)
@@ -655,6 +875,18 @@ namespace WASender
                 bool useCache = cfg.CacheEnabled && HistoryEmpty(chatId);
                 string ckey = useCache ? CacheKey(cfg.Model, extraInstruction, incomingText) : null;
                 System.Collections.Generic.List<string> qtoks = useCache ? Tokens(NormQ(incomingText)) : null;
+                try
+                {
+                    string ovr = DbOverrideHit(NormQ(incomingText), Tokens(NormQ(incomingText)));
+                    if (!string.IsNullOrWhiteSpace(ovr))
+                    {
+                        PushHistory(chatId, incomingText, ovr);
+                        try { DbBump(chatId, 1, 0, 0, 1); } catch (Exception) { }
+                        try { SendEngine.Log("AI override hit"); } catch (Exception) { }
+                        return ApplySegments(ovr, incomingText, cfg);
+                    }
+                }
+                catch (Exception) { }
                 if (useCache)
                 {
                     try
@@ -664,8 +896,9 @@ namespace WASender
                         if (!string.IsNullOrWhiteSpace(hit))
                         {
                             PushHistory(chatId, incomingText, hit);
+                            try { DbBump(chatId, 1, 1, 0, 0); } catch (Exception) { }
                             try { SendEngine.Log("AI cache hit: " + NormQ(incomingText).Substring(0, System.Math.Min(60, NormQ(incomingText).Length))); } catch (Exception) { }
-                            return hit;
+                            return ApplySegments(hit, incomingText, cfg);
                         }
                     }
                     catch (Exception) { }
@@ -713,8 +946,10 @@ namespace WASender
                         {
                             try { DbStore(ckey, incomingText, NormQ(incomingText), ans, cfg.Model, extraInstruction, cfg.MaxCacheEntries); }
                             catch (Exception) { }
+                            try { RefreshFaqFile(); } catch (Exception) { }
                         }
-                        return ans;
+                        try { DbBump(chatId, 1, 0, 1, 0); } catch (Exception) { }
+                        return ApplySegments(ans, incomingText, cfg);
                     }
                 }
                 catch (Exception) { }
