@@ -8,7 +8,8 @@ MULAI DARI SINI:
 4. Dokumentasi teknis      -> README.md (root) + docs/architecture.md + docs/license-model.md
 
 CATATAN:
-- Folder Documentation/, AppHere/, update/, exe/WASender.exe adalah peninggalan
-  era .NET/CodeCanyon dan TIDAK dipakai aplikasi Python 6.x. Jangan jadikan acuan.
+- Folder legacy/ (dulu Documentation/, AppHere/, update/, exe/WASender.exe,
+  keygen .exe lama) adalah peninggalan era .NET/CodeCanyon dan TIDAK dipakai
+  aplikasi Python 6.x. Jangan jadikan acuan.
 - samples/ berisi contoh CSV yang kompatibel dengan parser aplikasi.
 - keygen/ hanya untuk DEVELOPER. private_key.pem tidak boleh di-commit (lihat .gitignore).
