@@ -504,7 +504,28 @@ namespace WASender
             }
 
 
-            String FolderPath = Config.GetTempFolderPath();
+            var _nameMap = new System.Collections.Generic.Dictionary<string, string>();
+            var _adminSet = new System.Collections.Generic.HashSet<string>();
+            try
+            {
+                if (generalSettingsModel.browserType == 1)
+                {
+                    try { foreach (var c in WAPIHelper.getMyContacts(driver)) { try { string dn = new string(((c.number ?? "").Where(char.IsDigit).ToArray())); if (!string.IsNullOrEmpty(dn) && !_nameMap.ContainsKey(dn)) _nameMap[dn] = c.Name ?? ""; } catch (Exception) { } } } catch (Exception) { }
+                    try { foreach (var gg in p) { try { foreach (var a in WAPIHelper.GetGroupAdmins(driver, gg.GroupId)) { string da = new string(((a ?? "").Where(char.IsDigit).ToArray())); if (!string.IsNullOrEmpty(da)) _adminSet.Add(da); } } catch (Exception) { } } } catch (Exception) { }
+                }
+                else
+                {
+                    WebView2 _wv2 = null;
+                    try { _wv2 = Utils.GetActiveWebView(browser); } catch (Exception) { }
+                    if (_wv2 != null)
+                    {
+                        try { foreach (var c in await WPPHelper.getMyContacts(_wv2)) { try { string dn = new string(((c.number ?? "").Where(char.IsDigit).ToArray())); if (!string.IsNullOrEmpty(dn) && !_nameMap.ContainsKey(dn)) _nameMap[dn] = c.Name ?? ""; } catch (Exception) { } } } catch (Exception) { }
+                        try { foreach (var gg in p) { try { foreach (var a in await WPPHelper.GetGroupAdmins(_wv2, gg.GroupId)) { string da = new string(((a ?? "").Where(char.IsDigit).ToArray())); if (!string.IsNullOrEmpty(da)) _adminSet.Add(da); } } catch (Exception) { } } } catch (Exception) { }
+                    }
+                }
+            }
+            catch (Exception) { }
+String FolderPath = Config.GetTempFolderPath();
             String file = Path.Combine(FolderPath, "Multiple_" + DownloaType + "_Members" + Guid.NewGuid().ToString() + ".xlsx");
             string NewFileName = file.ToString();
 
@@ -517,11 +538,22 @@ namespace WASender
             {
                 var ws = xlPackage.Workbook.Worksheets[0];
                 ws.Cells[1, 1].Value = Strings.Number;
-                ws.Cells[1, 2].Value = Strings.CountryShortCode;
+                ws.Cells[1, 2].Value = "Name";
+                ws.Cells[1, 3].Value = "Admin";
+                ws.Cells[1, 4].Value = Strings.CountryShortCode;
                 for (int i = 0; i < members.Count(); i++)
                 {
                     ws.Cells[i + 2, 1].Value = members[i].number;
-                    ws.Cells[i + 2, 2].Value = members[i].CountryShortCode;
+                    try
+                    {
+                        string _dn = new string(((members[i].number ?? "").Where(char.IsDigit).ToArray()));
+                        string _nm = "";
+                        _nameMap.TryGetValue(_dn, out _nm);
+                        ws.Cells[i + 2, 2].Value = _nm ?? "";
+                        ws.Cells[i + 2, 3].Value = _adminSet.Contains(_dn) ? "Ya" : "";
+                    }
+                    catch (Exception) { }
+                    ws.Cells[i + 2, 4].Value = members[i].CountryShortCode;
                 }
                 xlPackage.Save();
             }

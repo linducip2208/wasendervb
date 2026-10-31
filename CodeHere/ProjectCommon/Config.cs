@@ -549,6 +549,29 @@ namespace WASender
         }
 
 
+        public static void BackupFile(string path)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(path) || !File.Exists(path)) return;
+                string dir = Path.Combine(GetAppDataFolder(), "Backup");
+                if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
+                string name = Path.GetFileNameWithoutExtension(path) + "_" + DateTime.Now.ToString("yyyyMMdd_HHmmss") + Path.GetExtension(path);
+                File.Copy(path, Path.Combine(dir, name), true);
+                try
+                {
+                    string[] fs = Directory.GetFiles(dir, Path.GetFileNameWithoutExtension(path) + "_*");
+                    if (fs.Length > 5)
+                    {
+                        Array.Sort(fs);
+                        for (int i = 0; i < fs.Length - 5; i++) { try { File.Delete(fs[i]); } catch (Exception) { } }
+                    }
+                }
+                catch (Exception) { }
+            }
+            catch (Exception) { }
+        }
+
         public static void deActivateProduct()
         {
 

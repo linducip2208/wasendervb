@@ -12,10 +12,10 @@ namespace WASender
         private Form _main;
         private CheckBox chkEnabled;
         private TextBox txtBaseUrl, txtApiKey, txtModel, txtPrompt, txtTemp, txtMaxTok, txtTimeout;
-        private CheckBox chkCache, chkFuzzy;
+        private CheckBox chkCache, chkFuzzy, chkVision;
         private TextBox txtTtl, txtMaxEntries;
         private Label lblTest;
-        private DataGridView gridOverride, gridSegmen;
+        private DataGridView gridOverride, gridSegmen, gridPersonas;
         private ListBox lstFaq;
         private TabControl tc;
 
@@ -85,7 +85,11 @@ namespace WASender
             MkLabel(tConn, "Temperature", 10, 222); txtTemp = MkText(tConn, 150, 220, 100);
             MkLabel(tConn, "Max Tokens", 270, 222); txtMaxTok = MkText(tConn, 360, 220, 100);
             MkLabel(tConn, "Timeout (detik)", 10, 250); txtTimeout = MkText(tConn, 150, 248, 100);
-            MkBtn(tConn, "Tes Koneksi", 150, 285, OnTest);
+            chkVision = new CheckBox();
+        chkVision.Text = "Izinkan baca gambar (Vision)";
+        chkVision.Left = 150; chkVision.Top = 258; chkVision.Width = 250;
+        tConn.Controls.Add(chkVision);
+        MkBtn(tConn, "Tes Koneksi", 150, 285, OnTest);
             MkBtn(tConn, "Simpan", 320, 285, delegate { SaveConnCache(); MessageBox.Show("Disimpan.", "AI Setup"); });
             lblTest = new Label();
             lblTest.Left = 150; lblTest.Top = 320; lblTest.Width = 450; lblTest.Height = 60;
@@ -120,6 +124,12 @@ namespace WASender
             MkBtn(tSeg, "Hapus", 175, 335, delegate { foreach (DataGridViewRow r in gridSegmen.SelectedRows) { if (!r.IsNewRow) gridSegmen.Rows.Remove(r); } });
             MkBtn(tSeg, "Simpan", 340, 335, delegate { SaveSegmen(); MessageBox.Show("Disimpan.", "AI Setup"); });
             gridSegmen.AllowUserToDeleteRows = true;
+        TabPage tPer = NewTab(tc, "Persona Label");
+        gridPersonas = NewGrid(tPer, new string[] { "Label", "Prompt" });
+        MkBtn(tPer, "Tambah", 10, 335, delegate { gridPersonas.Rows.Add("", ""); });
+        MkBtn(tPer, "Hapus", 175, 335, delegate { foreach (DataGridViewRow r in gridPersonas.SelectedRows) { if (!r.IsNewRow) gridPersonas.Rows.Remove(r); } });
+        MkBtn(tPer, "Simpan", 340, 335, delegate { SavePersona(); MessageBox.Show("Disimpan.", "AI Setup"); });
+        gridPersonas.AllowUserToDeleteRows = true;
         }
 
         private DataGridView NewGrid(TabPage p, string[] cols)
@@ -159,6 +169,7 @@ namespace WASender
                 txtTemp.Text = cfg.Temperature.ToString();
                 txtMaxTok.Text = cfg.MaxTokens.ToString();
                 txtTimeout.Text = cfg.TimeoutSeconds.ToString();
+                chkVision.Checked = cfg.AllowVision;
                 chkCache.Checked = cfg.CacheEnabled;
                 chkFuzzy.Checked = cfg.CacheFuzzy;
                 txtTtl.Text = cfg.CacheTtlDays.ToString();
@@ -174,6 +185,7 @@ namespace WASender
             }
             catch (Exception ex) { lblTest.Text = "Gagal muat: " + ex.Message; }
             try { LoadOverrideGrid(); } catch (Exception) { }
+        try { LoadPersona(); } catch (Exception) { }
             try { LoadFaq(); } catch (Exception) { }
         }
 
@@ -192,6 +204,7 @@ namespace WASender
                 int iv;
                 if (int.TryParse(txtMaxTok.Text, out iv)) cfg.MaxTokens = iv;
                 if (int.TryParse(txtTimeout.Text, out iv)) cfg.TimeoutSeconds = iv;
+                cfg.AllowVision = chkVision.Checked;
                 cfg.CacheEnabled = chkCache.Checked;
                 cfg.CacheFuzzy = chkFuzzy.Checked;
                 if (int.TryParse(txtTtl.Text, out iv)) cfg.CacheTtlDays = iv;
@@ -306,7 +319,29 @@ namespace WASender
 
 
 
-        private void SaveSegmen()
+        private void SavePersona()
+    {
+        try
+        {
+            AiSettings cfg = AiResponder.LoadSettings() ?? new AiSettings();
+            var list = new System.Collections.Generic.List<AiPersona>();
+            foreach (DataGridViewRow r in gridPersonas.Rows)
+            {
+                if (r.IsNewRow) continue;
+                string lb = r.Cells[0].Value != null ? r.Cells[0].Value.ToString() : "";
+                string pr = r.Cells[1].Value != null ? r.Cells[1].Value.ToString() : "";
+                if (string.IsNullOrWhiteSpace(lb) || string.IsNullOrWhiteSpace(pr)) continue;
+                list.Add(new AiPersona { Label = lb, Prompt = pr });
+            }
+            cfg.LabelPersonas = list;
+            Config.BackupFile(AiResponder.GetSettingsPath());
+                    Config.BackupFile(AiResponder.GetOverridesPath());
+            System.IO.File.WriteAllText(AiResponder.GetSettingsPath(), Newtonsoft.Json.JsonConvert.SerializeObject(cfg, Newtonsoft.Json.Formatting.Indented));
+        }
+        catch (Exception ex) { MessageBox.Show("Gagal simpan: " + ex.Message, "AI Setup"); }
+    }
+
+    private void SaveSegmen()
         {
             try
             {
@@ -337,7 +372,24 @@ namespace WASender
             catch (Exception ex) { MessageBox.Show("Gagal simpan: " + ex.Message, "AI Setup"); }
         }
 
-        private void LoadFaq()
+        private void LoadPersona()
+    {
+        try
+        {
+            AiSettings cfg = AiResponder.LoadSettings();
+            if (cfg != null && cfg.LabelPersonas != null)
+            {
+                foreach (var s in cfg.LabelPersonas)
+                {
+                    if (s == null) continue;
+                    gridPersonas.Rows.Add(s.Label ?? "", s.Prompt ?? "");
+                }
+            }
+        }
+        catch (Exception) { }
+    }
+
+    private void LoadFaq()
         {
             lstFaq.Items.Clear();
             try

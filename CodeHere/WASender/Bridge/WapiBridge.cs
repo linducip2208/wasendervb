@@ -4008,6 +4008,50 @@ namespace WASender
             catch (Exception) { return ""; }
         }
 
+        public static string TryDownloadLastImage(object driver, string chatId)
+        {
+            try
+            {
+                if (!EnsureWpp(driver)) return "";
+                string gid = chatId ?? "";
+                string mbox = "__dlw" + Guid.NewGuid().ToString("N").Substring(0, 6);
+                string js = "window." + mbox + "='PENDING';(function(){try{"
+                    + "WPP.chat.getMessages(" + JsonConvert.SerializeObject(gid) + ",{count:5}).then(function(ms){try{"
+                    + "var arr=(ms&&ms.map)?ms:((ms&&ms.models)?ms.models:[]);var tgt=null;"
+                    + "for(var i=arr.length-1;i>=0;i--){try{var m=arr[i];if(m&&m.id&&!m.id.fromMe&&(m.type==='image')){tgt=m;break;}}catch(e){}}"
+                    + "if(!tgt){window." + mbox + "='NONE';return;}"
+                    + "var mid=(tgt.id&&(tgt.id._serialized||String(tgt.id)))||'';"
+                    + "WPP.chat.downloadMedia(mid).then(function(b){try{var fr=new FileReader();fr.onload=function(){try{var u=String(fr.result||'');window." + mbox + "=(u&&u.length>2000000)?'TOOBIG':('OK:'+u);}catch(e){window." + mbox + "='ERR';}};fr.onerror=function(){window." + mbox + "='ERR';};fr.readAsDataURL(b);}catch(e){window." + mbox + "='ERR';}}).catch(function(e){window." + mbox + "='FAIL';});"
+                    + "}catch(e){window." + mbox + "='ERR';}}).catch(function(e){window." + mbox + "='FAIL';});}catch(e){window." + mbox + "='EX';}})();'x';";
+                RawEval(driver, js);
+                string res = Mailbox(driver, mbox, 30);
+                if (res != null && res.StartsWith("OK:data:")) return res.Substring(3);
+                return "";
+            }
+            catch (Exception) { return ""; }
+        }
+
+        public static List<string> GetGroupAdmins(object driver, string groupId)
+        {
+            var out_ = new List<string>();
+            try
+            {
+                if (!EnsureWpp(driver)) return out_;
+                string gid = (groupId ?? "").Contains("@") ? groupId : groupId + "@g.us";
+                string mbox = "__gadw" + Guid.NewGuid().ToString("N").Substring(0, 6);
+                string js = "window." + mbox + "='PENDING';(function(){try{WPP.group.getParticipants(" + JsonConvert.SerializeObject(gid) + ").then(function(ps){try{var arr=(ps&&ps.map)?ps:(ps&&ps.participants?ps.participants:[]);var out=[];for(var i=0;i<arr.length;i++){try{var pp=arr[i];if(pp&&(pp.isAdmin||pp.isSuperAdmin)){var id=pp.id||pp;out.push((typeof id==='string')?id:((id&&(id._serialized||String(id)))||'');}}catch(e){}}window." + mbox + "='OK:'+JSON.stringify(out);}catch(e){window." + mbox + "='FAIL';}}).catch(function(e){window." + mbox + "='FAIL';});}catch(e){window." + mbox + "='EX';}})();'x';";
+                RawEval(driver, js);
+                string res = Mailbox(driver, mbox, 15);
+                if (res != null && res.StartsWith("OK:"))
+                {
+                    try { var ja = JArray.Parse(res.Substring(3)); foreach (var x in ja) { string s = x != null ? x.ToString() : ""; if (!string.IsNullOrEmpty(s)) out_.Add(s); } }
+                    catch (Exception) { }
+                }
+            }
+            catch (Exception) { }
+            return out_;
+        }
+
         public static async Task<bool> JoinGroup(object driver, string code)
 
 

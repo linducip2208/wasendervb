@@ -20,6 +20,7 @@ namespace WASender
         private static DateTime _lastTick = DateTime.MinValue;
         private static DateTime _sessionStart = DateTime.MinValue;
         private static int _disconnects = 0;
+        private static bool _wasOk = true;
         private static string _lastSummaryDate = "";
 
         private const string JS_STATE =
@@ -203,6 +204,15 @@ namespace WASender
                     _disconnects++;
                     HLog("WARN terputus (state=" + state + ", total=" + _disconnects + ")");
                 }
+                try
+                {
+                    NotifyCfg _nc = Notify.Load();
+                    if (_wasOk && !okState) { var __ = Notify.SendAsync("\u26a0\uFE0F WA terputus! State=" + state + " total putus=" + _disconnects, "dc", 1); }
+                    if (!_wasOk && okState) { var __ = Notify.SendAsync("\u2705 WA tersambung kembali. Skor=" + score, "rc", 1); }
+                    if (_nc != null && _nc.Enabled && _nc.OnLowScore && score < 40) { var __ = Notify.SendAsync("\u26a0\uFE0F Skor kesehatan WA rendah: " + score + "/100", "lowscore", 24); }
+                }
+                catch (Exception) { }
+                _wasOk = okState;
 
                 try
                 {
@@ -306,6 +316,15 @@ namespace WASender
                             }
                             catch (Exception) { }
                         }
+                    }
+                }
+                catch (Exception) { }
+                try
+                {
+                    NotifyCfg _nc2 = Notify.Load();
+                    if (_nc2 != null && _nc2.Enabled && _nc2.OnDailySummary)
+                    {
+                        var __ = Notify.SendAsync("Ringkasan " + today + ": tanya=" + q + " cache=" + hits + " ai=" + calls + " chats=" + chats + " skor=" + score, "daily", 20);
                     }
                 }
                 catch (Exception) { }

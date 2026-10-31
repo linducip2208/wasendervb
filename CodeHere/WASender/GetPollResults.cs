@@ -443,7 +443,8 @@ namespace WASender
             strim += "";
             strim += "</table>";
 
-            webBrowser1.DocumentText = strim;
+                            try { strim += PollTracker.TrendHtmlAll(); } catch (Exception) { }
+                webBrowser1.DocumentText = strim;
 
             return true;
         }
@@ -573,7 +574,8 @@ namespace WASender
             strim += "";
             strim += "</table>";
 
-            webBrowser1.DocumentText = strim;
+                            try { strim += PollTracker.TrendHtmlAll(); } catch (Exception) { }
+                webBrowser1.DocumentText = strim;
 
             return 1;
         }

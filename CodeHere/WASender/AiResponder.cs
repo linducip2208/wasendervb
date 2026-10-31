@@ -28,11 +28,21 @@ namespace WASender
         public int TimeoutSeconds { get; set; }
         public bool CacheEnabled { get; set; } = true;
         public bool CacheFuzzy { get; set; } = true;
+        public bool ReplyToGroups { get; set; } = false;
+        public bool AllowVision { get; set; } = true;
+        public System.Collections.Generic.List<AiPersona> LabelPersonas { get; set; } = new System.Collections.Generic.List<AiPersona>();
         public System.Collections.Generic.List<AiSegment> Segments { get; set; } = new System.Collections.Generic.List<AiSegment>();
         public int CacheTtlDays { get; set; } = 30;
         public int MaxCacheEntries { get; set; } = 1000;
         public string FallbackText { get; set; }
     }
+
+    public class AiPersona
+    {
+        public string Label { get; set; }
+        public string Prompt { get; set; }
+    }
+
 
     public class AiSegment
     {
@@ -46,6 +56,28 @@ namespace WASender
 
     public static class AiResponder
     {
+        private static bool _rgVal = false;
+        private static bool _visVal = true;
+        private static DateTime _flagTime = DateTime.MinValue;
+
+        private static void RefreshFlags()
+        {
+            try
+            {
+                if ((DateTime.Now - _flagTime).TotalSeconds < 30) return;
+                _flagTime = DateTime.Now;
+                AiSettings c = LoadSettings();
+                if (c == null) return;
+                _rgVal = c.ReplyToGroups;
+                _visVal = c.AllowVision;
+            }
+            catch (Exception) { }
+        }
+
+        public static bool ReplyToGroupsEnabled() { try { RefreshFlags(); return _rgVal; } catch (Exception) { return false; } }
+        public static bool VisionEnabled() { try { RefreshFlags(); return _visVal; } catch (Exception) { return true; } }
+
+
         public const string AiMarker = "[AI]";
 
         public static bool IsAiMessage(string text)
@@ -92,6 +124,9 @@ namespace WASender
                         CacheFuzzy = true,
                         CacheTtlDays = 30,
                         Segments = new System.Collections.Generic.List<AiSegment>(),
+                        ReplyToGroups = false,
+                        AllowVision = true,
+                        LabelPersonas = new System.Collections.Generic.List<AiPersona>(),
                         MaxCacheEntries = 1000,
                         FallbackText = "Maaf, saya sedang tidak bisa menjawab. Coba lagi nanti."
                     };
@@ -126,6 +161,78 @@ namespace WASender
                 }
             }
             catch (Exception) { }
+        }
+
+        public static async Task<string> ReplyWithImageAsync(string dataUrl, string caption, string extraInstruction, string chatId)
+        {
+            try
+            {
+                AiSettings cfg = LoadSettings();
+                if (cfg == null || !cfg.Enabled) return null;
+                if (string.IsNullOrWhiteSpace(cfg.ApiKey) || cfg.ApiKey == "ISI_DENGAN_API_KEY_ANDA") return cfg.FallbackText;
+                if (string.IsNullOrWhiteSpace(dataUrl)) return cfg.FallbackText;
+                string systemPrompt = cfg.SystemPrompt ?? "";
+                if (!string.IsNullOrWhiteSpace(extraInstruction)) systemPrompt = systemPrompt + "\nInstruksi tambahan: " + extraInstruction;
+                var userContent = new System.Collections.Generic.List<object>();
+                userContent.Add(new { type = "text", text = string.IsNullOrWhiteSpace(caption) ? "Jelaskan isi gambar ini lalu balas yang relevan." : caption });
+                userContent.Add(new { type = "image_url", image_url = new { url = dataUrl } });
+                var payload = new
+                {
+                    model = cfg.Model,
+                    messages = new object[]
+                    {
+                        new { role = "system", content = systemPrompt },
+                        new { role = "user", content = userContent.ToArray() }
+                    },
+                    temperature = cfg.Temperature,
+                    max_tokens = cfg.MaxTokens
+                };
+                string body = JsonConvert.SerializeObject(payload);
+                string url = cfg.BaseUrl.TrimEnd('/') + "/chat/completions";
+                HttpWebRequest req = (HttpWebRequest)WebRequest.Create(url);
+                req.Method = "POST";
+                req.ContentType = "application/json";
+                req.Headers["Authorization"] = "Bearer " + cfg.ApiKey;
+                req.Timeout = cfg.TimeoutSeconds * 1000;
+                req.ReadWriteTimeout = cfg.TimeoutSeconds * 1000;
+                byte[] bytes = Encoding.UTF8.GetBytes(body);
+                req.ContentLength = bytes.Length;
+                using (Stream rs = await req.GetRequestStreamAsync())
+                {
+                    await rs.WriteAsync(bytes, 0, bytes.Length);
+                }
+                string respText;
+                using (WebResponse resp = await req.GetResponseAsync())
+                using (StreamReader sr = new StreamReader(resp.GetResponseStream(), Encoding.UTF8))
+                {
+                    respText = await sr.ReadToEndAsync();
+                }
+                dynamic obj = JsonConvert.DeserializeObject(respText);
+                try
+                {
+                    string content = (string)obj.choices[0].message.content;
+                    if (!string.IsNullOrWhiteSpace(content)) { PushHistory(chatId, "[gambar] " + (caption ?? ""), content.Trim()); try { DbBump(chatId, 1, 0, 1, 0); } catch (Exception) { } return content.Trim(); }
+                }
+                catch (Exception) { }
+                try
+                {
+                    string err = (string)obj.error.message;
+                    SendEngine.Log("AI vision error: " + err);
+                }
+                catch (Exception) { }
+                return cfg.FallbackText;
+            }
+            catch (Exception ex)
+            {
+                try { SendEngine.Log("AI vision EX: " + ex.Message); }
+                catch (Exception) { }
+                try
+                {
+                    var cfg2 = LoadSettings();
+                    return cfg2 != null ? cfg2.FallbackText : null;
+                }
+                catch (Exception) { return null; }
+            }
         }
 
         public static bool IsConfigured()
@@ -878,7 +985,7 @@ namespace WASender
             catch (Exception) { }
         }
 
-        public static async Task<string> ReplyAsync(string incomingText, string extraInstruction = null, string chatId = null)
+        public static async Task<string> ReplyAsync(string incomingText, string extraInstruction = null, string chatId = null, string chatLabels = null)
         {
             try
             {
@@ -920,6 +1027,30 @@ namespace WASender
                 }
                 string systemPrompt = cfg.SystemPrompt ?? "";
                 if (!string.IsNullOrWhiteSpace(extraInstruction)) systemPrompt = systemPrompt + "\nInstruksi tambahan: " + extraInstruction;
+                try
+                {
+                    if (cfg.LabelPersonas != null && !string.IsNullOrEmpty(chatLabels))
+                    {
+                        foreach (var pp in cfg.LabelPersonas)
+                        {
+                            if (pp == null || string.IsNullOrEmpty(pp.Label) || string.IsNullOrEmpty(pp.Prompt)) continue;
+                            if (chatLabels.ToLowerInvariant().Contains(pp.Label.ToLowerInvariant())) { systemPrompt = systemPrompt + "\nPersona chat ini: " + pp.Prompt; break; }
+                        }
+                    }
+                }
+                catch (Exception) { }
+                try
+                {
+                    if (cfg.LabelPersonas != null && !string.IsNullOrEmpty(chatLabels))
+                    {
+                        foreach (var pp in cfg.LabelPersonas)
+                        {
+                            if (pp == null || string.IsNullOrEmpty(pp.Label) || string.IsNullOrEmpty(pp.Prompt)) continue;
+                            if (chatLabels.ToLowerInvariant().Contains(pp.Label.ToLowerInvariant())) { systemPrompt = systemPrompt + "\nPersona chat ini: " + pp.Prompt; break; }
+                        }
+                    }
+                }
+                catch (Exception) { }
 
                 var payload = new
                 {

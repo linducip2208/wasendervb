@@ -8,7 +8,8 @@ namespace WASender
     public partial class HealthForm : Form
     {
         private Form _main;
-        private TextBox txtStatus, txtLog, txtLimit, txtMinScore;
+        private TextBox txtStatus, txtLog, txtLimit, txtMinScore, txtBotToken, txtTgChat;
+        private CheckBox chkTg, chkDc, chkLow, chkDaily;
         private CheckBox chkBlock;
         private ListBox lstReports, lstQuota;
         private string _dir = "";
@@ -18,7 +19,7 @@ namespace WASender
             _main = main;
             Text = "WA Health & Laporan";
             Width = 720;
-            Height = 700;
+            Height = 860;
             StartPosition = FormStartPosition.CenterParent;
             FormClosed += delegate { try { if (_main != null) _main.Show(); } catch (Exception) { } };
             BuildUi();
@@ -115,8 +116,66 @@ namespace WASender
             };
             Controls.Add(bSaveLim);
             lstQuota = new ListBox();
-            lstQuota.Left = 10; lstQuota.Top = 546; lstQuota.Width = 680; lstQuota.Height = 100;
-            Controls.Add(lstQuota);
+        lstQuota.Left = 10; lstQuota.Top = 546; lstQuota.Width = 680; lstQuota.Height = 100;
+        Controls.Add(lstQuota);
+        Label ln = new Label();
+        ln.Text = "Notifikasi Telegram (bot kirim ke HP kamu):"; ln.Left = 10; ln.Top = 652; ln.Width = 300;
+        Controls.Add(ln);
+        chkTg = new CheckBox();
+        chkTg.Text = "Aktif"; chkTg.Left = 320; chkTg.Top = 650; chkTg.Width = 60;
+        Controls.Add(chkTg);
+        Label lb = new Label();
+        lb.Text = "Bot Token:"; lb.Left = 10; lb.Top = 678; lb.Width = 70;
+        Controls.Add(lb);
+        txtBotToken = new TextBox();
+        txtBotToken.Left = 85; txtBotToken.Top = 676; txtBotToken.Width = 300;
+        txtBotToken.UseSystemPasswordChar = true;
+        Controls.Add(txtBotToken);
+        Label lc = new Label();
+        lc.Text = "Chat ID:"; lc.Left = 395; lc.Top = 678; lc.Width = 55;
+        Controls.Add(lc);
+        txtTgChat = new TextBox();
+        txtTgChat.Left = 455; txtTgChat.Top = 676; txtTgChat.Width = 120;
+        Controls.Add(txtTgChat);
+        chkDc = new CheckBox();
+        chkDc.Text = "Putus"; chkDc.Left = 10; chkDc.Top = 704; chkDc.Width = 60;
+        Controls.Add(chkDc);
+        chkLow = new CheckBox();
+        chkLow.Text = "Skor rendah"; chkLow.Left = 80; chkLow.Top = 704; chkLow.Width = 100;
+        Controls.Add(chkLow);
+        chkDaily = new CheckBox();
+        chkDaily.Text = "Ringkasan harian"; chkDaily.Left = 190; chkDaily.Top = 704; chkDaily.Width = 130;
+        Controls.Add(chkDaily);
+        Button bTgTest = new Button();
+        bTgTest.Text = "Tes"; bTgTest.Left = 330; bTgTest.Top = 702; bTgTest.Width = 60;
+        bTgTest.Click += delegate {
+            try {
+                NotifyCfg _tc = Notify.Load();
+                _tc.BotToken = txtBotToken.Text.Trim();
+                _tc.ChatId = txtTgChat.Text.Trim();
+                _tc.Enabled = true;
+                Notify.Save(_tc);
+                var __t = Notify.SendAsync("Tes notifikasi WASender OK.", "", 0);
+                MessageBox.Show("Terkirim bila token & chat ID benar.", "Telegram");
+            } catch (Exception ex) { MessageBox.Show(ex.Message, "Telegram"); }
+        };
+        Controls.Add(bTgTest);
+        Button bTgSave = new Button();
+        bTgSave.Text = "Simpan"; bTgSave.Left = 400; bTgSave.Top = 702; bTgSave.Width = 80;
+        bTgSave.Click += delegate {
+            try {
+                NotifyCfg _nc = Notify.Load();
+                _nc.Enabled = chkTg.Checked;
+                _nc.BotToken = txtBotToken.Text.Trim();
+                _nc.ChatId = txtTgChat.Text.Trim();
+                _nc.OnDisconnect = chkDc.Checked;
+                _nc.OnLowScore = chkLow.Checked;
+                _nc.OnDailySummary = chkDaily.Checked;
+                Notify.Save(_nc);
+                MessageBox.Show("Disimpan.", "Telegram");
+            } catch (Exception ex) { MessageBox.Show(ex.Message, "Telegram"); }
+        };
+        Controls.Add(bTgSave);
         }
 
         private void RefreshAll()
@@ -159,6 +218,17 @@ namespace WASender
                     lstQuota.Items.Add("Kuota hari ini (akun | terkirim | batas):");
                     foreach (var row in SendGovernor.TodayAll())
                         lstQuota.Items.Add("  " + row);
+                try
+                {
+                    NotifyCfg _nc0 = Notify.Load();
+                    chkTg.Checked = _nc0.Enabled;
+                    txtBotToken.Text = _nc0.BotToken ?? "";
+                    txtTgChat.Text = _nc0.ChatId ?? "";
+                    chkDc.Checked = _nc0.OnDisconnect;
+                    chkLow.Checked = _nc0.OnLowScore;
+                    chkDaily.Checked = _nc0.OnDailySummary;
+                }
+                catch (Exception) { }
                     if (lstQuota.Items.Count == 1) lstQuota.Items.Add("  (belum ada pengiriman hari ini)");
                 }
                 catch (Exception ex) { lstQuota.Items.Add("Gagal muat kuota: " + ex.Message); }

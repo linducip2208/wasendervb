@@ -48,7 +48,11 @@ namespace WASender
 
         public static void SaveLimits(SendLimits l)
         {
-            try { File.WriteAllText(GetLimitsPath(), Newtonsoft.Json.JsonConvert.SerializeObject(l, Newtonsoft.Json.Formatting.Indented)); }
+            try
+            {
+                Config.BackupFile(GetLimitsPath());
+                File.WriteAllText(GetLimitsPath(), Newtonsoft.Json.JsonConvert.SerializeObject(l, Newtonsoft.Json.Formatting.Indented));
+            }
             catch (Exception) { }
         }
 

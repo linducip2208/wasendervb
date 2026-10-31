@@ -508,9 +508,20 @@ namespace WaAutoReplyBot
                 else if (result.type == "newmsg")
                 {
                     IncommingMessageModel _data = JsonConvert.DeserializeObject<IncommingMessageModel>(result._data);
-                    if ((_data.body != null) && (_data.id.fromMe != true) && (!_data.id._serialized.Contains("@g.us")))
+                    if ((_data.body != null) && (_data.id.fromMe != true) && (!_data.id._serialized.Contains("@g.us") || AiResponder.ReplyToGroupsEnabled()))
                     {
                         gotNewMessage(_data);
+                    }
+                    else if (_data != null && string.IsNullOrEmpty(_data.body) && _data.id != null && _data.id.fromMe != true && AiResponder.VisionEnabled())
+                    {
+                        try { if (!string.IsNullOrEmpty(_data.id._serialized) && CheckAndMarkSent(_data.id._serialized)) return; } catch (Exception) { }
+                        try
+                        {
+                            string _vcid = _data.from ?? "";
+                            if (!_vcid.Contains("@")) _vcid = _vcid + "@c.us";
+                            var __ = VisionFallbackAsync(_vcid, generalSettingsModel.browserType == 1 ? (object)driver : (object)wv, generalSettingsModel.browserType);
+                        }
+                        catch (Exception) { }
                     }
                 }
             }
@@ -732,9 +743,27 @@ namespace WaAutoReplyBot
                                 Thread.Sleep(1000);
                                 if ((sendMessagesList.Where(x => x.id == item.id).Count() == 0) || item.isPoll == true)
                                 {
+                                    if ((item.chatId ?? "").Contains("@g.us") && !AiResponder.ReplyToGroupsEnabled())
+                                    {
+                                        try
+                                        {
+                                            if (generalSettingsModel.browserType == 1) WAPIHelper.markIsRead(driver, item.chatId);
+                                            else WPPHelper.markIsRead(wv, item.chatId);
+                                            sendMessagesList.Add(item);
+                                        }
+                                        catch (Exception) { }
+                                        continue;
+                                    }
                                     if (item.body != null)
                                     {
                                         string lastMessageText = item.body;
+                                        if (string.IsNullOrWhiteSpace(lastMessageText) && AiResponder.VisionEnabled())
+                                        {
+                                            bool _vd = false;
+                                            try { _vd = await TryVisionReplyAsync(item.chatId, generalSettingsModel.browserType == 1 ? (object)driver : (object)wv, generalSettingsModel.browserType); }
+                                            catch (Exception) { }
+                                            if (_vd) { try { sendMessagesList.Add(item); } catch (Exception) { } continue; }
+                                        }
                                         RuleTransactionModel contaisModel = checkContains(containsMessageList, lastMessageText);
 
                                         logger.WriteLog("lastMessageText = " + lastMessageText);
@@ -947,7 +976,7 @@ namespace WaAutoReplyBot
                     {
                         string _extra = AiResponder.GetExtraInstruction(NewMessage);
                         string _ai = null;
-                        try { _ai = await AiResponder.ReplyAsync(incomingText, _extra, number); }
+                        try { string _lb0 = ""; try { _lb0 = ResolveChatLabels(number); } catch (Exception) { } _ai = await AiResponder.ReplyAsync(incomingText, _extra, number, _lb0); }
                         catch (Exception ex) { try { logger.WriteLog("AI-" + ex.Message); } catch (Exception) { } }
                         if (string.IsNullOrEmpty(_ai))
                         {
@@ -1053,7 +1082,7 @@ namespace WaAutoReplyBot
                 if (!AiResponder.IsConfigured()) return false;
                 if (string.IsNullOrWhiteSpace(incomingText)) return false;
                 string reply = null;
-                try { reply = await AiResponder.ReplyAsync(incomingText, null, number); }
+                try { string _lb1 = ""; try { _lb1 = ResolveChatLabels(number); } catch (Exception) { } reply = await AiResponder.ReplyAsync(incomingText, null, number, _lb1); }
                 catch (Exception) { return false; }
                 if (string.IsNullOrWhiteSpace(reply)) return false;
                 if (generalSettingsModel.browserType == 1)
@@ -1198,7 +1227,88 @@ namespace WaAutoReplyBot
 
         }
 
-        private void WaAutoReplyForm_FormClosing(object sender, FormClosingEventArgs e)
+        private static readonly System.Collections.Generic.Dictionary<string, string> _labelCache = new System.Collections.Generic.Dictionary<string, string>();
+    private static DateTime _labelTime = DateTime.MinValue;
+
+    private string ResolveChatLabels(string numberOrChat)
+    {
+        try
+        {
+            string digits = new string(((numberOrChat ?? "").Where(char.IsDigit).ToArray()));
+            if (string.IsNullOrEmpty(digits)) return "";
+            lock (_labelCache) { if ((DateTime.Now - _labelTime).TotalMinutes < 10 && _labelCache.ContainsKey(digits)) return _labelCache[digits]; }
+            string lab = "";
+            try
+            {
+                if (generalSettingsModel.browserType == 1)
+                {
+                    foreach (var c in WAPIHelper.getAlChats(driver)) { try { if (new string((c.number ?? "").Where(char.IsDigit).ToArray()) == digits) { lab = c.Labels ?? ""; break; } } catch (Exception) { } }
+                }
+                else
+                {
+                    WebView2 _wv = null;
+                    try { _wv = Utils.GetActiveWebView(browser); } catch (Exception) { }
+                    if (_wv == null) _wv = wv;
+                    if (_wv != null) { var tsk = WPPHelper.getAllChats(_wv); tsk.Wait(30000); foreach (var c in tsk.Result) { try { if (new string((c.number ?? "").Where(char.IsDigit).ToArray()) == digits) { lab = c.Labels ?? ""; break; } } catch (Exception) { } } }
+                }
+            }
+            catch (Exception) { }
+            lock (_labelCache) { _labelCache[digits] = lab ?? ""; _labelTime = DateTime.Now; }
+            return lab ?? "";
+        }
+        catch (Exception) { return ""; }
+    }
+
+    private async Task<bool> TryVisionReplyAsync(string chatId, object driverOrWv, int browserType)
+    {
+        try
+        {
+            if (!AiResponder.IsConfigured() || !AiResponder.VisionEnabled()) return false;
+            if (string.IsNullOrWhiteSpace(chatId)) return false;
+            string data = "";
+            try
+            {
+                if (browserType == 1) data = WAPIHelper.TryDownloadLastImage(driverOrWv, chatId);
+                else
+                {
+                    WebView2 _wv = driverOrWv as WebView2;
+                    if (_wv == null) return false;
+                    data = await WPPHelper.TryDownloadLastImage(_wv, chatId);
+                }
+            }
+            catch (Exception) { return false; }
+            if (string.IsNullOrEmpty(data)) return false;
+            string reply = null;
+            try { reply = await AiResponder.ReplyWithImageAsync(data, "", null, chatId); }
+            catch (Exception) { return false; }
+            if (string.IsNullOrWhiteSpace(reply)) return false;
+            if (browserType == 1) WAPIHelper.SendMessage(driverOrWv, chatId, reply);
+            else
+            {
+                WebView2 _wv2 = driverOrWv as WebView2;
+                if (_wv2 == null) return false;
+                WPPHelper.SendMessage(_wv2, chatId, reply);
+            }
+            Thread.Sleep(300);
+            if (browserType == 1) WAPIHelper.sendSeen(driverOrWv, chatId);
+            else
+            {
+                WebView2 _wv3 = driverOrWv as WebView2;
+                if (_wv3 != null) WPPHelper.sendSeen(_wv3, chatId);
+            }
+            try { WaAutoReplyForm.WriteLogg(chatId + "\t-- AI Vision -- " + Strings.ReplySend + "!"); } catch (Exception) { }
+            return true;
+        }
+        catch (Exception) { return false; }
+    }
+
+    private async Task VisionFallbackAsync(string chatId, object driverOrWv, int browserType)
+    {
+        try { await TryVisionReplyAsync(chatId, driverOrWv, browserType); }
+        catch (Exception) { }
+    }
+
+    private void WaAutoReplyForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             try
             {
@@ -1209,6 +1319,7 @@ namespace WaAutoReplyBot
                 {
                     File.Create(path).Close();
                 }
+                try { Config.BackupFile(path); } catch (Exception) { }
                 File.WriteAllText(path, ObjData);
             }
             catch (Exception ex)
