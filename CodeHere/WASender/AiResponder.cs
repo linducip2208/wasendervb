@@ -1,6 +1,7 @@
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Data.SQLite;
 using System.IO;
 using System.Net;
 using System.Text;
@@ -26,6 +27,8 @@ namespace WASender
         public int MaxTokens { get; set; }
         public int TimeoutSeconds { get; set; }
         public bool CacheEnabled { get; set; } = true;
+        public bool CacheFuzzy { get; set; } = true;
+        public int CacheTtlDays { get; set; } = 30;
         public int MaxCacheEntries { get; set; } = 1000;
         public string FallbackText { get; set; }
     }
@@ -86,6 +89,8 @@ namespace WASender
                         MaxTokens = 300,
                         TimeoutSeconds = 45,
                         CacheEnabled = true,
+                        CacheFuzzy = true,
+                        CacheTtlDays = 30,
                         MaxCacheEntries = 1000,
                         FallbackText = "Maaf, saya sedang tidak bisa menjawab. Coba lagi nanti."
                     };
@@ -102,6 +107,7 @@ namespace WASender
                 if (s.MaxTokens <= 0) s.MaxTokens = 300;
                 if (s.TimeoutSeconds <= 0) s.TimeoutSeconds = 45;
                 if (s.MaxCacheEntries <= 0) s.MaxCacheEntries = 1000;
+                if (s.CacheTtlDays < 0) s.CacheTtlDays = 30;
                 return s;
             }
             catch (Exception) { return new AiSettings { Enabled = false }; }
@@ -134,7 +140,12 @@ namespace WASender
                     lock (_histLock)
                     {
                         List<KeyValuePair<string, string>> h;
-                        if (_history.TryGetValue(chatId, out h))
+                        if (!_history.TryGetValue(chatId, out h) || h.Count == 0)
+                        {
+                            try { DbLoadHistory(chatId); } catch (Exception) { }
+                            _history.TryGetValue(chatId, out h);
+                        }
+                        if (h != null)
                         {
                             foreach (var kv in h)
                             {
@@ -165,18 +176,22 @@ namespace WASender
                     while (h.Count > 6) h.RemoveAt(0);
                     if (_history.Count > 500) _history.Clear();
                 }
+                try { DbSaveHistory(chatId); } catch (Exception) { }
             }
             catch (Exception) { }
         }
 
+        private static readonly object _dbLock = new object();
+        private static bool _dbReady = false;
+        private static bool _ftsOk = false;
+
         public static string GetCachePath()
         {
-            try { return System.IO.Path.Combine(System.IO.Path.GetDirectoryName(GetSettingsPath()), "ai_cache.json"); }
-            catch (Exception) { return "ai_cache.json"; }
+            try { return System.IO.Path.Combine(System.IO.Path.GetDirectoryName(GetSettingsPath()), "ai_cache.db"); }
+            catch (Exception) { return "ai_cache.db"; }
         }
 
-        private static readonly object _cacheLock = new object();
-        private static Dictionary<string, string> _cache = null;
+        private static long NowUnix() { return (long)(System.DateTime.UtcNow - new System.DateTime(1970, 1, 1)).TotalSeconds; }
 
         private static string NormQ(string s)
         {
@@ -190,44 +205,118 @@ namespace WASender
             catch (Exception) { return (s ?? "").Trim(); }
         }
 
-        private static Dictionary<string, string> LoadCache(int max)
+        private static System.Collections.Generic.List<string> Tokens(string norm)
         {
+            var out_ = new System.Collections.Generic.List<string>();
             try
             {
-                lock (_cacheLock)
+                foreach (string w in (norm ?? "").Split(new char[] { ' ' }, System.StringSplitOptions.RemoveEmptyEntries))
                 {
-                    if (_cache != null) return _cache;
-                    _cache = new Dictionary<string, string>();
-                    try
-                    {
-                        string path = GetCachePath();
-                        if (System.IO.File.Exists(path))
-                        {
-                            var d = JsonConvert.DeserializeObject<Dictionary<string, string>>(System.IO.File.ReadAllText(path));
-                            if (d != null)
-                            {
-                                foreach (var kv in d)
-                                {
-                                    if (_cache.Count >= max) break;
-                                    if (!string.IsNullOrEmpty(kv.Key) && kv.Value != null) _cache[kv.Key] = kv.Value;
-                                }
-                            }
-                        }
-                    }
-                    catch (Exception) { }
-                    return _cache;
+                    string x = w.Trim();
+                    if (x.Length >= 3 && !out_.Contains(x)) out_.Add(x);
                 }
             }
-            catch (Exception) { return new Dictionary<string, string>(); }
+            catch (Exception) { }
+            return out_;
         }
 
-        private static void SaveCache()
+        private static void DbInit()
         {
             try
             {
-                Dictionary<string, string> snap;
-                lock (_cacheLock) { snap = new Dictionary<string, string>(_cache ?? new Dictionary<string, string>()); }
-                System.IO.File.WriteAllText(GetCachePath(), JsonConvert.SerializeObject(snap, Formatting.None));
+                lock (_dbLock)
+                {
+                    if (_dbReady) return;
+                    string path = GetCachePath();
+                    try
+                    {
+                        string dir = System.IO.Path.GetDirectoryName(path);
+                        if (!string.IsNullOrEmpty(dir) && !System.IO.Directory.Exists(dir)) System.IO.Directory.CreateDirectory(dir);
+                    }
+                    catch (Exception) { }
+                    using (var c = new SQLiteConnection("Data Source=" + path + ";Version=3;Journal Mode=WAL;Synchronous=NORMAL;"))
+                    {
+                        c.Open();
+                        using (var cmd = c.CreateCommand())
+                        {
+                            cmd.CommandText = "CREATE TABLE IF NOT EXISTS ai_cache(key TEXT PRIMARY KEY, question TEXT NOT NULL, norm TEXT NOT NULL, answer TEXT NOT NULL, model TEXT NOT NULL DEFAULT '', extra TEXT NOT NULL DEFAULT '', hits INTEGER NOT NULL DEFAULT 1, created_at INTEGER NOT NULL, last_hit INTEGER NOT NULL);"
+                                + "CREATE INDEX IF NOT EXISTS idx_ai_cache_norm ON ai_cache(norm);"
+                                + "CREATE TABLE IF NOT EXISTS ai_history(chat_id TEXT NOT NULL, seq INTEGER NOT NULL, role TEXT NOT NULL, content TEXT NOT NULL, PRIMARY KEY(chat_id, seq));"
+                                + "CREATE INDEX IF NOT EXISTS idx_ai_history_chat ON ai_history(chat_id, seq);";
+                            cmd.ExecuteNonQuery();
+                        }
+                        try
+                        {
+                            using (var cmd = c.CreateCommand())
+                            {
+                                cmd.CommandText = "CREATE VIRTUAL TABLE IF NOT EXISTS ai_cache_fts USING fts4(ckey, question);";
+                                cmd.ExecuteNonQuery();
+                            }
+                            _ftsOk = true;
+                        }
+                        catch (Exception) { _ftsOk = false; }
+                    }
+                    try { ImportJsonCache(); } catch (Exception) { }
+                    _dbReady = true;
+                }
+            }
+            catch (Exception) { }
+        }
+
+        private static void ImportJsonCache()
+        {
+            try
+            {
+                string dir = System.IO.Path.GetDirectoryName(GetCachePath());
+                string jp = System.IO.Path.Combine(dir ?? "", "ai_cache.json");
+                if (!System.IO.File.Exists(jp)) return;
+                Dictionary<string, string> d = null;
+                try { d = JsonConvert.DeserializeObject<Dictionary<string, string>>(System.IO.File.ReadAllText(jp)); } catch (Exception) { }
+                if (d == null || d.Count == 0) return;
+                long now = NowUnix();
+                using (var c = new SQLiteConnection("Data Source=" + GetCachePath() + ";Version=3;"))
+                {
+                    c.Open();
+                    using (var tx = c.BeginTransaction())
+                    {
+                        foreach (var kv in d)
+                        {
+                            try
+                            {
+                                if (string.IsNullOrEmpty(kv.Key) || string.IsNullOrWhiteSpace(kv.Value)) continue;
+                                string[] parts = kv.Key.Split(new char[] { '|' }, 3);
+                                string model = parts.Length > 0 ? parts[0] : "";
+                                string extra = parts.Length > 1 ? parts[1] : "";
+                                string norm = parts.Length > 2 ? parts[2] : kv.Key;
+                                using (var cmd = c.CreateCommand())
+                                {
+                                    cmd.CommandText = "INSERT OR IGNORE INTO ai_cache(key,question,norm,answer,model,extra,hits,created_at,last_hit) VALUES(@k,@q,@n,@a,@m,@e,1,@t,@t);";
+                                    cmd.Parameters.AddWithValue("@k", kv.Key);
+                                    cmd.Parameters.AddWithValue("@q", norm);
+                                    cmd.Parameters.AddWithValue("@n", norm);
+                                    cmd.Parameters.AddWithValue("@a", kv.Value);
+                                    cmd.Parameters.AddWithValue("@m", model);
+                                    cmd.Parameters.AddWithValue("@e", extra);
+                                    cmd.Parameters.AddWithValue("@t", now);
+                                    cmd.ExecuteNonQuery();
+                                }
+                                if (_ftsOk)
+                                {
+                                    using (var cmd = c.CreateCommand())
+                                    {
+                                        cmd.CommandText = "INSERT OR IGNORE INTO ai_cache_fts(ckey,question) VALUES(@k,@q);";
+                                        cmd.Parameters.AddWithValue("@k", kv.Key);
+                                        cmd.Parameters.AddWithValue("@q", norm);
+                                        cmd.ExecuteNonQuery();
+                                    }
+                                }
+                            }
+                            catch (Exception) { }
+                        }
+                        tx.Commit();
+                    }
+                }
+                try { System.IO.File.Move(jp, jp + ".bak"); } catch (Exception) { }
             }
             catch (Exception) { }
         }
@@ -251,6 +340,309 @@ namespace WASender
             catch (Exception) { return true; }
         }
 
+        private static string DbExactHit(string ckey, int ttlDays)
+        {
+            try
+            {
+                DbInit();
+                lock (_dbLock)
+                {
+                    using (var c = new SQLiteConnection("Data Source=" + GetCachePath() + ";Version=3;"))
+                    {
+                        c.Open();
+                        string ans = null;
+                        long created = 0;
+                        using (var cmd = c.CreateCommand())
+                        {
+                            cmd.CommandText = "SELECT answer,created_at FROM ai_cache WHERE key=@k LIMIT 1;";
+                            cmd.Parameters.AddWithValue("@k", ckey);
+                            using (var r = cmd.ExecuteReader())
+                            {
+                                if (r.Read()) { ans = r.IsDBNull(0) ? null : r.GetString(0); created = r.IsDBNull(1) ? 0 : r.GetInt64(1); }
+                            }
+                        }
+                        if (string.IsNullOrWhiteSpace(ans)) return null;
+                        if (ttlDays > 0 && created > 0 && NowUnix() - created > (long)ttlDays * 86400L)
+                        {
+                            using (var cmd = c.CreateCommand())
+                            {
+                                cmd.CommandText = "DELETE FROM ai_cache WHERE key=@k; DELETE FROM ai_cache_fts WHERE ckey=@k;";
+                                cmd.Parameters.AddWithValue("@k", ckey);
+                                cmd.ExecuteNonQuery();
+                            }
+                            return null;
+                        }
+                        using (var cmd = c.CreateCommand())
+                        {
+                            cmd.CommandText = "UPDATE ai_cache SET hits=hits+1,last_hit=@t WHERE key=@k;";
+                            cmd.Parameters.AddWithValue("@t", NowUnix());
+                            cmd.Parameters.AddWithValue("@k", ckey);
+                            cmd.ExecuteNonQuery();
+                        }
+                        return ans;
+                    }
+                }
+            }
+            catch (Exception) { return null; }
+        }
+
+        private static string DbFuzzyHit(string model, string extra, string norm, System.Collections.Generic.List<string> toks, int ttlDays)
+        {
+            try
+            {
+                if (toks == null || toks.Count == 0) return null;
+                DbInit();
+                var cands = new System.Collections.Generic.List<string[]>();
+                lock (_dbLock)
+                {
+                    using (var c = new SQLiteConnection("Data Source=" + GetCachePath() + ";Version=3;"))
+                    {
+                        c.Open();
+                        if (_ftsOk)
+                        {
+                            try
+                            {
+                                var sb = new System.Text.StringBuilder();
+                                foreach (string tk in toks)
+                                {
+                                    if (sb.Length > 0) sb.Append(" OR ");
+                                    sb.Append('"').Append(tk.Replace("\"", "\"\"")).Append('"');
+                                }
+                                using (var cmd = c.CreateCommand())
+                                {
+                                    cmd.CommandText = "SELECT ckey,question FROM ai_cache_fts WHERE question MATCH @q LIMIT 10;";
+                                    cmd.Parameters.AddWithValue("@q", sb.ToString());
+                                    using (var r = cmd.ExecuteReader())
+                                    {
+                                        while (r.Read()) cands.Add(new string[] { r.GetString(0), r.IsDBNull(1) ? "" : r.GetString(1) });
+                                    }
+                                }
+                            }
+                            catch (Exception) { _ftsOk = false; }
+                        }
+                        if (!_ftsOk && cands.Count == 0)
+                        {
+                            try
+                            {
+                                var use = toks.Count > 3 ? toks.GetRange(0, 3) : toks;
+                                var sb = new System.Text.StringBuilder("SELECT key,norm FROM ai_cache WHERE ");
+                                for (int i = 0; i < use.Count; i++)
+                                {
+                                    if (i > 0) sb.Append(" OR ");
+                                    sb.Append("norm LIKE @t").Append(i);
+                                }
+                                sb.Append(" LIMIT 20;");
+                                using (var cmd = c.CreateCommand())
+                                {
+                                    cmd.CommandText = sb.ToString();
+                                    for (int i = 0; i < use.Count; i++) cmd.Parameters.AddWithValue("@t" + i, "%" + use[i] + "%");
+                                    using (var r = cmd.ExecuteReader())
+                                    {
+                                        while (r.Read()) cands.Add(new string[] { r.GetString(0), r.IsDBNull(1) ? "" : r.GetString(1) });
+                                    }
+                                }
+                            }
+                            catch (Exception) { }
+                        }
+                        string bestKey = null;
+                        double bestScore = 0.5;
+                        foreach (var cd in cands)
+                        {
+                            try
+                            {
+                                var ct = Tokens(NormQ(cd[1]));
+                                if (ct.Count == 0) continue;
+                                int inter = 0;
+                                foreach (string tk in toks) if (ct.Contains(tk)) inter++;
+                                double score = (double)inter / (double)System.Math.Max(toks.Count, ct.Count);
+                                if (score > bestScore) { bestScore = score; bestKey = cd[0]; }
+                            }
+                            catch (Exception) { }
+                        }
+                        if (bestKey == null) return null;
+                        string ans = null;
+                        long created = 0;
+                        using (var cmd = c.CreateCommand())
+                        {
+                            cmd.CommandText = "SELECT answer,created_at FROM ai_cache WHERE key=@k LIMIT 1;";
+                            cmd.Parameters.AddWithValue("@k", bestKey);
+                            using (var r = cmd.ExecuteReader())
+                            {
+                                if (r.Read()) { ans = r.IsDBNull(0) ? null : r.GetString(0); created = r.IsDBNull(1) ? 0 : r.GetInt64(1); }
+                            }
+                        }
+                        if (string.IsNullOrWhiteSpace(ans)) return null;
+                        if (ttlDays > 0 && created > 0 && NowUnix() - created > (long)ttlDays * 86400L) return null;
+                        using (var cmd = c.CreateCommand())
+                        {
+                            cmd.CommandText = "UPDATE ai_cache SET hits=hits+1,last_hit=@t WHERE key=@k;";
+                            cmd.Parameters.AddWithValue("@t", NowUnix());
+                            cmd.Parameters.AddWithValue("@k", bestKey);
+                            cmd.ExecuteNonQuery();
+                        }
+                        return ans;
+                    }
+                }
+            }
+            catch (Exception) { return null; }
+        }
+
+        private static void DbStore(string ckey, string question, string norm, string ans, string model, string extra, int max)
+        {
+            try
+            {
+                DbInit();
+                long now = NowUnix();
+                lock (_dbLock)
+                {
+                    using (var c = new SQLiteConnection("Data Source=" + GetCachePath() + ";Version=3;"))
+                    {
+                        c.Open();
+                        using (var tx = c.BeginTransaction())
+                        {
+                            using (var cmd = c.CreateCommand())
+                            {
+                                cmd.CommandText = "INSERT OR IGNORE INTO ai_cache(key,question,norm,answer,model,extra,hits,created_at,last_hit) VALUES(@k,@q,@n,@a,@m,@e,1,@t,@t);";
+                                cmd.Parameters.AddWithValue("@k", ckey);
+                                cmd.Parameters.AddWithValue("@q", question ?? norm ?? "");
+                                cmd.Parameters.AddWithValue("@n", norm ?? "");
+                                cmd.Parameters.AddWithValue("@a", ans);
+                                cmd.Parameters.AddWithValue("@m", model ?? "");
+                                cmd.Parameters.AddWithValue("@e", extra ?? "");
+                                cmd.Parameters.AddWithValue("@t", now);
+                                cmd.ExecuteNonQuery();
+                            }
+                            if (_ftsOk)
+                            {
+                                try
+                                {
+                                    using (var cmd = c.CreateCommand())
+                                    {
+                                        cmd.CommandText = "INSERT OR IGNORE INTO ai_cache_fts(ckey,question) VALUES(@k,@q);";
+                                        cmd.Parameters.AddWithValue("@k", ckey);
+                                        cmd.Parameters.AddWithValue("@q", norm ?? "");
+                                        cmd.ExecuteNonQuery();
+                                    }
+                                }
+                                catch (Exception) { _ftsOk = false; }
+                            }
+                            try
+                            {
+                                int cnt = 0;
+                                using (var cmd = c.CreateCommand())
+                                {
+                                    cmd.CommandText = "SELECT COUNT(*) FROM ai_cache;";
+                                    cnt = System.Convert.ToInt32(cmd.ExecuteScalar());
+                                }
+                                while (cnt >= max && max > 0)
+                                {
+                                    using (var cmd = c.CreateCommand())
+                                    {
+                                        cmd.CommandText = "SELECT key FROM ai_cache ORDER BY last_hit ASC LIMIT 1;";
+                                        object o = cmd.ExecuteScalar();
+                                        if (o == null) break;
+                                        string old = o.ToString();
+                                        using (var d = c.CreateCommand())
+                                        {
+                                            d.CommandText = "DELETE FROM ai_cache WHERE key=@k; DELETE FROM ai_cache_fts WHERE ckey=@k;";
+                                            d.Parameters.AddWithValue("@k", old);
+                                            d.ExecuteNonQuery();
+                                        }
+                                    }
+                                    cnt--;
+                                }
+                            }
+                            catch (Exception) { }
+                            tx.Commit();
+                        }
+                    }
+                }
+            }
+            catch (Exception) { }
+        }
+
+        private static void DbSaveHistory(string chatId)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(chatId)) return;
+                DbInit();
+                System.Collections.Generic.List<KeyValuePair<string, string>> snap;
+                lock (_histLock)
+                {
+                    List<KeyValuePair<string, string>> h;
+                    if (!_history.TryGetValue(chatId, out h)) return;
+                    snap = new System.Collections.Generic.List<KeyValuePair<string, string>>(h);
+                }
+                lock (_dbLock)
+                {
+                    using (var c = new SQLiteConnection("Data Source=" + GetCachePath() + ";Version=3;"))
+                    {
+                        c.Open();
+                        using (var tx = c.BeginTransaction())
+                        {
+                            using (var cmd = c.CreateCommand())
+                            {
+                                cmd.CommandText = "DELETE FROM ai_history WHERE chat_id=@c;";
+                                cmd.Parameters.AddWithValue("@c", chatId);
+                                cmd.ExecuteNonQuery();
+                            }
+                            int seq = 0;
+                            foreach (var kv in snap)
+                            {
+                                using (var cmd = c.CreateCommand())
+                                {
+                                    cmd.CommandText = "INSERT INTO ai_history(chat_id,seq,role,content) VALUES(@c,@s,@r,@t);";
+                                    cmd.Parameters.AddWithValue("@c", chatId);
+                                    cmd.Parameters.AddWithValue("@s", seq++);
+                                    cmd.Parameters.AddWithValue("@r", kv.Key);
+                                    cmd.Parameters.AddWithValue("@t", kv.Value ?? "");
+                                    cmd.ExecuteNonQuery();
+                                }
+                            }
+                            tx.Commit();
+                        }
+                    }
+                }
+            }
+            catch (Exception) { }
+        }
+
+        private static void DbLoadHistory(string chatId)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(chatId)) return;
+                DbInit();
+                var rows = new System.Collections.Generic.List<KeyValuePair<string, string>>();
+                lock (_dbLock)
+                {
+                    using (var c = new SQLiteConnection("Data Source=" + GetCachePath() + ";Version=3;"))
+                    {
+                        c.Open();
+                        using (var cmd = c.CreateCommand())
+                        {
+                            cmd.CommandText = "SELECT role,content FROM ai_history WHERE chat_id=@c ORDER BY seq DESC LIMIT 6;";
+                            cmd.Parameters.AddWithValue("@c", chatId);
+                            using (var r = cmd.ExecuteReader())
+                            {
+                                while (r.Read()) rows.Add(new KeyValuePair<string, string>(r.IsDBNull(0) ? "user" : r.GetString(0), r.IsDBNull(1) ? "" : r.GetString(1)));
+                            }
+                        }
+                    }
+                }
+                rows.Reverse();
+                if (rows.Count == 0) return;
+                lock (_histLock)
+                {
+                    List<KeyValuePair<string, string>> h;
+                    if (!_history.TryGetValue(chatId, out h)) { h = new System.Collections.Generic.List<KeyValuePair<string, string>>(); _history[chatId] = h; }
+                    if (h.Count == 0) h.AddRange(rows);
+                }
+            }
+            catch (Exception) { }
+        }
+
         public static async Task<string> ReplyAsync(string incomingText, string extraInstruction = null, string chatId = null)
         {
             try
@@ -262,13 +654,13 @@ namespace WASender
 
                 bool useCache = cfg.CacheEnabled && HistoryEmpty(chatId);
                 string ckey = useCache ? CacheKey(cfg.Model, extraInstruction, incomingText) : null;
+                System.Collections.Generic.List<string> qtoks = useCache ? Tokens(NormQ(incomingText)) : null;
                 if (useCache)
                 {
                     try
                     {
-                        var c = LoadCache(cfg.MaxCacheEntries);
-                        string hit;
-                        lock (_cacheLock) { c.TryGetValue(ckey, out hit); }
+                        string hit = DbExactHit(ckey, cfg.CacheTtlDays);
+                        if (string.IsNullOrWhiteSpace(hit) && cfg.CacheFuzzy) hit = DbFuzzyHit(cfg.Model, extraInstruction, NormQ(incomingText), qtoks, cfg.CacheTtlDays);
                         if (!string.IsNullOrWhiteSpace(hit))
                         {
                             PushHistory(chatId, incomingText, hit);
@@ -278,7 +670,6 @@ namespace WASender
                     }
                     catch (Exception) { }
                 }
-
                 string systemPrompt = cfg.SystemPrompt ?? "";
                 if (!string.IsNullOrWhiteSpace(extraInstruction)) systemPrompt = systemPrompt + "\nInstruksi tambahan: " + extraInstruction;
 
@@ -318,27 +709,9 @@ namespace WASender
                     {
                         string ans = content.Trim();
                         PushHistory(chatId, incomingText, ans);
-                        if (useCache)
+                                                if (useCache)
                         {
-                            try
-                            {
-                                var c = LoadCache(cfg.MaxCacheEntries);
-                                lock (_cacheLock)
-                                {
-                                    if (!c.ContainsKey(ckey))
-                                    {
-                                        while (c.Count >= cfg.MaxCacheEntries)
-                                        {
-                                            string first = null;
-                                            foreach (var k in c.Keys) { first = k; break; }
-                                            if (first == null) break;
-                                            c.Remove(first);
-                                        }
-                                        c[ckey] = ans;
-                                    }
-                                }
-                                SaveCache();
-                            }
+                            try { DbStore(ckey, incomingText, NormQ(incomingText), ans, cfg.Model, extraInstruction, cfg.MaxCacheEntries); }
                             catch (Exception) { }
                         }
                         return ans;
