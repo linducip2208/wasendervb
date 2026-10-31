@@ -23,8 +23,12 @@ def load_public_key() -> Ed25519PublicKey:
 
 def verify_signature(payload: bytes, signature_b64: str) -> bool:
     try:
-        sig = base64.b64decode(signature_b64)
+        sig = base64.b64decode(signature_b64, validate=True)
         load_public_key().verify(sig, payload)
         return True
-    except (InvalidSignature, ValueError, Exception):
+    except InvalidSignature:
+        return False
+    except Exception as e:
+        from .logger import logger
+        logger.warning(f"Signature verify error ({type(e).__name__}): {e}")
         return False

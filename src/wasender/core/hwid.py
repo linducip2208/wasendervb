@@ -72,10 +72,31 @@ def get_hwid() -> str:
     parts = [_bios_uuid(), _motherboard_serial(), _disk_serial(), _mac(), platform.machine()]
     raw = "|".join(p for p in parts if p)
     if not raw:
-        logger.warning("HWID: no stable identifiers found, falling back to MAC-only — fingerprint weaker")
-        raw = _mac() or "fallback"
+        # Semua probe gagal (VM minimal dsb) — JANGAN pakai konstanta global
+        # ("fallback" akan sama di semua mesin!). Persist random UUID per-mesin.
+        raw = _persistent_fallback_id()
+        logger.warning("HWID: no stable identifiers found, using persisted random id — fingerprint weaker")
     digest = hashlib.sha256(raw.encode("utf-8")).hexdigest()
     return digest
+
+
+def _persistent_fallback_id() -> str:
+    """Random UUID yang disimpan di app data — stabil per-mesin walau probe gagal."""
+    from .paths import app_data_dir
+
+    marker = app_data_dir() / ".hwid_fallback"
+    try:
+        existing = marker.read_text(encoding="utf-8").strip()
+        if existing:
+            return existing
+    except OSError:
+        pass
+    new_id = f"fallback-{uuid.uuid4().hex}"
+    try:
+        marker.write_text(new_id, encoding="utf-8")
+    except OSError as e:
+        logger.warning(f"HWID: cannot persist fallback id: {e}")
+    return new_id
 
 
 def get_hwid_short() -> str:

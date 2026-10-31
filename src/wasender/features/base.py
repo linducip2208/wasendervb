@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import csv
 import json
+import re
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -41,9 +42,16 @@ def get_session(account_id: int):
     return sess
 
 
+_VAR_RE = re.compile(r"\{([A-Za-z0-9_]+)\}")
+
+
 def render_template(template: str, ctx: dict) -> str:
-    """Simple {var} replacement. Missing vars left as-is."""
-    out = template
-    for k, v in ctx.items():
-        out = out.replace("{" + k + "}", str(v))
-    return out
+    """Simple {var} replacement. Missing vars left as-is.
+
+    Single-pass: nilai ctx yang mengandung "{var}" TIDAK di-expand ulang.
+    """
+    def _sub(m: re.Match) -> str:
+        key = m.group(1)
+        return str(ctx[key]) if key in ctx else m.group(0)
+
+    return _VAR_RE.sub(_sub, template)

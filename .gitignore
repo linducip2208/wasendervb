@@ -15,3 +15,15 @@ packages/
 # OS
 Thumbs.db
 Desktop.ini
+# Secrets — JANGAN commit: private signing key bisa dipakai forge license!
+private_key.pem
+*.lic
+issued/
+licenses.json
+# Python build outputs
+dist/
+build/
+.venv/
+__pycache__/
+.pytest_cache/
+*.pyc

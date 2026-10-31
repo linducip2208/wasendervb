@@ -57,6 +57,13 @@ def issue_license(
     features: list[str],
     expires_at: str | None,
 ) -> tuple[str, dict]:
+    if not expires_at:  # "" dianggap lifetime, konsisten dgn is_expired()
+        expires_at = None
+    if expires_at is not None:
+        try:
+            date.fromisoformat(expires_at)
+        except ValueError:
+            raise ValueError("expires_at harus YYYY-MM-DD atau kosong")
     payload = {
         "license_id": new_license_id(),
         "hwid": hwid.strip().lower(),

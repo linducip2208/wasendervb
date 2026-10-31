@@ -37,10 +37,11 @@ def check_quota(account_id: int) -> tuple[bool, int, int]:
 
 
 def increment_sent(account_id: int) -> None:
-    db.execute(
-        "UPDATE accounts SET sent_today = sent_today + 1 WHERE id = ?", (account_id,)
-    )
-    db._conn().commit()
+    reset_daily_counters_if_needed(account_id)
+    with db.transaction() as c:
+        c.execute(
+            "UPDATE accounts SET sent_today = sent_today + 1 WHERE id = ?", (account_id,)
+        )
 
 
 def acquire_send_slot(account_id: int) -> None:

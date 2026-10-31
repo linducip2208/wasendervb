@@ -18,12 +18,17 @@ def list_accounts() -> list[dict]:
 
 
 def add_account(label: str, daily_quota: int = 200) -> int:
-    profile_dir = str(wa_sessions_dir() / f"acc_placeholder")
-    return db.insert("accounts", {
+    # Insert dulu supaya dapat id, lalu set profile_dir unik per akun.
+    # (Sebelumnya selalu "acc_placeholder" sehingga semua akun berbagi folder
+    #  yang sama, sedangkan session.py memakai "acc_{account_id}".)
+    account_id = db.insert("accounts", {
         "label": label,
-        "profile_dir": profile_dir,
+        "profile_dir": "",
         "daily_quota": daily_quota,
     })
+    profile_dir = str(wa_sessions_dir() / f"acc_{account_id}")
+    db.update("accounts", account_id, {"profile_dir": profile_dir})
+    return account_id
 
 
 def remove_account(account_id: int) -> None:

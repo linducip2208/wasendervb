@@ -36,7 +36,7 @@ def load() -> Config:
         raw = db.get_setting(k, default) or default
         current = getattr(cfg, k)
         if isinstance(current, bool):
-            setattr(cfg, k, raw.lower() == "true")
+            setattr(cfg, k, raw.lower() in ("true", "1", "yes", "on"))
         elif isinstance(current, int):
             try:
                 setattr(cfg, k, int(raw))
@@ -44,6 +44,17 @@ def load() -> Config:
                 pass
         else:
             setattr(cfg, k, raw)
+    # Clamp ke rentang yang masuk akal — setting corrupt jangan bikin crash.
+    cfg.delay_min_seconds = max(0, cfg.delay_min_seconds)
+    cfg.delay_max_seconds = max(0, cfg.delay_max_seconds)
+    if cfg.delay_min_seconds > cfg.delay_max_seconds:
+        cfg.delay_min_seconds, cfg.delay_max_seconds = cfg.delay_max_seconds, cfg.delay_min_seconds
+    cfg.daily_quota_per_account = max(1, cfg.daily_quota_per_account)
+    cfg.warmup_days = max(1, cfg.warmup_days)
+    cfg.warmup_messages_per_day = max(1, cfg.warmup_messages_per_day)
+    cfg.auto_responder_check_interval_seconds = max(
+        1, cfg.auto_responder_check_interval_seconds
+    )
     return cfg
 
 

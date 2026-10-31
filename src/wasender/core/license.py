@@ -12,14 +12,17 @@ from pathlib import Path
 from .crypto import verify_signature
 from .hwid import get_hwid
 from .logger import logger
-from .paths import license_path
+from .paths import is_frozen, license_path
 
 ARMOR_RE = re.compile(
     r"-----BEGIN WASENDER LICENSE-----\s*(.*?)\s*-----END WASENDER LICENSE-----",
     re.DOTALL,
 )
 
-_DEV_MODE = os.environ.get("WASENDER_DEV", "").lower() in ("1", "true", "yes")
+# Dev bypass hanya berlaku saat run dari source (tidak frozen).
+# Di binary hasil PyInstaller (frozen) env ini diabaikan supaya tidak
+# bisa dipakai untuk memakai app tanpa license.
+_DEV_MODE = os.environ.get("WASENDER_DEV", "").lower() in ("1", "true", "yes") and not is_frozen()
 
 
 @dataclass
@@ -87,6 +90,31 @@ def parse_license_text(text: str) -> License:
     if missing:
         raise LicenseError(f"License kekurangan field: {missing}")
 
+    if not isinstance(payload["license_id"], str) or not payload["license_id"]:
+        raise LicenseError("License corrupt — license_id tidak valid")
+    if not isinstance(payload["hwid"], str) or not payload["hwid"].strip():
+        raise LicenseError("License corrupt — hwid tidak valid")
+    if not isinstance(payload["tier"], str) or not payload["tier"]:
+        raise LicenseError("License corrupt — tier tidak valid")
+    if (
+        not isinstance(payload["features"], list)
+        or not payload["features"]
+        or not all(isinstance(f, str) for f in payload["features"])
+    ):
+        raise LicenseError("License corrupt — features harus list of string")
+    if "version" in payload and payload["version"] != 1:
+        raise LicenseError(f"License version tidak didukung: {payload.get('version')}")
+    try:
+        date.fromisoformat(payload["issued_at"])
+    except (ValueError, TypeError):
+        raise LicenseError("License corrupt — issued_at bukan tanggal valid")
+    expires_at = payload.get("expires_at")
+    if expires_at is not None:
+        try:
+            date.fromisoformat(expires_at)
+        except (ValueError, TypeError):
+            raise LicenseError("License corrupt — expires_at bukan tanggal valid")
+
     return License(
         license_id=payload["license_id"],
         hwid=payload["hwid"],
@@ -94,7 +122,7 @@ def parse_license_text(text: str) -> License:
         tier=payload["tier"],
         features=payload["features"],
         issued_at=payload["issued_at"],
-        expires_at=payload.get("expires_at"),
+        expires_at=expires_at,
         raw_payload=payload,
     )
 

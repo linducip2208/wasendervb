@@ -4,7 +4,6 @@ from __future__ import annotations
 import re
 
 import httpx
-from selectolax.parser import HTMLParser
 
 from .. import register
 from ..base import export_csv
@@ -14,7 +13,6 @@ LINK_RE = re.compile(r"https?://chat\.whatsapp\.com/[A-Za-z0-9]+", re.IGNORECASE
 
 def _google_search(query: str, num: int = 30) -> list[str]:
     """Light scrape Google SERP. For production replace with SerpAPI/CSE for stability."""
-    url = f"https://www.google.com/search?q={httpx.QueryParams({'q': query})}&num={num}"
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
         "Accept-Language": "en-US,en;q=0.9",

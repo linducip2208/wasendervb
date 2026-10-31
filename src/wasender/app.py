@@ -36,7 +36,7 @@ def _start_main_window(api: Api, has_license: bool) -> None:
 def main() -> int:
     try:
         setup_logging()
-        logger.info("WASender v1.0.0 starting...")
+        logger.info("WASender v6.0.1 starting...")
 
         db._init_if_needed()
         logger.info("DB initialized")

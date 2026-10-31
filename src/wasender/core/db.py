@@ -146,7 +146,19 @@ def query_one(sql: str, params: Iterable[Any] = ()) -> dict | None:
     return dict(row) if row else None
 
 
+_MUTABLE_TABLES = frozenset({
+    "accounts", "contacts", "message_log", "schedules",
+    "auto_replies", "leads", "settings",
+})
+
+
+def _check_table(table: str) -> None:
+    if table not in _MUTABLE_TABLES:
+        raise ValueError(f"Unknown table: {table!r}")
+
+
 def insert(table: str, data: dict) -> int:
+    _check_table(table)
     cols = ", ".join(data.keys())
     placeholders = ", ".join("?" * len(data))
     values = []
@@ -161,6 +173,7 @@ def insert(table: str, data: dict) -> int:
 
 
 def update(table: str, row_id: int, data: dict) -> None:
+    _check_table(table)
     if not data:
         return
     sets = ", ".join(f"{k} = ?" for k in data)
@@ -176,6 +189,7 @@ def update(table: str, row_id: int, data: dict) -> None:
 
 
 def delete(table: str, row_id: int) -> None:
+    _check_table(table)
     with transaction() as c:
         c.execute(f"DELETE FROM {table} WHERE id = ?", (row_id,))
 
