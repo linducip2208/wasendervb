@@ -641,6 +641,25 @@ namespace WASender
             }
             pgbar.Hide();
 
+            for (int gi = 0; gi < wAPI_GroupModel.Count(); gi++)
+            {
+                try
+                {
+                    string lk = "";
+                    if (generalSettingsModel.browserType == 1)
+                    {
+                        lk = WAPIHelper.GetGroupInviteLink(driver, wAPI_GroupModel[gi].GroupId);
+                    }
+                    else if (generalSettingsModel.browserType == 2)
+                    {
+                        WebView2 wv2 = null;
+                        try { wv2 = Utils.GetActiveWebView(browser); } catch (Exception) { }
+                        if (wv2 != null) lk = await WPPHelper.GetGroupInviteLink(wv2, wAPI_GroupModel[gi].GroupId);
+                    }
+                    if (!string.IsNullOrEmpty(lk)) wAPI_GroupModel[gi].GroupLink = lk;
+                }
+                catch (Exception) { }
+            }
             String FolderPath = Config.GetTempFolderPath();
             String file = Path.Combine(FolderPath, "GroupList_" + Guid.NewGuid().ToString() + ".xlsx");
 

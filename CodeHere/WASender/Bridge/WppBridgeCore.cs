@@ -316,9 +316,9 @@ namespace WASender
                 await Eval(wv, js);
                 string res = await Mailbox(wv, "__qe", 6);
                 if (res.StartsWith("R:") && !res.Contains("false") && !res.Contains("null")) return digits;
-                return number;
+                return "";
             }
-            catch (Exception) { return number; }
+            catch (Exception) { return ""; }
         }
 
         public static async Task<string> queryExistsSync(WebView2 wv, string number)
@@ -331,7 +331,7 @@ namespace WASender
             try
             {
                 string r = await queryExists(wv, number);
-                return string.IsNullOrEmpty(r) || r == number ? 0 : 1;
+                return string.IsNullOrEmpty(r) ? 0 : 1;
             }
             catch (Exception) { return 0; }
         }

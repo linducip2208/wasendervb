@@ -982,7 +982,7 @@ namespace WASender
 
                 ws.Cells[1, 10].Value = Strings.clossinghour;
                 ws.Cells[1, 11].Value = Strings.latitude;
-                ws.Cells[1, 12].Value = Strings.latitude;
+                ws.Cells[1, 12].Value = Strings.longitude;
                 ws.Cells[1, 13].Value = Strings.instagramprofile;
                 ws.Cells[1, 14].Value = Strings.facebookprofile;
                 ws.Cells[1, 15].Value = Strings.linkedinprofile;

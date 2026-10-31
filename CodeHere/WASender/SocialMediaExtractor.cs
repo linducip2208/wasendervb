@@ -505,9 +505,10 @@ namespace WASender
                             if (Listitem.link == null || Listitem.link == "")
                             {
                                 List<HtmlElement> hTMLElementsCollectionBySimilarClass2 = WebScraper.GetHTMLElementsCollectionBySimilarClass(item, "div", "kCrYT");
-                                if (hTMLElementsCollectionBySimilarClass2.Count > 0)
+                                if (hTMLElementsCollectionBySimilarClass2.Count > 0 && hTMLElementsCollectionBySimilarClass2[0].Children != null && hTMLElementsCollectionBySimilarClass2[0].Children.Count > 0 && hTMLElementsCollectionBySimilarClass2[0].Children[0] != null)
                                 {
-                                    Listitem.link = hTMLElementsCollectionBySimilarClass2[0].Children[0].GetAttribute("href").Replace("https", "http").Replace("http://www.google.com/url?esrc=s&q=&rct=j&sa=U&url=", "");
+                                    try { Listitem.link = hTMLElementsCollectionBySimilarClass2[0].Children[0].GetAttribute("href").Replace("https", "http").Replace("http://www.google.com/url?esrc=s&q=&rct=j&sa=U&url=", ""); }
+                                    catch (Exception) { }
                                 }
                             }
                             List<HtmlElement> hTMLElementsCollectionBySimilarClass3 = WebScraper.GetHTMLElementsCollectionBySimilarClass(item, "div", "s3v9rd");
@@ -628,11 +629,12 @@ namespace WASender
                 ws.Cells[1, 1].Value = "#";
                 ws.Cells[1, 2].Value = Strings.Title;
                 ws.Cells[1, 3].Value = Strings.EmailId;
-                ws.Cells[1, 3].Value = Strings.Mobile;
+                ws.Cells[1, 4].Value = Strings.Mobile;
 
                 int j = 0;
                 foreach (DataGridViewRow row in dataGridView1.Rows)
                 {
+                    if (row.IsNewRow) continue;
                     ws.Cells[j + 2, 1].Value = row.Cells[0].Value != null ? row.Cells[0].Value.ToString() : "";
                     ws.Cells[j + 2, 2].Value = row.Cells[1].Value != null ? row.Cells[1].Value.ToString() : "";
                     ws.Cells[j + 2, 3].Value = row.Cells[2].Value != null ? row.Cells[2].Value.ToString() : "";

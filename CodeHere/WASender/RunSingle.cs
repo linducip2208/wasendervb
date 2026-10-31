@@ -607,7 +607,7 @@ namespace WASender
                             {
                                 if (generalSettingsModel.browserType == 1)
                                 {
-                                    WAPIHelper.SendAudio(driver, item.number, fullBase64, NewMessage, holder);
+                                    try { WAPIHelper.sendPttSync(driver, item.number, fullBase64); } catch (Exception) { }
                                 }
                                 else if (generalSettingsModel.browserType == 2)
                                 {
@@ -621,7 +621,7 @@ namespace WASender
                             {
                                 if (generalSettingsModel.browserType == 1)
                                 {
-                                    WAPIHelper.SendAudio(driver, item.number, fullBase64, file.Caption);
+                                    try { WAPIHelper.sendPttSync(driver, item.number, fullBase64); } catch (Exception) { }
                                 }
                                 else if (generalSettingsModel.browserType == 2)
                                 {
@@ -972,12 +972,12 @@ namespace WASender
                                 {
                                     if (generalSettingsModel.browserType == 1)
                                     {
-                                        WAPIHelper.SendAudio(driver, item.number, fullBase64, NewMessage, holder);
+                                        try { WAPIHelper.sendPttSync(driver, item.number, fullBase64); } catch (Exception) { }
                                     }
                                     else if (generalSettingsModel.browserType == 2)
                                     {
                                         // Voice note tidak dukung caption: kirim audio, teks menyusul di bawah
-                                        bool isDone = await WPPHelper.sendAudioFile(wv, item.number, fullBase64);
+                                        bool isDone = await WPPHelper.sendPtt(wv, item.number, fullBase64);
                                     }
 
                                     AutoSend = false;
@@ -986,11 +986,11 @@ namespace WASender
                                 {
                                     if (generalSettingsModel.browserType == 1)
                                     {
-                                        WAPIHelper.SendAudio(driver, item.number, fullBase64, file.Caption);
+                                        try { WAPIHelper.sendPttSync(driver, item.number, fullBase64); } catch (Exception) { }
                                     }
                                     else if (generalSettingsModel.browserType == 2)
                                     {
-                                        bool isDone = await WPPHelper.sendAudioFile(wv, item.number, fullBase64);
+                                        bool isDone = await WPPHelper.sendPtt(wv, item.number, fullBase64);
                                     }
                                 }
                             }

@@ -34,7 +34,7 @@ namespace WASender
             catch (Exception ex) { return Tuple.Create(false, "ex:" + ex.Message); }
         }
 
-        private static async Task<Tuple<bool, string>> WppSendMedia(WebView2 wv, string chatId, string base64, string fileName, string caption, string mailbox)
+        private static async Task<Tuple<bool, string>> WppSendMedia(WebView2 wv, string chatId, string base64, string fileName, string caption, string mailbox, string extraOptions = "")
         {
             try
             {
@@ -43,6 +43,7 @@ namespace WASender
                     + "WPP.chat.sendFileMessage(" + JsonConvert.SerializeObject(chatId) + "," + JsonConvert.SerializeObject(base64)
                     + ",{filename:" + JsonConvert.SerializeObject(fileName ?? "file")
                     + (string.IsNullOrEmpty(caption) ? "" : ",caption:" + JsonConvert.SerializeObject(caption))
+                    + extraOptions
                     + "}).then(function(r){window." + mailbox + "='OK:'+JSON.stringify(r).substring(0,200);})"
                     + ".catch(function(e){window." + mailbox + "='FAIL:'+((e&&e.message)||e);});'DISPATCHED';";
                 await Eval(wv, js);
@@ -186,6 +187,47 @@ namespace WASender
             catch (Exception) { return false; }
         }
 
+        public static async Task<bool> sendPtt(WebView2 wv, string to, string base64)
+        {
+            try { var r = await WppSendMedia(wv, ChatId(to), base64, "voice", "", "__spt" + Guid.NewGuid().ToString("N").Substring(0, 6), ",type:'audio',isPtt:true"); return r.Item1; }
+            catch (Exception) { return false; }
+        }
+
+
+
+        
+
+
+
+        
+
+
+
+        
+
+
+
+        
+
+
+
+        
+
+
+
+        
+
+        public static bool sendPttSync(WebView2 wv, string groupId, string base64)
+        {
+            try
+            {
+                var t = WppSendMedia(wv, ChatId(groupId), base64, "voice", "", "__spts" + Guid.NewGuid().ToString("N").Substring(0, 6), ",type:'audio',isPtt:true");
+                t.Wait(60000);
+                return t.Result.Item1;
+            }
+            catch (Exception) { return false; }
+        }
+
         public static async Task<bool> SendMessageGroupSync(WebView2 wv, string groupId, string msg, bool tagAll)
         {
             try
@@ -251,7 +293,7 @@ namespace WASender
 
         public static async Task<bool> sendVideoNote(WebView2 wv, string to, string base64)
         {
-            try { var r = await WppSendMedia(wv, ChatId(to), base64, "v", "", "__svn" + Guid.NewGuid().ToString("N").Substring(0, 6)); return r.Item1; }
+            try { var r = await WppSendMedia(wv, ChatId(to), base64, "v", "", "__svn" + Guid.NewGuid().ToString("N").Substring(0, 6), ",type:'video',isPtv:true"); return r.Item1; }
             catch (Exception) { return false; }
         }
 
@@ -259,7 +301,7 @@ namespace WASender
         {
             try
             {
-                var t = WppSendMedia(wv, ChatId(groupId), base64, "v", "", "__svns" + Guid.NewGuid().ToString("N").Substring(0, 6));
+                var t = WppSendMedia(wv, ChatId(groupId), base64, "v", "", "__svns" + Guid.NewGuid().ToString("N").Substring(0, 6), ",type:'video',isPtv:true");
                 t.Wait(60000);
                 return t.Result.Item1;
             }
@@ -268,7 +310,7 @@ namespace WASender
 
         public static async Task<bool> sendSticker(WebView2 wv, string to, string base64)
         {
-            try { var r = await WppSendMedia(wv, ChatId(to), base64, "s", "", "__sst" + Guid.NewGuid().ToString("N").Substring(0, 6)); return r.Item1; }
+            try { var r = await WppSendMedia(wv, ChatId(to), base64, "s", "", "__sst" + Guid.NewGuid().ToString("N").Substring(0, 6), ",type:'sticker'"); return r.Item1; }
             catch (Exception) { return false; }
         }
 
@@ -276,7 +318,7 @@ namespace WASender
         {
             try
             {
-                var t = WppSendMedia(wv, ChatId(groupId), base64, "s", "", "__ssts" + Guid.NewGuid().ToString("N").Substring(0, 6));
+                var t = WppSendMedia(wv, ChatId(groupId), base64, "s", "", "__ssts" + Guid.NewGuid().ToString("N").Substring(0, 6), ",type:'sticker'");
                 t.Wait(60000);
                 return t.Result.Item1;
             }

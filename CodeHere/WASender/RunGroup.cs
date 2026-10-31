@@ -440,13 +440,13 @@ namespace WASender
                             {
                                 if (generalSettingsModel.browserType == 1)
                                 {
-                                    bool gau = WAPIHelper.sendAudioFile(driver, item.GroupId, fullBase64);
+                                    bool gau = WAPIHelper.sendPttSync(driver, item.GroupId, fullBase64);
                                     item.reason = gau ? "OK" : "FAILED";
                                     if (!gau) { ok = false; }
                                 }
                                 if (generalSettingsModel.browserType == 2)
                                 {
-                                    bool gau2 = WPPHelper.sendAudioFileSync(wv, item.GroupId, fullBase64);
+                                    bool gau2 = await WPPHelper.sendPtt(wv, item.GroupId, fullBase64);
                                     if (!gau2) { ok = false; }
                                 }
 
@@ -456,13 +456,13 @@ namespace WASender
                             {
                                 if (generalSettingsModel.browserType == 1)
                                 {
-                                    bool gau = WAPIHelper.sendAudioFile(driver, item.GroupId, fullBase64);
+                                    bool gau = WAPIHelper.sendPttSync(driver, item.GroupId, fullBase64);
                                     item.reason = gau ? "OK" : "FAILED";
                                     if (!gau) { ok = false; }
                                 }
                                 else if (generalSettingsModel.browserType == 2)
                                 {
-                                    bool gau3 = WPPHelper.sendAudioFileSync(wv, item.GroupId, fullBase64);
+                                    bool gau3 = await WPPHelper.sendPtt(wv, item.GroupId, fullBase64);
                                     if (!gau3) { ok = false; }
                                 }
                             }

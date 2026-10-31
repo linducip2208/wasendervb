@@ -25,8 +25,14 @@ namespace WASender
             {
                 return result;
             }
-            Url = Url.Replace("https:", "http:");
-            string hTML = HTTPScraper.ClearString(HTTPScraper.GetPage(Url, null));
+            string hTML = "";
+            try { hTML = HTTPScraper.ClearString(HTTPScraper.GetPage(Url, null)); }
+            catch (Exception) { }
+            if (string.IsNullOrEmpty(hTML) && Url.StartsWith("https:"))
+            {
+                try { hTML = HTTPScraper.ClearString(HTTPScraper.GetPage(Url.Replace("https:", "http:"), null)); }
+                catch (Exception) { }
+            }
             List<string[]> list = HTTPScraper.ParseHTML(hTML, "(mailto\\:|)([\\w\\.\\-]+)@((([\\-\\w]+\\.)+[a-zA-Z]{2,4})|(([0-9]{1,3}\\.){3}[0-9]{1,3}))");
             if (list.Count > 0)
             {
