@@ -1,0 +1,22 @@
+{
+  "version": "2026-05-24",
+  "comment": "Fallback DOM selectors when WAPI Store hooks fail. Updated for current WA Web.",
+  "selectors": {
+    "qr_canvas": "canvas[aria-label='Scan me!'], canvas",
+    "chat_list_pane": "div[aria-label='Chat list'], div#pane-side",
+    "chat_item": "div[role='listitem'], div[role='row']",
+    "chat_title": "span[title], span[dir='auto']",
+    "search_input": "div[contenteditable='true'][data-tab='3'], div[contenteditable='true'][role='textbox']",
+    "message_input": "div[contenteditable='true'][data-tab='10'], div[contenteditable='true'][role='textbox']",
+    "send_button": "button[aria-label='Send'], button[data-tab='11'], span[data-icon='send']",
+    "attach_button": "div[title='Attach'], button[aria-label='Attach'], span[data-icon='attach-menu-plus']",
+    "attach_image": "input[accept*='image']",
+    "attach_document": "input[accept*='document']",
+    "group_info_subject": "div[role='button'][title], header span[dir='auto']",
+    "group_participants": "div[role='listitem'], div[role='gridcell']",
+    "join_group_button": "div[role='button']:has-text('Join group'), button:has-text('Join')",
+    "new_group_button": "div[aria-label='New group'], button[aria-label='New group']",
+    "loading_screen": "div#startup, div[data-animate-modal-popup]",
+    "main_panel": "div#pane-side, div[role='navigation']"
+  }
+}

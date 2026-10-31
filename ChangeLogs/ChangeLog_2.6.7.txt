@@ -1,0 +1,6 @@
+Change Log - 2.6.7 (12 Dec. 2022) 
+----------------------------------
+* Enabled 'Buttons in Group' - You cam abe to send Button in Groups.
+* Group Joiner Not Working - Issue Resolved
+* Buttons are not working after web whatsapp update - issue resolved
+* Now you can use AutoReply bot and Software at same time

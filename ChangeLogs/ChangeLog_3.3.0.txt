@@ -1,0 +1,32 @@
+Changelog - 3.3.0 ( 22 May 2024) - Major Update
+------------------------------------------------------
+For All ->
+* Added Ability to extract member Id from any community you joined and send message to them.
+  (See updated UserDoc file)
+* Added Message Scheduler - Now you can Schedule your Campaign (Option Available on Launcher window)
+  (See updated UserDoc file)
+* Added 'Friendly List' function as part of ani-ban setting (Option Available on Launcher window)
+* Added tiktok in Social Media data extractor
+* Bulk Group Member Invite - Now System will send Actual WhatsApp Invite to user if he is not in your contact list
+  (See updated UserDoc file)
+* Google Map Data Extractor - Website and Email not capturing issue - resolved
+* Warmer - Dataset changed because previous dataset has some abusive and offensive texts
+* Warmer - Added Warming Method , Now you can choose type of warming - 'One to One' or 'One to Many' 
+  Previously it was only to many as default 
+* Google Map Extractor - Images not grabbing issue - resolved
+* Google Map Extractor - Address not grabbing issue - resolved
+* WaSender is now available in Tamil,Bengali,Telugu and Malaya Languages
+* Added 'Ignore Link Preview' Option in Setting , You can enable it if you facing any issues while sending message if message contains any link
+* ContactNotFound error for the first number in Built in Browser Issue - Resolved
+* Software will take Auto Internal Updates if required
+* Russian language corrections
+* for 'Côte d'Ivoire' Country - Numbers issue resolved
+* Fixed Missing Translations
+* ChromeDriver and EdgeDrivers are updated to version 125, Please update your chrome browser and edge browser  to version 125, its available now. 
+* Bug Fixes
+
+
+For Rebranders->
+* The rebranding process involves slight changes in terms of software name. Please go through the updated DeveloperDoc file.
+
+

@@ -1,0 +1,16 @@
+Changelog - 3.0.0 ( 10 August 2023) 
+----------------------------------
+* Added Multi Account feature in Built-in Browser - https://youtu.be/BdOc7b8oo34
+* Activation Process changed - From version WaSender 3.0.0 You need to provide your codecanyon Purchase code in KeyGen while generating License for any client
+  Old Keygen will not work from version WaSender 3.0.0 and above versions
+
+  How to Activate ? -> https://bit.ly/3DNZ9M9
+  Why this Change ? -> https://bit.ly/3KvoIFM
+
+* As Old KeyGens will not work for latest(3.0.0) version APK file also no longer working, We will create new APK file and provide it very soon
+* Rebranding Process - Logo changing Process is more smooth and less steps from now.
+* Group Finder improvements - Now able to find group from Brazil
+* Added 'De-Activate' License button in ABOUT section.
+* G Map Extractor - Export Button no visible- Issue resolved
+* Rebranding - Now you can set Any available Language as Default Language apart from Activation Process.
+* Rebranding - Now no need to set Icon to each form (process updated)

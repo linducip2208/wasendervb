@@ -1,0 +1,12 @@
+Changelog - 2.7.3 (05 Apr. 2023) 
+----------------------------------
+* BUTTONS issue partially resolved - Working Only NOTMAL BUTTONS (Call butont and Link Button will not work), Buttons will not be send using WHatsApp Business Account
+* Autoreply Bot - Issue Resolved
+* Grab Chat List - Now you can get All lables along with name and number
+* Contact List Grabber - Now you can get All lables along with name and number
+* Contact List Grabber - Group Grabber - Now you can get Group Links along with Groups is you are admin
+* Arabic and french language corrections
+* Now You can send file As Audio Recording - If you select any file with .OGG extention, system will autometicolly send it as Audio Recording 
+* G Map Extractor Improvements - Added New fields -> Email Id,Catagory,Clossing Hour,latitude,longitude ,Instagram Profile,Facebook Profile,Linkedin Profile,Twitter Profile
+* G Map Extractor - Now you can use multiple keywords with multiple locations
+* Brazilian Numbers issue Resolved

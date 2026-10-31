@@ -1,0 +1,6 @@
+Changelog - 2.7.1 (10 Feb. 2023) 
+----------------------------------
+* Parameters Not working since Version 2.7.0 Issue Resolved
+* ChromeDriver update Option now available in Settings, Now no need to anything after Your chrome updated
+Just go to settings top right corner, Settings window will open , Find "UPDATE CHROME DRIVER" option,
+Press Button and wait for it.

@@ -1,0 +1,4 @@
+Change Log - 2.5.4 (05 Sept 2022)
+----------------------------------
+* Caption On Image is now available
+* Spanish and Portuguese language corrections

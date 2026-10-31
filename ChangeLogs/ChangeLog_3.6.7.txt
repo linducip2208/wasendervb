@@ -1,0 +1,10 @@
+Changelog - 3.7.0 ( 29 April. 2025) 
+------------------------------------------------------
+* Google Map Extractor - NEW UI Not working-  Issue resolved
+* Social Media data extractor - not collecting the data - Issue Resolved
+* Message Sending Speed issues -  Issue Resolved
+* Audio file  with .ogg format was not sending as Recorded audio - Issue Resolved
+* Russion and Portuguese language corrections
+* Proxy Settings are now applied while sending message - Issue resolved
+* Social Media data extractor - Added "Youtube" and "(Default google search)" options.
+

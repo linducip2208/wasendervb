@@ -1,0 +1,6 @@
+Change Log - 2.5.3 (30 Aug 2022)
+----------------------------------
+* Previously MP4 file was sending as file Now it sending as Video file. 
+* Google Map Data Extractor Issue Resolved
+* Buttons are enabled in remaining 4 tabs
+* WaSender Desktop Icon issue fixed

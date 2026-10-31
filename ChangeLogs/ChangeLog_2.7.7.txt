@@ -1,0 +1,12 @@
+Changelog - 2.7.7 ( 04 July. 2023) 
+----------------------------------
+* Added New Feature - Bulk Group Creator 
+* G Map Extractor - Added ability to grab Images
+* Group Member Adder - Web WhatsApp update, you can't add unsaved members, you need to save them into your contact list first.
+  Made provision to invite them via group link.
+  this is a new WhatsApp web rule to avoid spam and we have no way of interfering with this. it's better since it prevents account blocking.
+* ChromeDriver updated to version  114
+* Group Finder Issue Resolved
+* G Map Extractor - Website and Email Id not grabbing issue - Resolved
+* Code Level errors - Resolved
+* Contact List Grabber Not Working - Issue Resolved

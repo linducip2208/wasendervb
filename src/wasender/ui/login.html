@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>WASender — License Activation</title>
+  <link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body class="auth">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="logo-circle">WA</div>
+      <h1>WASender</h1>
+      <p class="muted">License Activation</p>
+    </div>
+
+    <div class="hwid-block">
+      <label>Hardware ID untuk komputer ini:</label>
+      <div class="hwid-display" id="hwid-display">loading...</div>
+      <button id="copy-hwid" class="btn btn-ghost">Copy HWID</button>
+      <p class="muted small">Kirim HWID ini ke vendor untuk dapat license file.</p>
+    </div>
+
+    <div class="form-group">
+      <label for="lic-text">Paste isi file <code>.lic</code> dari vendor:</label>
+      <textarea id="lic-text" rows="10" placeholder="-----BEGIN WASENDER LICENSE-----&#10;...&#10;-----END WASENDER LICENSE-----"></textarea>
+      <button id="activate" class="btn btn-primary btn-block">Activate License</button>
+      <div id="activation-msg" class="msg"></div>
+    </div>
+
+    <p class="muted small text-center">
+      Belum punya license? Hubungi vendor di support@wasender.local
+    </p>
+  </div>
+
+  <script src="assets/js/api.js"></script>
+  <script>
+    (async () => {
+      const hwid = await api.get_hwid();
+      document.getElementById('hwid-display').textContent = hwid.short + '...';
+      document.getElementById('hwid-display').title = hwid.hwid;
+
+      document.getElementById('copy-hwid').onclick = async () => {
+        await navigator.clipboard.writeText(hwid.hwid);
+        document.getElementById('copy-hwid').textContent = 'Copied!';
+        setTimeout(() => document.getElementById('copy-hwid').textContent = 'Copy HWID', 1500);
+      };
+
+      document.getElementById('activate').onclick = async () => {
+        const text = document.getElementById('lic-text').value.trim();
+        const msg = document.getElementById('activation-msg');
+        msg.className = 'msg';
+        msg.textContent = 'Activating...';
+        const result = await api.install_license(text);
+        if (result.ok) {
+          msg.className = 'msg success';
+          msg.textContent = `Activated! Tier: ${result.data.tier}. Restart aplikasi.`;
+        } else {
+          msg.className = 'msg error';
+          msg.textContent = result.error;
+        }
+      };
+    })();
+  </script>
+</body>
+</html>

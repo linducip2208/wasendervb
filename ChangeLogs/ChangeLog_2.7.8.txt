@@ -1,0 +1,10 @@
+Changelog - 2.7.8 ( 22 July. 2023) 
+----------------------------------
+* Added Built in Web Browser for Multi account feature - To Switch Chrome to 'Built in Browser' go to settings (top right corner icon) and New Option is added as 'Browser' change select 'Built in Web Browser'. Please prefer to use this Built in Web Browser, Once it get stable we are happy to launch multi account feature . because with google chrome hard to launch multi account feature. If you facing any issues , report it on our on WhatsApp.
+(Estimates Date of Multi Account feature enabled - Next month first week)
+* Added New Feature - Google Contacts CSV Generator - to convert number excel to 'google contacts CSV' and import them into your google contacts to add Group Members
+* Parameters in Caption,  sending first parameter value to all numbers - Issue Resolved
+* Turkish language improvements
+* Tools - Layout change
+* Bug fixes
+* Decided to not provide Without_Activation_Process setup file to avoid its misuse.

@@ -1,0 +1,4 @@
+Changelog - 2.7.4 (08 Apr. 2023) 
+----------------------------------
+* ChromeDriver updated to  V-112
+* Code Level Issues while rebranding - Resolved

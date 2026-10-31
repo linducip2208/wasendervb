@@ -1,0 +1,6 @@
+Change Log - 2.5.5 (13 Sept 2022)
+----------------------------------
+* If files are added , Then no Main message is required now
+* After Finishing Campaign , Report will open directlly 
+* UI design improvements
+* Message Not sending Issue fixed permanently.

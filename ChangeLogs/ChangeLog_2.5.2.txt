@@ -1,0 +1,6 @@
+Change Log - 2.5.2 (22 Aug 2022)
+----------------------------------
+* New Feature 'WhatsApp interactive buttons' enabled
+* Google Map Data Extractor Issue Resolved
+* Grab Chat List - Re Enabled
+* Developer Doc Improvements

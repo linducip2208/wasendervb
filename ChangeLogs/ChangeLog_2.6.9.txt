@@ -1,0 +1,13 @@
+Changelog - 2.6.9 (15 Jan. 2023) 
+----------------------------------
+* Autometic Updates for - 'Web WhatsApp update' and 'Google Chrome version change' - Done
+  Now you can check internal updates using 'setting' button. 
+  No need to download and insiall again and again New version of WaSender
+  because of web whatsapp update and chrome update
+  https://youtu.be/2J294xtVVkc
+
+* Added PAUSE and STOP buttons in Single Sender, Group Sender, Number Filter, Group Joiner, Group Member Adder.
+
+* Added New Language 'Laos'
+
+* Adding Byulk Group Member was not working because of web whatsapp update - Resolved

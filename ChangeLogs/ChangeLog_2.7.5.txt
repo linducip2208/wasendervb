@@ -1,0 +1,11 @@
+Changelog - 2.7.5 ( 25 May. 2023) 
+----------------------------------
+* Buttons - Buttons are disabled, Because of recent whatsapp update, Buttons are stopped working for all Bulk sender in market . Buttons are only available in Official WhatsApp API - Working on implementing Official WhatsApp API into WaSender.
+* French language issue is resolved
+* Contact Grabber - Group List grabber not working if the number of joined group is more than 200 - issue fixed
+* Number Filter - Performance and Speed Improved  + Number Generator is Added
+* General Settings - Added Second Method for 'chrome driver update' 
+* Grab Group Members - Now you can select multiple groups and export all selected group members.
+* Grab Group Members - Added Search textbox on Select Group DialogBox .
+* ContactNotFound issue - some users are facing contact not found issue - Resolved
+* Group Member Adder - Always failed to adding group members - Issue Fixed

@@ -1,0 +1,44 @@
+Changelog - 3.6.0 ( 29 Jan. 2025) 
+------------------------------------------------------
+
+Deprecated-
+* The buttons have stopped working - the buttons have been removed!
+
+Added-
+* Added a new feature 'WhatsApp Group Warmer' – two or more of your accounts can now talk to each other in a common group [watch - https://youtu.be/lf7HUqHe8Ds]
+
+* Added a new feature 'Bulk Group Links Verify' – check if bulk group links are valid or expired. If valid, you can retrieve additional information such as title, description, member count, etc. [watch - https://youtu.be/EfLauFiSyu0]
+
+* Proxy Enabled – You can now set up a separate proxy IP for each account. A 'Settings' option has been added in the 'Accounts' section [Watch - https://youtu.be/UPv4iQ_EPTw]
+
+* Contact Sender and Group Sender – Added more attachment types. You can now send location, contacts, .mp3 files as audio recordings, images as stickers, and video notes (bubble videos)  - [Watch - https://youtu.be/pVvdBbMEQKk]
+
+* WaSender is now available with "Azerbaijani" language
+
+* CHromrdriver is updated with 132- if you are using chrome then make sure your chrome version in 132
+
+Fixes-
+* Run Campaign - Software not responding after PAUSE button click - Issue resolved
+* Run Campaign - Multi profile message sending - If any one account ban during the sending messages, full campaign was stuck- Issue resolved
+* Keep Initializing only after loading web whatsapp on Chrome Broswee - issue resolved
+* Export Group Members not working - issue resolved
+* Export Group list not working - issue resolved
+* Get Poll Results Showing issues- Resolved
+
+Pending-
+* Sending messages to community members (UIDs) is not working; this function has stopped functioning. The fix may take some time, so I haven’t resolved the issue yet. I will work on it dedicatedly and provide the solution via 'internal updates.' Join our WhatsApp channel for updates once the issue is fixed.: [https://whatsapp.com/channel/0029Va81vTc8F2pMLSIiM21s]
+
+Improvements-
+* 'Get Group Links from web' tool Improvements- Removed Chrome dependacy - now it will work with own internal browser 
+* IMPORTENT - Internal Software Security Improvements - Recommended all users to use latest KeyGen and Latest copy of 'AndroidVersion.apk' 
+* Tools Grouping – We have a lot of tools, and more may be added in the future. It’s better to categorize them based on their behavior
+
+* Google Map Data Extractor - now supports New Google Map UI, It will be 10X faster than previous, By default Gm Extractor will scrap data from latest UI
+it has some pros and cons
+pros:   
+1) Faster data extraction
+2) It works in Built-in browser, No more need to update chromedriver 
+Cons - 
+1) This method unable to get instagram profile,Facebook profile,linkedin profile and Twitter profile data
+2) Images Will not able to download with this method
+You can switch it back as previous from General Settings, Change 'Google Map UI' to 'Old Classic' and SAVE

@@ -1,0 +1,4 @@
+Change Log - 2.6.6 (02 Dec. 2022) [Optional Update]
+----------------------------------
+* Chrome Driver Updated to version 108 
+* UI Colors Related issues fixed

@@ -1,0 +1,8 @@
+Change Log - 2.5.8 (15 Oct 2022)
+----------------------------------
+* Enabled - Link Preview
+* Added - Bulk Group Member Adder
+* Added - Groups Finder
+* Enabled Buttons in Autoreply BOT
+* license key issues fixed
+* Issue Resolved- Sending MP4 file to unsaved contact failed

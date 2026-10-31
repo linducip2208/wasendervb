@@ -1,0 +1,21 @@
+Changelog - 3.2.0 ( 12 December 2023) - Major Update
+------------------------------------------------------
+For All ->
+* Added New Tool 'Get Poll Report' - it allows you to generate detailed report of poll which you sent to bulk numbers (for details go through updated UserDoc file)
+* Added New Tool 'Social Media Data Extractor' (for details go through updated UserDoc file)
+* Number filter - Added new field in results 'Is Business Account' or not.
+* Number filter - Added 'Business Profile Extractor' to extract Business details if any numbers is using Business WhatsApp Account.
+* Grab Chat List : Now you can Grab Your chat list based on Labels (Only for Business WhatsApp)
+* Attachment filename was not same as original file name - Issue Fixed
+* Manage Account- Not able to Delete Profile1 - Issue Fixed
+* Google Map Data Extractor - Bug fixes
+* Autoreply Bot - In Some cases Message Sending Delay  - Issue fixed.
+* ChromeDriver Updated to 120 - Please Update your chrome version to 120
+* EdgeDriver Updated to 120 - Please Update your Edge version to 120
+
+For Rebranders->
+* Now you can disable any tool from TOOLS section (i.e. Warmer) follow updated DeveloperDoc file.
+
+
+
+

@@ -1,0 +1,28 @@
+[
+  {
+    "license_id": "WAS-64CE-D527-998D",
+    "hwid": "0dfde6e8436815eb5d9b9ffef7c770bd6bd5351425e868dab7260d731c46eb8c",
+    "customer": "lindu@act.co.id",
+    "tier": "monthly",
+    "features": [
+      "*"
+    ],
+    "issued_at": "2026-05-02",
+    "expires_at": "2026-06-01",
+    "version": 1,
+    "issued_ts": "2026-05-02T20:22:42.216173"
+  },
+  {
+    "license_id": "WAS-932C-20BD-66F8",
+    "hwid": "0dfde6e8436815eb5d9b9ffef7c770bd6bd5351425e868dab7260d731c46eb8c",
+    "customer": "lindu@act.co.id",
+    "tier": "monthly",
+    "features": [
+      "*"
+    ],
+    "issued_at": "2026-05-02",
+    "expires_at": "2026-06-01",
+    "version": 1,
+    "issued_ts": "2026-05-02T20:23:49.173257"
+  }
+]

@@ -1,0 +1,3 @@
+Change Log - 2.6.1 (09 Nov. 2022)
+----------------------------------
+* Resolved Google Map Data extractor issue

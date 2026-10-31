@@ -1,0 +1,5 @@
+Change Log - 2.6.5 (26 Nov. 2022)
+----------------------------------
+* Number filter Not Working - Resolved 
+* Now you able to change color scheme of entire software in single line change.(see Developerdoc file)
+* we click of software to start the browser for whatsapp sending. it keeps on showing initializing even after whatsapp is opened - Issue Resolved

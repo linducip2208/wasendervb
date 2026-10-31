@@ -1,0 +1,7 @@
+Change Log - 2.5.9 (29 Oct 2022)
+----------------------------------
+* Resolved 'Contact Not Found' error
+* Link Preview - Issue resolved
+* mp4 file date issue resolved
+* Now you can send Attachment(Image/video/any file) + Message + Buttons as one single message
+* Now you can Save (Ctrl +S) Campaign and Open it(Ctrl + O) in WaSender for latter.

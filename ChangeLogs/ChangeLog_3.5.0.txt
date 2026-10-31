@@ -1,0 +1,5 @@
+Changelog - 3.5.0 ( 16 Sept. 2024) 
+------------------------------------------------------
+* Added Call to Action Buttons
+  (Please go through 'How to Send Call to Action Buttons?' section in UserDoc file)
+* Social Media Data Extractor not working - issue resolved

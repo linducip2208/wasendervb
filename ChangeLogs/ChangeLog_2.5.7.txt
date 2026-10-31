@@ -1,0 +1,3 @@
+Change Log - 2.5.7 (02 Oct 2022)
+----------------------------------
+* Chrome Driver Updated to - v106

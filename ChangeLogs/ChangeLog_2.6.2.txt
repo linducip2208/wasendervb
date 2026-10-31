@@ -1,0 +1,3 @@
+Change Log - 2.6.2 (16 Nov. 2022)
+----------------------------------
+* Resolved Group Member Adder issue

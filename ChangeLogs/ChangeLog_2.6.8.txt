@@ -1,0 +1,5 @@
+Changelog - 2.6.8 (04 Jan. 2023) 
+----------------------------------
+* One time Initialization - Done - Now you don't need to Initialize Web WhatsApp every time
+* Now you can use AutoReply bot and Software at same time
+* AutoReply Bot - Log not working - Resolved

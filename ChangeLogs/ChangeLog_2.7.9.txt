@@ -1,0 +1,5 @@
+Changelog - 2.7.8 ( __ July. 2023) 
+----------------------------------
+* Group Finder improvemets - Now able to find group from Brazil
+* G Map Extractor - Export Button no visible- Issue resolved
+* 

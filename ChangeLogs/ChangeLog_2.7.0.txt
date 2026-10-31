@@ -1,0 +1,9 @@
+Changelog - 2.7.0 (09 Feb. 2023) 
+----------------------------------
+* ChromeDriver Updated to Version 110
+* Enabled Random , Keymarkers and Parameters in Caption 
+* added 'About' dialog in settings Window to show all lenience Information including Remaining Days 
+* Grab Active Group Members  Not Working - Issue Resolved
+* Bug fixes - 'Download Excel Template' twice saving showing error
+* Bug fixes - Auto remove + and spaces from number
+* Bug Fixes - Cant Delete any rule from Bot if any non English language selected 

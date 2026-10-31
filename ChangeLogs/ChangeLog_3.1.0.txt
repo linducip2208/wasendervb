@@ -1,0 +1,21 @@
+Changelog - 3.1.0 ( 18 Sept. 2023) 
+----------------------------------
+* Added new tool - 'WhatsApp warmer' (For Built in Browser only)
+* Added new tool - 'Website EMail Mobile Extractor'
+* Android Version of KeyGen is Provided - Find 'AndroidVersion.APK' file in KeyGen folder
+* Polls are enabled in 'Single Sender' & 'Group Sender'
+* Polls are enabled in BOT as quick reply (Available only for Built In Browser)
+* Enabled Message Rotation option in 'Single Sender' & 'Group Sender'
+* Added Safe and UnSafe Sending Mode options while before start campaign.
+* Audio (.ogg) file sending to iPhone, Icon is not showing - Issue Resolved
+* Random and KeyMarker issue resoved
+* Code Simplification
+* Group Finder Improved
+* AutoReply Bot - Message sending twice - issue fixed
+* General Settings- Updating chrome driver is more easy and user friendly
+* Added BlockList in General settings to avoid sending message who are not interested in your campaigns
+* Default Browser will be 'Built in Browser' if you not selected any. Previous it was Chrome. 
+  You can switch to chrome anytime if you want from SETTINGS.
+* Google Map - Now you can copy your searches and paste it in big text area.
+* Russian Language Improvement
+* Added New Language - 'Ukrainian'

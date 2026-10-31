@@ -1,0 +1,17 @@
+# Build outputs
+[Bb]in/
+[Oo]bj/
+TestResults/
+# Visual Studio
+.vs/
+*.suo
+*.user
+*.userosscache
+# Backups
+*.bak*
+*.tmp
+# NuGet packages (restore via nuget.org)
+packages/
+# OS
+Thumbs.db
+Desktop.ini

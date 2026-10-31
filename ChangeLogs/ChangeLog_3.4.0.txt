@@ -1,0 +1,32 @@
+Changelog - 3.4.0 ( __ ___ 2024) -
+------------------------------------------------------
+* Contact Sender - Issues while sending Messages - Issue Resolved
+
+* Sending Speed Improvement - Removed the 'Don't Check Number Status Before Sending Message' option from Settings and added 'Filter Numbers Before Sending Messages'. By default, this option will be OFF, meaning that while sending a message, the software will not check the number status—whether it is available on WhatsApp or not. If you want to filter it, turn this option ON, and the software will quickly filter all numbers just before sending messages. Previously, the software was filtering numbers one by one while sending messages, which was a very time-consuming process. But now, it will filter all numbers first before sending messages, then send messages one by one to the available numbers.
+
+* Group Sender - Showing 'Failed-CantSend_Group_Admin_Only_Or_Removed' for Open Groups- Issue Resolved. Export fresh Group List from Contact List Grabber with this Latest Version again then Import it in Group Sender
+
+* Autoreply Bot performance in Built in Browser is increased , no its 10X faster and quick
+
+* For the 'Google Map Data Extractor' and 'Grab Group Links from Web' tools: these tools will now use Google Chrome as the browser. Previously, if you used the 'Built-in Browser', those tools were using Edge as the browser, so we needed to maintain both Chrome and Edge drivers up to date. Because of this change, we now only need to keep Chrome drivers updated. As a result, the 'Update Edge Driver' option is no longer needed and has been removed from Settings.
+
+* Now you can add NAME as built in variable in message as [NAME] 
+  this variable only works for the number which already present in your chat list or contact list
+  (See Latest UserDoc file for more details)
+* Now You can able to add 'Read More' (SPOILER) in message with adding [SPOILER] in main message. 
+  (See Latest UserDoc file for more details)
+* Contact Sender + Group Sender - Now You can Select Multiple files while choosing an atachment.
+
+* Group List Export - Now it will export Group Links (Only if you are admin of the Group) along with Group Name and Ids
+* Google Map Extractor - Review Count and Ratings are not captured for some searches - Issue Resolved
+* Google Map Extractor - Images are now scrapping - Issue Resolved
+* ChromeDriver updated to version 127 - Make sure your chrome is up to date with 127
+* Autoreply Bot - Issue with the rule with CONTAINS condition - Issue Resolved
+* Group Member Extractor - Now It can extract members with Country Short Code
+* Added Farsi Language
+* Bug Fixes while sending messages
+* Number Filter - Business Profile Extractor Not working - Issue resolved
+* Arabic Chinese, English and Italian Language corrections
+* SafeMode not working - Issue Resolved
+* Software is now available with Farsi language
+* Bug Fixes

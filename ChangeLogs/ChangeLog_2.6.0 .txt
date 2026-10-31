@@ -1,0 +1,5 @@
+Change Log - 2.6.0 (01 Nov. 2022)
+----------------------------------
+* Reverted this feature back -Now you can send Attachment(Image/video/any file) + Message + Buttons as one single message, lots of users reporting 'Contact Not found' issue, Now it kept as it was before.
+* Anti Ban internal settings improvement 
+* Arabic language improvement 

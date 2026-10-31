@@ -1,0 +1,9 @@
+Halo {name},
+
+Terima kasih udah jadi customer kami. Ada promo spesial untuk kamu di {phone} —
+diskon 50% untuk pembelian berikutnya, valid sampai akhir bulan!
+
+Klik link berikut untuk klaim: https://example.com/promo
+
+Salam,
+Tim Marketing

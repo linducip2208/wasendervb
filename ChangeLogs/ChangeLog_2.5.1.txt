@@ -1,0 +1,12 @@
+Change Log - 2.5.1 (12 Aug 2022)
+----------------------------------
+* Removed Buttons features for now, WhatsApp Resreicted buttons so Its now working.
+* Chrome Driver Update
+* Grab Contact List - Performance Improved
+* Grab Contact List - Now able to export Name and Number
+* Grab Contact List - Extract All Joined Groups
+* Grab Group Members - Performance Improvements
+* Contact Sender - Performance Improvements
+* Contact Sender - Added Copy Paste Numbers option
+* Group Sender - Bug Fixes and Performance Improvements
+* WhatsApp Bot - All Issues Resolved

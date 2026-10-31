@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "wasender"
+version = "6.0.1"
+description = "WhatsApp marketing & automation suite for Windows"
+requires-python = ">=3.11"
+license = { text = "Proprietary" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+wasender = ["ui/**/*", "wa/*.js", "wa/*.json", "core/*.pem"]
