@@ -1,16 +1,14 @@
-Thanks for choosing Us.
+WASender 6.1 — WhatsApp marketing & automation (Python + WebView2)
+==============================================================================
 
-Please Read All tutorials given in 'UserDoc.html' file in 'Documentation' folder
+MULAI DARI SINI:
+1. User/pemakai .exe      -> baca exe/README.txt (aktivasi license .lic)
+2. Developer (run source)  -> jalankan .\run-dev.ps1  (butuh Python 3.11+)
+3. Build .exe + installer  -> python build.py, lalu iscc installer.iss
+4. Dokumentasi teknis      -> README.md (root) + docs/architecture.md + docs/license-model.md
 
-
-Follow Us on CodeCanyon
-https://codecanyon.net/user/trendingapps/portfolio
-
-Rate this product 5 Star
-https://codecanyon.net/item/wasender-bulk-whatsapp-sender-group-sender-wahtsapp-bot/35762285
-
-Follow out WhatsApp channel for updates and Important Accouchements 
-https://whatsapp.com/channel/0029Va81vTc8F2pMLSIiM21s
-
-
-Codecanyon.net is only trusted Secure to buy this product
+CATATAN:
+- Folder Documentation/, AppHere/, update/, exe/WASender.exe adalah peninggalan
+  era .NET/CodeCanyon dan TIDAK dipakai aplikasi Python 6.x. Jangan jadikan acuan.
+- samples/ berisi contoh CSV yang kompatibel dengan parser aplikasi.
+- keygen/ hanya untuk DEVELOPER. private_key.pem tidak boleh di-commit (lihat .gitignore).

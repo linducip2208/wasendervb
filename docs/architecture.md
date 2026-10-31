@@ -51,3 +51,13 @@ WhatsApp Web ships frequent UI rewrites. Two defenses:
 - `wa/wapi.js` — hooks WhatsApp's webpack module loader and pulls stable internal modules (Store, Wap, etc.) by signature, not by class name. This survives most cosmetic releases.
 
 If WhatsApp ships a major rewrite, an auto-updater (planned) will let us push a new `selectors.json` + `wapi.js` without rebuilding the whole installer.
+
+## Measurement
+
+Every send is recorded in `message_log` with three orthogonal axes:
+
+- `direction`: `'out'` (bulk/warmer/responder) vs `'in'` (incoming DMs, logged by `responder_bot.on_message`, groups skipped).
+- `kind`: `'bulk'` / `'warmer'` / `'inbox'`.
+- `campaign`: free-text label from bulk-sender params (`NULL` = uncategorized).
+
+Reply-rate per campaign = distinct `in`-phones that previously received an `out`-message in the same campaign (`o.sent_at <= m.sent_at`, phones normalized to digits). Dashboard aggregates (`bridge.send_heatmap`, `account_health`, `campaigns`, `alerts`) read only — no extra writes.
