@@ -137,6 +137,12 @@ namespace WASender
                     + "return 'NOBOX';})();";
                 string found = await Eval(wv, findBox);
                 Log("search box -> " + (found ?? "null"));
+                try
+                {
+                    string domState = await Eval(wv, "(function(){var r={};r.side=!!document.querySelector('#side');r.paneside=!!document.querySelector('#pane-side');r.sideKids=document.querySelector('#side')?document.querySelector('#side').querySelectorAll('*').length:0;r.cells=document.querySelectorAll('[data-testid=\"cell-frame-container\"]').length;r.opts=document.querySelectorAll('[role=\"option\"]').length;r.inputs=Array.from(document.querySelectorAll('input')).map(function(e){return (e.type||'')+':'+((e.getAttribute('aria-label')||e.name||e.id||e.className)||'').toString().substring(0,30);}).join('|');r.cedit=document.querySelectorAll('[contenteditable=\"true\"]').length;r.title=document.title;return JSON.stringify(r);})();");
+                    Log("domstate=" + (domState ?? "null"));
+                }
+                catch (Exception exD) { Log("domstate EX " + exD.Message); }
                 string foundClean = ((found ?? "").Trim().Trim('"') ?? "");
                 if (foundClean != "BOX") { return "FAIL"; }
                 string typeJs = "(function(){var q=" + JsonConvert.SerializeObject(clean) + ";"
