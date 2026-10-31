@@ -1331,21 +1331,22 @@ namespace WASender
                     await Task.Delay(2000);
                     try
                     {
-                        string st = await wv.ExecuteScriptAsync(
-                            "return (function(){ try{"
-                            + "var box=document.querySelector('#main footer [contenteditable=\"true\"]')||document.querySelector('[data-lexical-editor]');"
-                            + "if(box) return 'CHAT';"
-                            + "if(document.querySelector('canvas[aria-label=\"Scan me!\"]')||document.querySelector('canvas[aria-label^=\"Scan\"]')) return 'LOGGEDOUT';"
-                            + "var t=(document.body&&document.body.innerText||'').substring(0,2000);"
-                            + "if(/not on WhatsApp|invalid phone|tidak valid|tidak terdaftar|tidak ada di WhatsApp/i.test(t)) return 'NOTONWA';"
-                            + "if(/to use WhatsApp on your computer|scan.*qr|pindai.*qr|masuk.*telepon/i.test(t)) return 'LOGGEDOUT';"
-                            + "return 'WAIT:' + (document.title||'').substring(0,40);"
-                            + "}catch(e){return 'ERR:'+e.message;} })();");
-                        string s = ((st ?? "").Trim().Trim('"') ?? "");
-                        if (i % 4 == 0) { writetrace("SENDLINK poll " + i + "=" + s.Substring(0, Math.Min(80, s.Length))); }
-                        if (s.StartsWith("CHAT")) { writetrace("SENDLINK chat open"); return "OK"; }
-                        if (s.StartsWith("NOTONWA")) { writetrace("SENDLINK number not on WA"); return "NOTONWA"; }
-                        if (s.StartsWith("LOGGEDOUT")) { writetrace("SENDLINK session logged out!"); return "LOGGEDOUT"; }
+                        // Sengaja pendek: verifikasi di C#, bukan di JS.
+                        string stTitle = await wv.ExecuteScriptAsync("document.title");
+                        string stBox = await wv.ExecuteScriptAsync("document.querySelector('#main footer [contenteditable=\"true\"]') ? 'HASBOX' : (document.querySelector('[data-lexical-editor]') ? 'HASLEX' : 'NOBOX')");
+                        string stQr = await wv.ExecuteScriptAsync("document.querySelector('canvas[aria-label=\"Scan me!\"]') ? 'HASQR' : 'NOQR'");
+                        string stBody = await wv.ExecuteScriptAsync("(document.body&&document.body.innerText||'').substring(0,400)");
+                        string sT = ((stTitle ?? "").Trim().Trim('"') ?? "");
+                        string sB = ((stBox ?? "").Trim().Trim('"') ?? "");
+                        string sQ = ((stQr ?? "").Trim().Trim('"') ?? "");
+                        string sBo = ((stBody ?? "").Trim().Trim('"') ?? "");
+                        string slow = sBo.ToLower();
+                        string s = "T=" + sT + " BOX=" + sB + " QR=" + sQ;
+                        if (i % 4 == 0) { writetrace("SENDLINK poll " + i + "=" + s); }
+                        if (sB.Contains("HASBOX") || sB.Contains("HASLEX")) { writetrace("SENDLINK chat open"); return "OK"; }
+                        if (sQ.Contains("HASQR")) { writetrace("SENDLINK session logged out!"); return "LOGGEDOUT"; }
+                        if (slow.Contains("not on whatsapp") || slow.Contains("invalid phone") || slow.Contains("tidak valid") || slow.Contains("tidak terdaftar") || slow.Contains("tidak ada di whatsapp")) { writetrace("SENDLINK number not on WA"); return "NOTONWA"; }
+                        if (slow.Contains("to use whatsapp on your computer") || slow.Contains("scan me") || slow.Contains("pindai") || slow.Contains("masuk")) { writetrace("SENDLINK session logged out!"); return "LOGGEDOUT"; }
                     }
                     catch (Exception exPoll)
                     {
