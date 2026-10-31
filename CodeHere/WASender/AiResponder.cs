@@ -25,6 +25,8 @@ namespace WASender
         public double Temperature { get; set; }
         public int MaxTokens { get; set; }
         public int TimeoutSeconds { get; set; }
+        public bool CacheEnabled { get; set; } = true;
+        public int MaxCacheEntries { get; set; } = 1000;
         public string FallbackText { get; set; }
     }
 
@@ -83,6 +85,8 @@ namespace WASender
                         Temperature = 0.7,
                         MaxTokens = 300,
                         TimeoutSeconds = 45,
+                        CacheEnabled = true,
+                        MaxCacheEntries = 1000,
                         FallbackText = "Maaf, saya sedang tidak bisa menjawab. Coba lagi nanti."
                     };
                     try { File.WriteAllText(path, JsonConvert.SerializeObject(tpl, Formatting.Indented)); }
@@ -97,6 +101,7 @@ namespace WASender
                 if (s.Temperature < 0 || s.Temperature > 2) s.Temperature = 0.7;
                 if (s.MaxTokens <= 0) s.MaxTokens = 300;
                 if (s.TimeoutSeconds <= 0) s.TimeoutSeconds = 45;
+                if (s.MaxCacheEntries <= 0) s.MaxCacheEntries = 1000;
                 return s;
             }
             catch (Exception) { return new AiSettings { Enabled = false }; }
@@ -164,6 +169,88 @@ namespace WASender
             catch (Exception) { }
         }
 
+        public static string GetCachePath()
+        {
+            try { return System.IO.Path.Combine(System.IO.Path.GetDirectoryName(GetSettingsPath()), "ai_cache.json"); }
+            catch (Exception) { return "ai_cache.json"; }
+        }
+
+        private static readonly object _cacheLock = new object();
+        private static Dictionary<string, string> _cache = null;
+
+        private static string NormQ(string s)
+        {
+            try
+            {
+                string q = (s ?? "").ToLowerInvariant().Trim();
+                q = System.Text.RegularExpressions.Regex.Replace(q, @"\s+", " ");
+                q = System.Text.RegularExpressions.Regex.Replace(q, @"[^\p{L}\p{N} ]", "");
+                return q.Trim();
+            }
+            catch (Exception) { return (s ?? "").Trim(); }
+        }
+
+        private static Dictionary<string, string> LoadCache(int max)
+        {
+            try
+            {
+                lock (_cacheLock)
+                {
+                    if (_cache != null) return _cache;
+                    _cache = new Dictionary<string, string>();
+                    try
+                    {
+                        string path = GetCachePath();
+                        if (System.IO.File.Exists(path))
+                        {
+                            var d = JsonConvert.DeserializeObject<Dictionary<string, string>>(System.IO.File.ReadAllText(path));
+                            if (d != null)
+                            {
+                                foreach (var kv in d)
+                                {
+                                    if (_cache.Count >= max) break;
+                                    if (!string.IsNullOrEmpty(kv.Key) && kv.Value != null) _cache[kv.Key] = kv.Value;
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception) { }
+                    return _cache;
+                }
+            }
+            catch (Exception) { return new Dictionary<string, string>(); }
+        }
+
+        private static void SaveCache()
+        {
+            try
+            {
+                Dictionary<string, string> snap;
+                lock (_cacheLock) { snap = new Dictionary<string, string>(_cache ?? new Dictionary<string, string>()); }
+                System.IO.File.WriteAllText(GetCachePath(), JsonConvert.SerializeObject(snap, Formatting.None));
+            }
+            catch (Exception) { }
+        }
+
+        private static string CacheKey(string model, string extra, string incomingText)
+        {
+            return (model ?? "") + "|" + (extra ?? "") + "|" + NormQ(incomingText);
+        }
+
+        private static bool HistoryEmpty(string chatId)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(chatId)) return true;
+                lock (_histLock)
+                {
+                    List<KeyValuePair<string, string>> h;
+                    return !_history.TryGetValue(chatId, out h) || h.Count == 0;
+                }
+            }
+            catch (Exception) { return true; }
+        }
+
         public static async Task<string> ReplyAsync(string incomingText, string extraInstruction = null, string chatId = null)
         {
             try
@@ -172,6 +259,25 @@ namespace WASender
                 if (cfg == null || !cfg.Enabled) return null;
                 if (string.IsNullOrWhiteSpace(cfg.ApiKey) || cfg.ApiKey == "ISI_DENGAN_API_KEY_ANDA") return cfg.FallbackText;
                 if (string.IsNullOrWhiteSpace(incomingText)) return cfg.FallbackText;
+
+                bool useCache = cfg.CacheEnabled && HistoryEmpty(chatId);
+                string ckey = useCache ? CacheKey(cfg.Model, extraInstruction, incomingText) : null;
+                if (useCache)
+                {
+                    try
+                    {
+                        var c = LoadCache(cfg.MaxCacheEntries);
+                        string hit;
+                        lock (_cacheLock) { c.TryGetValue(ckey, out hit); }
+                        if (!string.IsNullOrWhiteSpace(hit))
+                        {
+                            PushHistory(chatId, incomingText, hit);
+                            try { SendEngine.Log("AI cache hit: " + NormQ(incomingText).Substring(0, System.Math.Min(60, NormQ(incomingText).Length))); } catch (Exception) { }
+                            return hit;
+                        }
+                    }
+                    catch (Exception) { }
+                }
 
                 string systemPrompt = cfg.SystemPrompt ?? "";
                 if (!string.IsNullOrWhiteSpace(extraInstruction)) systemPrompt = systemPrompt + "\nInstruksi tambahan: " + extraInstruction;
@@ -208,7 +314,35 @@ namespace WASender
                 try
                 {
                     string content = (string)obj.choices[0].message.content;
-                    if (!string.IsNullOrWhiteSpace(content)) { PushHistory(chatId, incomingText, content.Trim()); return content.Trim(); }
+                    if (!string.IsNullOrWhiteSpace(content))
+                    {
+                        string ans = content.Trim();
+                        PushHistory(chatId, incomingText, ans);
+                        if (useCache)
+                        {
+                            try
+                            {
+                                var c = LoadCache(cfg.MaxCacheEntries);
+                                lock (_cacheLock)
+                                {
+                                    if (!c.ContainsKey(ckey))
+                                    {
+                                        while (c.Count >= cfg.MaxCacheEntries)
+                                        {
+                                            string first = null;
+                                            foreach (var k in c.Keys) { first = k; break; }
+                                            if (first == null) break;
+                                            c.Remove(first);
+                                        }
+                                        c[ckey] = ans;
+                                    }
+                                }
+                                SaveCache();
+                            }
+                            catch (Exception) { }
+                        }
+                        return ans;
+                    }
                 }
                 catch (Exception) { }
                 try
