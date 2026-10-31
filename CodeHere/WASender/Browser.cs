@@ -711,7 +711,8 @@ namespace WASender
             HtmlAgilityPack.HtmlDocument doc = new HtmlAgilityPack.HtmlDocument();
             doc.LoadHtml(sHtmlDecoded);
 
-            List<HtmlNode> links = doc.DocumentNode.SelectNodes("//a[@href]").ToList();
+            var nodes = doc.DocumentNode.SelectNodes("//a[@href]");
+            List<HtmlNode> links = nodes != null ? nodes.ToList() : new List<HtmlNode>();
 
             chatNames = new List<string>();
             foreach (HtmlNode link in links)

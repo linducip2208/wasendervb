@@ -186,6 +186,51 @@ namespace WASender
             catch (Exception) { return false; }
         }
 
+        public static async Task<bool> SendMessageGroupSync(WebView2 wv, string groupId, string msg, bool tagAll)
+        {
+            try
+            {
+                if (!await EnsureWpp(wv)) return false;
+                string gid = (groupId ?? "").Contains("@") ? groupId : groupId + "@g.us";
+                string mbox = "__smg" + Guid.NewGuid().ToString("N").Substring(0, 6);
+                string js;
+                if (tagAll)
+                {
+                    js = "window." + mbox + "='PENDING';(function(){try{WPP.group.getParticipants(" + JsonConvert.SerializeObject(gid) + ").then(function(ps){try{var arr=(ps&&ps.map)?ps:(ps&&ps.participants?ps.participants:[]);var ids=arr.map(function(p){try{var id=p.id||p;return (typeof id==='string')?id:((id&&(id._serialized||String(id)))||'');}catch(e){return '';}}).filter(function(x){return !!x;});WPP.chat.sendTextMessage(" + JsonConvert.SerializeObject(gid) + "," + JsonConvert.SerializeObject(msg ?? "") + ",{mentionedList:ids,detectMentioned:true,waitForAck:true}).then(function(r){window." + mbox + "='OK:'+JSON.stringify(r).substring(0,300);}).catch(function(e){window." + mbox + "='FAIL:'+(e&&e.message);});}catch(e){window." + mbox + "='FAIL';}}).catch(function(e){window." + mbox + "='FAIL:'+(e&&e.message);});}catch(e){window." + mbox + "='EX';}})();'DISPATCHED';";
+                }
+                else
+                {
+                    js = "window." + mbox + "='PENDING';(function(){try{WPP.chat.sendTextMessage(" + JsonConvert.SerializeObject(gid) + "," + JsonConvert.SerializeObject(msg ?? "") + ",{waitForAck:true}).then(function(r){window." + mbox + "='OK:'+JSON.stringify(r).substring(0,300);}).catch(function(e){window." + mbox + "='FAIL:'+(e&&e.message);});}catch(e){window." + mbox + "='EX';}})();'DISPATCHED';";
+                }
+                await Eval(wv, js);
+                string res = await Mailbox(wv, mbox, 20);
+                return res != null && res.StartsWith("OK:{");
+            }
+            catch (Exception) { return false; }
+        }
+
+        public static async Task<bool> SendMediaGroupSync(WebView2 wv, string groupId, string base64, string fileName, string caption)
+        {
+            try
+            {
+                if (!await EnsureWpp(wv)) return false;
+                string gid = (groupId ?? "").Contains("@") ? groupId : groupId + "@g.us";
+                string mbox = "__gmd" + Guid.NewGuid().ToString("N").Substring(0, 6);
+                string js = "window." + mbox + "='PENDING';(function(){try{"
+                    + "WPP.chat.sendFileMessage(" + JsonConvert.SerializeObject(gid) + "," + JsonConvert.SerializeObject(base64 ?? "")
+                    + ",{filename:" + JsonConvert.SerializeObject(fileName ?? "file") + ",caption:" + JsonConvert.SerializeObject(caption ?? "") + "})"
+                    + ".then(function(r){var mid='';try{mid=(r&&r.id&&(r.id._serialized||r.id.id||String(r.id)))||'';}catch(e){}"
+                    + "WPP.chat.getMessages(" + JsonConvert.SerializeObject(gid) + ",{count:10}).then(function(ms){try{var arr=(ms&&ms.map)?ms:((ms&&ms.models)?ms.models:[]);var ok=false;"
+                    + "for(var i=arr.length-1;i>=0;i--){var m=arr[i]||{};var id='';try{id=(m.id&&(m.id._serialized||m.id.id||String(m.id)))||'';}catch(e){}var fm=false;try{fm=!!(m.fromMe||(m.id&&m.id.fromMe));}catch(e){}"
+                    + "if(fm&&(id===mid||mid=='')){ok=true;break;}}window." + mbox + "=ok?'OK':'NOTFOUND';}catch(e){window." + mbox + "='ERR';}}).catch(function(e){window." + mbox + "='FAIL';});"
+                    + "}).catch(function(e){window." + mbox + "='FAIL:'+(e&&e.message);});}catch(e){window." + mbox + "='EX';}})();'DISPATCHED';";
+                await Eval(wv, js);
+                string res = await Mailbox(wv, mbox, 25);
+                return res == "OK";
+            }
+            catch (Exception) { return false; }
+        }
+
         public static async void SendAttachmentAsync(WebView2 wv, string to, string base64, string fileName, string caption) { try { await WppSendMedia(wv, ChatId(to), base64, fileName, caption, "__saa2" + Guid.NewGuid().ToString("N").Substring(0, 6)); } catch (Exception) { } }
 
         public static async Task<bool> SendAttachmentsync(WebView2 wv, string to, string base64, string fileName, string caption)

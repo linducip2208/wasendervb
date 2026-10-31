@@ -254,6 +254,9 @@ namespace WASender
 
 
                 if (!await EnsureWpp(wv)) return list;
+                var lmap = new System.Collections.Generic.Dictionary<string, string>();
+                try { foreach (var lb in await getAllLabels(wv)) { if (!string.IsNullOrEmpty(lb.id) && !lmap.ContainsKey(lb.id)) lmap[lb.id] = lb.name ?? ""; } }
+                catch (Exception) { }
 
 
                 string js = "window.__gac='PENDING';"
@@ -262,7 +265,7 @@ namespace WASender
                     + "(function(){try{var cs=WPP.chat.list();"
 
 
-                    + "var out=cs.slice(0,5000).map(function(c){try{var id=(c.id&&(c.id._serialized||String(c.id)))||'';return{id:id,name:c.name||c.formattedTitle||'',isGroup:!!(c.isGroup||c.groupMetadata),unread:c.unreadCount||0};}catch(e){return null;}}).filter(function(x){return !!x;});"
+                    + "var out=cs.slice(0,5000).map(function(c){try{var id=(c.id&&(c.id._serialized||String(c.id)))||'';return{id:id,name:c.name||c.formattedTitle||'',isGroup:!!(c.isGroup||c.groupMetadata),unread:c.unreadCount||0,ls:((c.labels||[]).map(function(l){try{return String((l&&l.id)||l);}catch(e){return '';}}))};}catch(e){return null;}}).filter(function(x){return !!x;});"
 
 
                     + "window.__gac='OK:'+JSON.stringify(out).substring(0,380000);}catch(e){window.__gac='FAIL:'+e.message;}})();'DISPATCHED';";
@@ -310,7 +313,26 @@ namespace WASender
                         if (!isg) num = Digits(num);
 
 
-                        list.Add(new WASender.Models.WAPI_ContactModel { number = num, Name = Str(c, "name"), Labels = "", countryShortCode = "", isGroup = isg });
+                        string labStr = "";
+                        try
+                        {
+                            var la = c["labels"] as JArray;
+                            if (la != null)
+                            {
+                                var names = new System.Collections.Generic.List<string>();
+                                foreach (var lv in la)
+                                {
+                                    string llid = lv != null ? lv.ToString() : "";
+                                    if (string.IsNullOrEmpty(llid)) continue;
+                                    string nm = null;
+                                    if (lmap != null) lmap.TryGetValue(llid, out nm);
+                                    names.Add(string.IsNullOrEmpty(nm) ? llid : nm);
+                                }
+                                labStr = string.Join(", ", names.ToArray());
+                            }
+                        }
+                        catch (Exception) { }
+                        list.Add(new WASender.Models.WAPI_ContactModel { number = num, Name = Str(c, "name"), Labels = labStr, countryShortCode = "", isGroup = isg });
 
 
                     }
@@ -458,6 +480,9 @@ namespace WASender
 
 
                 var labels = await getAllLabels(wv);
+                var lmap = new System.Collections.Generic.Dictionary<string, string>();
+                try { foreach (var lb in labels) { if (!string.IsNullOrEmpty(lb.id) && !lmap.ContainsKey(lb.id)) lmap[lb.id] = lb.name ?? ""; } }
+                catch (Exception) { }
 
 
                 global::Models.LableModel sel = null;
@@ -487,7 +512,7 @@ namespace WASender
                     + "for(var j=0;j<ls.length;j++){var lv=ls[j];if(String((lv&&lv.id)||lv||'')==" + JsonConvert.SerializeObject(lid) + "){ok=true;break;}}"
 
 
-                    + "if(ok){var id=(c.id&&(c.id._serialized||String(c.id)))||'';out.push({id:id,name:c.name||c.formattedTitle||'',isGroup:!!(c.isGroup||c.groupMetadata)});}}catch(e){}}"
+                    + "if(ok){var id=(c.id&&(c.id._serialized||String(c.id)))||'';out.push({id:id,name:c.name||c.formattedTitle||'',isGroup:!!(c.isGroup||c.groupMetadata),labels:((c.labels||[]).map(function(l){try{return String((l&&l.id)||l);}catch(e){return '';}}))});}}catch(e){}}"
 
 
                     + "window.__gacl='OK:'+JSON.stringify(out).substring(0,380000);}catch(e){window.__gacl='FAIL:'+e.message;}})();'DISPATCHED';";
@@ -556,7 +581,26 @@ namespace WASender
                         if (!isg) num = Digits(num);
 
 
-                        list.Add(new WASender.Models.WAPI_ContactModel { number = num, Name = Str(c, "name"), Labels = "", countryShortCode = "", isGroup = isg });
+                        string labStr = "";
+                        try
+                        {
+                            var la = c["labels"] as JArray;
+                            if (la != null)
+                            {
+                                var names = new System.Collections.Generic.List<string>();
+                                foreach (var lv in la)
+                                {
+                                    string llid = lv != null ? lv.ToString() : "";
+                                    if (string.IsNullOrEmpty(llid)) continue;
+                                    string nm = null;
+                                    if (lmap != null) lmap.TryGetValue(llid, out nm);
+                                    names.Add(string.IsNullOrEmpty(nm) ? llid : nm);
+                                }
+                                labStr = string.Join(", ", names.ToArray());
+                            }
+                        }
+                        catch (Exception) { }
+                        list.Add(new WASender.Models.WAPI_ContactModel { number = num, Name = Str(c, "name"), Labels = labStr, countryShortCode = "", isGroup = isg });
 
 
                     }
@@ -730,22 +774,18 @@ namespace WASender
                     {
 
 
-                        string js = "(function(){try{if(WPP.group&&WPP.group.iAmAdmin&&WPP.group.iAmAdmin(" + JsonConvert.SerializeObject(g.GroupId ?? "") + "))return 'Y';}catch(e){}return 'N';})();";
+                        string js = "window.__adm='PENDING';" + "(function(){try{WPP.group.iAmAdmin(" + JsonConvert.SerializeObject(g.GroupId ?? "") + ").then(function(r){window.__adm=r?'Y':'N';}).catch(function(){window.__adm='N';});}catch(e){window.__adm='N';}})();'DISPATCHED';";
 
 
-                        string r = await Eval(wv, js);
-
-
-                        if ((r ?? "").Contains("Y") && !(r ?? "").Contains("N")) { mine.Add(g); continue; }
-
-
-                        mine.Add(g);
+                        await Eval(wv, js);
+                        string r = await Mailbox(wv, "__adm", 8);
+                        if ((r ?? "") == "Y") { mine.Add(g); }
 
 
                     }
 
 
-                    catch (Exception) { mine.Add(g); }
+                    catch (Exception) { }
 
 
                 }
@@ -757,7 +797,7 @@ namespace WASender
             catch (Exception) { return all; }
 
 
-            return mine.Count > 0 ? mine : all;
+            return mine;
 
 
         }
@@ -1339,6 +1379,7 @@ namespace WASender
 
 
                     bp.catagory = o["cat"] != null ? o["cat"].ToString() : bp.catagory;
+                    bp.number = Digits(chatId ?? "");
 
 
                 }

@@ -378,7 +378,17 @@ namespace WASender
                             }
                             catch (Exception) { ok = false; }
                         }
-                        outList.Add(new global::WASender.Models.NumberFilterFReturnModel { id = num, numberExists = ok, isBusiness = false, canReceiveMessage = ok, status = ok ? 200 : 404 });
+                        bool biz = false;
+                        if (ok)
+                        {
+                            try
+                            {
+                                var bp = await getBusinessProfile(wv, num + "@c.us");
+                                biz = bp != null && (!string.IsNullOrEmpty(bp.name) || !string.IsNullOrEmpty(bp.website) || !string.IsNullOrEmpty(bp.email));
+                            }
+                            catch (Exception) { biz = false; }
+                        }
+                        outList.Add(new global::WASender.Models.NumberFilterFReturnModel { id = num, numberExists = ok, isBusiness = biz, canReceiveMessage = ok, status = ok ? 200 : 404 });
                         await Task.Delay(1200);
                     }
                     catch (Exception) { }

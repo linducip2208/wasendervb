@@ -815,11 +815,19 @@ namespace WASender
 
                             if (generalSettingsModel.browserType == 1)
                             {
-
+                                if (NewMessage != "")
+                                {
+                                    WAPIHelper.SendMessage(driver, item.number, NewMessage);
+                                    isAlreadySent = true;
+                                }
                             }
                             else if (generalSettingsModel.browserType == 2)
                             {
-
+                                if (NewMessage != "")
+                                {
+                                    WPPHelper.SendMessage(wv, item.number, NewMessage);
+                                    isAlreadySent = true;
+                                }
                             }
 
 
@@ -856,6 +864,8 @@ namespace WASender
                 {
                     AutoSend = false;
                 }
+                bool _hadPoll = false;
+                bool _allPollOk = true;
 
                 isFirstMessage = false;
                 //await Task.Delay(500);
@@ -1194,6 +1204,7 @@ namespace WASender
                         }
                         if (mesageModel.polls != null && mesageModel.polls.Count() > 0)
                         {
+                            _hadPoll = true;
                             foreach (var poll in mesageModel.polls)
                             {
                                 try
@@ -1206,12 +1217,13 @@ namespace WASender
                                     else if (generalSettingsModel.browserType == 2)
                                     {
                                         bool isDone = await WPPHelper.sendCreatePollMessageToNumberSync(wv, item.number, poll);
+                                        if (!isDone) _allPollOk = false;
                                         await Task.Delay(500);
                                     }
                                 }
                                 catch (Exception ex)
                                 {
-
+                                    _allPollOk = false;
                                 }
                             }
 
@@ -1225,6 +1237,8 @@ namespace WASender
                     }
 
                 }
+
+                if (_hadPoll && !_allPollOk && string.IsNullOrEmpty(NewMessage) && (mesageModel.files == null || mesageModel.files.Count == 0)) { return false; }
 
                 await Task.Delay(Utils.getRandom(wASenderSingleTransModel.settings.delayAfterEveryMessageFrom * 1000, wASenderSingleTransModel.settings.delayAfterEveryMessageTo * 1000));
 
@@ -2048,23 +2062,18 @@ namespace WASender
                         {
                             writetrace("isAuthenticated start= " + isAuthenticated.ToString());
                             isAuthenticated = await WPPHelper.isAuthenticated(wv);
-                            if (!isAuthenticated) isAuthenticated = true;
                             writetrace("isAuthenticated end = " + isAuthenticated.ToString());
                             if (isAuthenticated == false)
                             {
                                 writetrace(" isWPPinjected start= " );
                                 bool iswpAvailable = await WPPHelper.isWPPinjected(wv);
                                 writetrace(" isWPPinjected end= " );
-                                if (iswpAvailable)
-                                {
-                                    isAuthenticated = true;
-                                }
+                                
                             }
                         }
                         else if (generalSettingsModel.browserType == 1)
                         {
                             isAuthenticated = WAPIHelper.isAuthenticated(driver);
-                            if (!isAuthenticated) isAuthenticated = true;
                         }
                         if (isBlockListed == true)
                         {
@@ -2142,15 +2151,11 @@ namespace WASender
                                 {
                                     writetrace("isAuthenticated 2 start---");
                                     isAuthenticated = await WPPHelper.isAuthenticated(wv);
-                            if (!isAuthenticated) isAuthenticated = true;
                                     writetrace("isAuthenticated end ---");
                                     if (isAuthenticated == false)
                                     {
                                         bool iswpAvailable = await WPPHelper.isWPPinjected(wv);
-                                        if (iswpAvailable)
-                                        {
-                                            isAuthenticated = true;
-                                        }
+                                        
                                     }
                                     if (isAuthenticated == true)
                                     {
@@ -2170,7 +2175,6 @@ namespace WASender
                                 else if (generalSettingsModel.browserType == 1)
                                 {
                                     isAuthenticated = WAPIHelper.isAuthenticated(driver);
-                            if (!isAuthenticated) isAuthenticated = true;
                                     if (isAuthenticated == true)
                                     {
                                         bool result = await WAPIHelper.findChatLongSync(driver, item.number);
@@ -2251,15 +2255,11 @@ namespace WASender
                                         writetrace("isAuthenticated 1558 start---");
                                         chatOpened = false;
                                         isAuthenticated = await WPPHelper.isAuthenticated(wv);
-                            if (!isAuthenticated) isAuthenticated = true;
                                         writetrace("isAuthenticated end start---");
                                         if (isAuthenticated == false)
                                         {
                                             bool iswpAvailable = await WPPHelper.isWPPinjected(wv);
-                                            if (iswpAvailable)
-                                            {
-                                                isAuthenticated = true;
-                                            }
+                                            
                                         }
 
                                         if (isAuthenticated)
@@ -2279,7 +2279,6 @@ namespace WASender
                                     {
 
                                         isAuthenticated = WAPIHelper.isAuthenticated(driver);
-                            if (!isAuthenticated) isAuthenticated = true;
                                         if (isAuthenticated == true)
                                         {
                                             bool result = await WAPIHelper.findChatLongSync(driver, item.number);
@@ -2296,7 +2295,6 @@ namespace WASender
                                         if (generalSettingsModel.browserType == 1)
                                         {
                                             isAuthenticated = WAPIHelper.isAuthenticated(driver);
-                            if (!isAuthenticated) isAuthenticated = true;
                                             if (isAuthenticated == true)
                                             {
                                                 bool isDOne = await SendMessageSync(mesageModel, isFirstMessage, item, wv);
@@ -2305,14 +2303,10 @@ namespace WASender
                                         else if (generalSettingsModel.browserType == 2)
                                         {
                                             isAuthenticated = await WPPHelper.isAuthenticated(wv);
-                            if (!isAuthenticated) isAuthenticated = true;
                                             if (isAuthenticated == false)
                                             {
                                                 bool iswpAvailable = await WPPHelper.isWPPinjected(wv);
-                                                if (iswpAvailable)
-                                                {
-                                                    isAuthenticated = true;
-                                                }
+                                                
                                             }
                                             if (isAuthenticated)
                                             {

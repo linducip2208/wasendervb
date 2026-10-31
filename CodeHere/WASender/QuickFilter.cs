@@ -368,7 +368,7 @@ namespace WASender
 
 
                     //worker.ReportProgress(per);
-                    if (totalCount < DoneCount)
+                    if (DoneCount < totalCount)
                     {
                         try
                         {

@@ -278,6 +278,8 @@ namespace WASender
                 HLog("RINGKASAN " + today + ": tanya=" + q + " cache=" + hits + " ai=" + calls + " override=" + ovr
                     + " chats=" + chats + " unread=" + unread + " uptime=" + uptimeMin + "m putus=" + _disconnects + "x skor=" + score
                     + " top=[" + top + "]");
+                try { WaReporter.WriteDailyReport(_disconnects); } catch (Exception) { }
+                try { WaReporter.WriteDailyReport(_disconnects); } catch (Exception) { }
                 await Task.Delay(1);
             }
             catch (Exception) { }

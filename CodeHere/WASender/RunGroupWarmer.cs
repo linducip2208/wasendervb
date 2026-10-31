@@ -16,8 +16,10 @@ using WASender.Models;
 
 namespace WASender
 {
-    public partial class RunGroupWarmer : MyMaterialPopOp
+    public partial class RunGroupWarmer
+        : MyMaterialPopOp
     {
+        private static readonly Random _rng = new Random();
         WarmerModel warmerModel;
         private BackgroundWorker backgroundWorker1;
         WaSenderBrowser waMultiInstance;
@@ -210,7 +212,7 @@ namespace WASender
 
                     string name = tab.Text;
                     bool isInitiated = await WPPHelper.isWaInited(vw);
-                    IsAllinitiated = isInitiated;
+                    if (!isInitiated) IsAllinitiated = false;
                 }
                 if (IsAllinitiated)
                 {
@@ -269,14 +271,16 @@ namespace WASender
                     if (IsRunning)
                     {
                         {
-                            Random r = new Random();
+                            Random r = _rng;
                             int rInt = r.Next(warmerModel.delayFrom * 1000, warmerModel.delayTo * 1000);
-                            r = new Random();
-                            int randomMessageIndex = r.Next(0, MessagesList.Count() - 1);
+                            r = _rng;
+                            int randomMessageIndex = MessagesList.Count() <= 0 ? -1 : _rng.Next(0, MessagesList.Count());
+                            if (randomMessageIndex < 0) { continue; }
                             string randomMessage = MessagesList[randomMessageIndex];
                             randomMessage = randomMessage.Replace("\r", "");
 
-                            waMultiInstance.tabControl1.SelectedTab = fromAccount.tabPage;
+                            try { waMultiInstance.tabControl1.Invoke((MethodInvoker)delegate { waMultiInstance.tabControl1.SelectedTab = fromAccount.tabPage; }); }
+                            catch (Exception) { try { waMultiInstance.tabControl1.SelectedTab = fromAccount.tabPage; } catch (Exception) { } }
 
                             bool _result = await WPPHelper.openChatAtBottomLongGroupSync(fromAccount.webview, selectedGroup.GroupId);
 
@@ -301,9 +305,9 @@ namespace WASender
                         }
 
                         {
-                            Random r = new Random();
+                            Random r = _rng;
                             int rInt = r.Next(warmerModel.delayFrom * 1000, warmerModel.delayTo * 1000);
-                            r = new Random();
+                            r = _rng;
                             await Task.Delay(rInt);
                         }
 

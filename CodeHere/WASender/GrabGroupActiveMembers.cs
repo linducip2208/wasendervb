@@ -622,7 +622,7 @@ namespace WASender
                         foreach (var item in nonduplicates.OrderByDescending(x => x.count))
                         {
                             ws.Cells[i + 1, 1].Value = AutomationCommon.GetNumbers(item.number);
-                            ws.Cells[i + 1, 2].Value = activeMembersMain.Where(x => x.number == item.number).Count();
+                            ws.Cells[i + 1, 2].Value = activeMembersMain.Where(x => x.number == item.number).Sum(x => x.count);
                             
                             i++;
                         }

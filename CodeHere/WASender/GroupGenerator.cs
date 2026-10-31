@@ -305,6 +305,8 @@ namespace WASender
                     }
                     else if (generalSettingsModel.browserType == 2)
                     {
+                        if (string.IsNullOrEmpty(new string((groupGeneratorModel.DefaultNumberAdd ?? "").Where(char.IsDigit).ToArray()))) { item.sendStatusModel.sendStatusEnum = SendStatusEnum.Failed; item.sendStatusModel.isDone = true; logger.WriteLog("skip grup tanpa nomor awal valid: " + item.name); }
+                        else
                         logger.WriteLog("creating " + item.name);
                         try
                         {

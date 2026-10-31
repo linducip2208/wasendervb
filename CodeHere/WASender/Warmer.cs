@@ -62,7 +62,7 @@ namespace WASender
         {
             initlanguages();
             bindData();
-            string ss = File.ReadAllText("dataset.txt");
+            string ss = ""; try { ss = System.IO.File.Exists("dataset.txt") ? File.ReadAllText("dataset.txt") : ""; } catch (Exception) { ss = ""; }
             string ds = Regex.Replace(ss, @"\r\n?|\n", Environment.NewLine);
             textBox1.Text = ds;
             stepWizardControl1.Location = new Point(
@@ -299,7 +299,7 @@ namespace WASender
             {
                 warmerModel.delayFrom = Convert.ToInt32(textBox2.Text);
                 warmerModel.delayTo = Convert.ToInt32(textBox3.Text);
-                warmerModel.warmmingMethod = Convert.ToInt32(materialComboBox1.SelectedValue);
+                try { warmerModel.warmmingMethod = materialComboBox1.SelectedValue != null ? Convert.ToInt32(materialComboBox1.SelectedValue) : 0; } catch (Exception) { warmerModel.warmmingMethod = 0; }
 
                 if (isGroupWarmer)
                 {

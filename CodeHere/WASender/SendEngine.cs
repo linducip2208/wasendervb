@@ -1,5 +1,6 @@
 using Microsoft.Web.WebView2.WinForms;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -338,6 +339,55 @@ namespace WASender
         catch (Exception ex) { Log("resolve EX " + ex.Message); return digits + "@c.us"; }
     }
 
+    private static string ExtractMsgId(string res)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(res) || !res.StartsWith("OK:{")) return "";
+            var o = JObject.Parse(res.Substring(3));
+            var id = o["id"];
+            if (id == null) return "";
+            if (id.Type == JTokenType.String) return id.ToString();
+            string s = (string)id["_serialized"] ?? (string)id["id"] ?? "";
+            if (!string.IsNullOrEmpty(s)) return s;
+            return id.ToString();
+        }
+        catch (Exception) { return ""; }
+    }
+
+    /// <summary>Verifikasi via ID pesan (anti tabrakan snippet). Return (terkirim, detail).</summary>
+    public static async Task<Tuple<bool, string>> ConfirmDeliveredById(WebView2 wv, string digits, string msgId)
+    {
+        try
+        {
+            string chatId = await ResolveChatId(wv, digits);
+            string chatIdJs = JsonConvert.SerializeObject(chatId);
+            string midJs = JsonConvert.SerializeObject(msgId);
+            string js = "window.__verifyid='PENDING';"
+                + "WPP.chat.getMessages(" + chatIdJs + ",{count:10})"
+                + ".then(function(ms){try{"
+                + "var list=(ms&&ms.map)?ms:((ms&&ms.models)?ms.models:[]);"
+                + "for(var i=list.length-1;i>=0;i--){var m=list[i]||{};var id='';try{id=(m.id&&(m.id._serialized||m.id.id||String(m.id)))||'';}catch(e){}"
+                + "var fromme=false;try{fromme=!!(m.fromMe||(m.id&&m.id.fromMe));}catch(e){}"
+                + "var ack=0;try{ack=m.ack||0;}catch(e){}"
+                + "if(fromme&&id&&id==" + midJs + "){window.__verifyid='FOUND ack='+ack;return;}}"
+                + "window.__verifyid='NOTFOUND n='+list.length;"
+                + "}catch(e){window.__verifyid='ERR:'+e.message;}})"
+                + ".catch(function(e){window.__verifyid='FAIL:'+(e&&e.message);});'DISPATCHED';";
+            await Eval(wv, js);
+            string res = await PollMailbox(wv, "__verifyid", 8);
+            Log("confirm-id -> " + res);
+            if (res.StartsWith("FOUND"))
+            {
+                int ack = 0;
+                try { ack = int.Parse(new string(res.SkipWhile(c => !char.IsDigit(c)).TakeWhile(char.IsDigit).ToArray())); } catch (Exception) { }
+                return Tuple.Create(ack >= 1, res);
+            }
+            return Tuple.Create(false, res);
+        }
+        catch (Exception ex) { Log("confirmid EX " + ex.Message); return Tuple.Create(false, "ex"); }
+    }
+
     /// <summary>Verifikasi TERKIRIM via API resmi WPP (baca pesan terakhir di chat).</summary>
         public static async Task<Tuple<bool, string>> ConfirmDelivered(WebView2 wv, string digits, string text)
         {
@@ -388,7 +438,10 @@ namespace WASender
                 string res = await PollMailbox(wv, "__wppText", 16);
                 Log("wpp text -> " + res);
                 if (!res.StartsWith("OK:{")) { return Tuple.Create(false, res); }
-                var cf = await ConfirmDelivered(wv, digits, text);
+                string mid = ExtractMsgId(res);
+                Tuple<bool, string> cf;
+                if (!string.IsNullOrEmpty(mid)) { cf = await ConfirmDeliveredById(wv, digits, mid); }
+                else { cf = await ConfirmDelivered(wv, digits, text); }
                 Log("wpp confirm=" + cf.Item1);
                 return Tuple.Create(cf.Item1, res + " | " + cf.Item2);
             }
@@ -420,7 +473,10 @@ namespace WASender
                 string res = await PollMailbox(wv, "__wppMedia", 20);
                 Log("wpp media -> " + (res ?? "").Substring(0, System.Math.Min(160, (res ?? "").Length)));
                 if (!res.StartsWith("OK:{")) { return Tuple.Create(false, res); }
-                var cfm = await ConfirmDelivered(wv, digits, caption);
+                string mmid = ExtractMsgId(res);
+                Tuple<bool, string> cfm;
+                if (!string.IsNullOrEmpty(mmid)) { cfm = await ConfirmDeliveredById(wv, digits, mmid); }
+                else { cfm = await ConfirmDelivered(wv, digits, caption); }
                 Log("wpp media confirm=" + cfm.Item1);
                 return Tuple.Create(cfm.Item1, res + " | " + cfm.Item2);
             }

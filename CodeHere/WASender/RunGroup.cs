@@ -311,7 +311,7 @@ namespace WASender
         }
 
 
-        private bool SendMessagetoGroup(MesageModel mesageModel, GroupModel item, WebView2 wv, bool isFirstMessage)
+        private async Task<bool> SendMessagetoGroup(MesageModel mesageModel, GroupModel item, WebView2 wv, bool isFirstMessage)
         {
             bool ok = true;
             bool AutoSend = false;
@@ -377,13 +377,14 @@ namespace WASender
                             {
                                 if (generalSettingsModel.browserType == 1)
                                 {
-                                    string outParam = "";
-                                    WAPIHelper.SendVideoToGroup(driver, item.GroupId, fullBase64, NewMessage, file.fileName, out outParam, wASenderGroupTransModel.tagAll);
-                                    item.reason = outParam;
+                                    bool gmv = WAPIHelper.SendMediaGroupSync(driver, item.GroupId, fullBase64, file.fileName, NewMessage);
+                                    item.reason = gmv ? "OK" : "FAILED";
+                                    if (!gmv) { ok = false; }
                                 }
                                 else if (generalSettingsModel.browserType == 2)
                                 {
-                                    WPPHelper.SendVideoToGroup2(wv, item.GroupId, fullBase64, NewMessage, file.fileName, wASenderGroupTransModel.tagAll);
+                                    bool gmv2 = await WPPHelper.SendMediaGroupSync(wv, item.GroupId, fullBase64, file.fileName, NewMessage);
+                                    if (!gmv2) { ok = false; }
                                 }
 
                                 AutoSend = false;
@@ -393,13 +394,14 @@ namespace WASender
                             {
                                 if (generalSettingsModel.browserType == 1)
                                 {
-                                    string outParam = "";
-                                    WAPIHelper.SendVideoToGroup(driver, item.GroupId, fullBase64, file.Caption, "", out outParam, wASenderGroupTransModel.tagAll);
-                                    item.reason = outParam;
+                                    bool gmv3 = WAPIHelper.SendMediaGroupSync(driver, item.GroupId, fullBase64, file.fileName, file.Caption);
+                                    item.reason = gmv3 ? "OK" : "FAILED";
+                                    if (!gmv3) { ok = false; }
                                 }
                                 else if (generalSettingsModel.browserType == 2)
                                 {
-                                    WPPHelper.SendVideoToGroup2(wv, item.GroupId, fullBase64, file.Caption, file.fileName, wASenderGroupTransModel.tagAll);
+                                    bool gmv4 = await WPPHelper.SendMediaGroupSync(wv, item.GroupId, fullBase64, file.fileName, file.Caption);
+                                    if (!gmv4) { ok = false; }
                                 }
 
                             }
@@ -438,12 +440,14 @@ namespace WASender
                             {
                                 if (generalSettingsModel.browserType == 1)
                                 {
-                                    WAPIHelper.sendAudioFile(driver, item.GroupId, fullBase64);
-                                    item.reason = "";
+                                    bool gau = WAPIHelper.sendAudioFile(driver, item.GroupId, fullBase64);
+                                    item.reason = gau ? "OK" : "FAILED";
+                                    if (!gau) { ok = false; }
                                 }
                                 if (generalSettingsModel.browserType == 2)
                                 {
-                                    WPPHelper.sendAudioFileSync(wv, item.GroupId, fullBase64);
+                                    bool gau2 = WPPHelper.sendAudioFileSync(wv, item.GroupId, fullBase64);
+                                    if (!gau2) { ok = false; }
                                 }
 
                                 AutoSend = false;
@@ -452,12 +456,14 @@ namespace WASender
                             {
                                 if (generalSettingsModel.browserType == 1)
                                 {
-                                    WAPIHelper.sendAudioFile(driver, item.GroupId, fullBase64);
-                                    item.reason = "";
+                                    bool gau = WAPIHelper.sendAudioFile(driver, item.GroupId, fullBase64);
+                                    item.reason = gau ? "OK" : "FAILED";
+                                    if (!gau) { ok = false; }
                                 }
                                 else if (generalSettingsModel.browserType == 2)
                                 {
-                                    WPPHelper.sendAudioFileSync(wv, item.GroupId, fullBase64);
+                                    bool gau3 = WPPHelper.sendAudioFileSync(wv, item.GroupId, fullBase64);
+                                    if (!gau3) { ok = false; }
                                 }
                             }
 
@@ -493,13 +499,14 @@ namespace WASender
                         {
                             if (generalSettingsModel.browserType == 1)
                             {
-                                string outParam = "";
-                                WAPIHelper.SendVideoToGroup(driver, item.GroupId, fullBase64, NewMessage, file.fileName, out outParam, wASenderGroupTransModel.tagAll);
-                                item.reason = outParam;
+                                bool gmv5 = WAPIHelper.SendMediaGroupSync(driver, item.GroupId, fullBase64, file.fileName, NewMessage);
+                                item.reason = gmv5 ? "OK" : "FAILED";
+                                if (!gmv5) { ok = false; }
                             }
                             else if (generalSettingsModel.browserType == 2)
                             {
-                                WPPHelper.SendVideoToGroup2(wv, item.GroupId, fullBase64, NewMessage, file.fileName, wASenderGroupTransModel.tagAll);
+                                bool gmv6 = await WPPHelper.SendMediaGroupSync(wv, item.GroupId, fullBase64, file.fileName, NewMessage);
+                                if (!gmv6) { ok = false; }
                             }
 
                             AutoSend = false;
@@ -509,13 +516,14 @@ namespace WASender
                         {
                             if (generalSettingsModel.browserType == 1)
                             {
-                                string outParam = "";
-                                WAPIHelper.SendAttachmentToGroup(driver, item.GroupId, fullBase64, FileName, file.Caption, out outParam); ////REMIND HERE
-                                item.reason = outParam;
+                                bool gat = WAPIHelper.SendMediaGroupSync(driver, item.GroupId, fullBase64, FileName, file.Caption);
+                                item.reason = gat ? "OK" : "FAILED";
+                                if (!gat) { ok = false; }
                             }
                             else if (generalSettingsModel.browserType == 2)
                             {
-                                WPPHelper.SendAttachmentToGroup(wv, item.GroupId, fullBase64, FileName, file.Caption);////REMIND HERE
+                                bool gat2 = await WPPHelper.SendMediaGroupSync(wv, item.GroupId, fullBase64, FileName, file.Caption);
+                                if (!gat2) { ok = false; }
                             }
 
                         }
@@ -540,6 +548,7 @@ namespace WASender
                     if (generalSettingsModel.browserType == 1)
                     {
                         bool isDone = WAPIHelper.sendAudioFile(driver, item.GroupId, fullBase64);
+                        if (!isDone) { ok = false; }
                     }
                     else if (generalSettingsModel.browserType == 2)
                     {
@@ -557,6 +566,7 @@ namespace WASender
                     if (generalSettingsModel.browserType == 1)
                     {
                         bool isDone = WAPIHelper.sendVideoNote(driver, item.GroupId, fullBase64);
+                        if (!isDone) { ok = false; }
                     }
                     else if (generalSettingsModel.browserType == 2)
                     {
@@ -574,6 +584,7 @@ namespace WASender
                     if (generalSettingsModel.browserType == 1)
                     {
                         bool isDone = WAPIHelper.sendStickerSync(driver, item.GroupId, fullBase64);
+                        if (!isDone) { ok = false; }
                     }
                     else if (generalSettingsModel.browserType == 2)
                     {
@@ -586,6 +597,7 @@ namespace WASender
                     if (generalSettingsModel.browserType == 1)
                     {
                         bool isDone = WAPIHelper.SendLocationMessage(driver, item.GroupId, file.locationMessageModel.lat, file.locationMessageModel.lng, file.locationMessageModel.name, file.locationMessageModel.address, file.locationMessageModel.url);
+                        if (!isDone) { ok = false; }
                     }
                     else if (generalSettingsModel.browserType == 2)
                     {
@@ -598,6 +610,7 @@ namespace WASender
                     if (generalSettingsModel.browserType == 1)
                     {
                         bool isDone = WAPIHelper.SendsendVCardContactMessage(driver, item.GroupId, file.contactMessageModel.number, file.contactMessageModel.name);
+                        if (!isDone) { ok = false; }
                     }
                     else if (generalSettingsModel.browserType == 2)
                     {
@@ -630,25 +643,13 @@ namespace WASender
                         {
                             if (generalSettingsModel.browserType == 1)
                             {
-                                try
-                                {
-                                    WAPIHelper.sendTextMessageWithPreview(driver, item.GroupId, NewMessage, true); /// REMIND
-                                }
-                                catch (Exception ex)
-                                {
-                                    WAPIHelper.SendMessage(driver, item.GroupId, NewMessage, true); /// REMIND
-                                }
+                                bool gok = WAPIHelper.SendMessageGroupSync(driver, item.GroupId, NewMessage, wASenderGroupTransModel.tagAll);
+                                if (!gok) { ok = false; }
                             }
                             else if (generalSettingsModel.browserType == 2)
                             {
-                                try
-                                {
-                                    WPPHelper.sendTextMessageWithPreview(wv, item.GroupId, NewMessage, true, wASenderGroupTransModel.tagAll);
-                                }
-                                catch (Exception ex)
-                                {
-                                    WPPHelper.SendMessage(wv, item.GroupId, NewMessage, true, wASenderGroupTransModel.tagAll);
-                                }
+                                bool gok2 = await WPPHelper.SendMessageGroupSync(wv, item.GroupId, NewMessage, wASenderGroupTransModel.tagAll);
+                                if (!gok2) { ok = false; }
                             }
 
                         }
@@ -656,11 +657,13 @@ namespace WASender
                         {
                             if (generalSettingsModel.browserType == 1)
                             {
-                                WAPIHelper.SendMessage(driver, item.GroupId, NewMessage, true);
+                                bool gok3 = WAPIHelper.SendMessageGroupSync(driver, item.GroupId, NewMessage, wASenderGroupTransModel.tagAll);
+                                if (!gok3) { ok = false; }
                             }
                             else if (generalSettingsModel.browserType == 2)
                             {
-                                WPPHelper.SendMessage(wv, item.GroupId, NewMessage, true, wASenderGroupTransModel.tagAll);
+                                bool gok4 = await WPPHelper.SendMessageGroupSync(wv, item.GroupId, NewMessage, wASenderGroupTransModel.tagAll);
+                                if (!gok4) { ok = false; }
                             }
 
                         }
@@ -863,7 +866,7 @@ namespace WASender
                             bool gRotateOk = true;
                             try
                             {
-                                gRotateOk = SendMessagetoGroup(mesageModel, item, wv, isFirstMessage);
+                                gRotateOk = await SendMessagetoGroup(mesageModel, item, wv, isFirstMessage);
                                 isFirstMessage = false;
                             }
                             catch (Exception ex)
@@ -906,7 +909,7 @@ namespace WASender
                                 SendEngine.Log("GRP MSG " + grpMsgIdx + " to " + item.GroupId);
                                 try
                                 {
-                                    bool gOk = SendMessagetoGroup(mesageModel, item, wv, isFirstMessage);
+                                    bool gOk = await SendMessagetoGroup(mesageModel, item, wv, isFirstMessage);
                                     if (!gOk) { grpError = true; }
                                     isFirstMessage = false;
                                 }

@@ -38,6 +38,23 @@ namespace WaAutoReplyBot
         System.Windows.Forms.Timer timerInitChecker;
         BackgroundWorker worker;
         private static bool IsRunning = false;
+        private static readonly System.Collections.Generic.HashSet<string> _sentIds = new System.Collections.Generic.HashSet<string>();
+        private static readonly object _sentLock = new object();
+        private static bool CheckAndMarkSent(string id)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(id)) return false;
+                lock (_sentLock)
+                {
+                    if (_sentIds.Contains(id)) return true;
+                    if (_sentIds.Count > 5000) _sentIds.Clear();
+                    _sentIds.Add(id);
+                }
+                return false;
+            }
+            catch (System.Exception) { return false; }
+        }
         private static string strLog = "";
         System.Windows.Forms.Timer timerRunner;
         WaSenderForm WaSenderForm;
@@ -533,6 +550,7 @@ namespace WaAutoReplyBot
             List<RuleTransactionModel> fallbackMesageList = this.ruleTransactionModelList.Where(x => x.IsFallBack == true).ToList();
 
             List<IncommingMessageModel> sendMessagesList = new List<IncommingMessageModel>();
+            try { if (incommingMessageModel != null && incommingMessageModel.id != null && CheckAndMarkSent(incommingMessageModel.id._serialized)) return; } catch (System.Exception) { }
             incommingMessageModel.from = incommingMessageModel.from.Replace("@c.us", "");
 
             

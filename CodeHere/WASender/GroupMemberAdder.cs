@@ -514,7 +514,7 @@ namespace WASender
                 {
                     if (IsPaused)
                     {
-                        while (IsPaused) ;
+                        while (IsPaused) { System.Threading.Thread.Sleep(500); }
                     }
                     if (IsStopped)
                     {

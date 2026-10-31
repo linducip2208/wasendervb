@@ -16,8 +16,10 @@ using WASender.Models;
 
 namespace WASender
 {
-    public partial class RunWarmer : MyMaterialPopOp
+    public partial class RunWarmer
+        : MyMaterialPopOp
     {
+        private static readonly Random _rng = new Random();
 
         WarmerModel warmerModel;
         private BackgroundWorker backgroundWorker1;
@@ -167,10 +169,11 @@ namespace WASender
                                 if (IsRunning)
                                 {
 
-                                    Random r = new Random();
+                                    Random r = _rng;
                                     int rInt = r.Next(warmerModel.delayFrom * 1000, warmerModel.delayTo * 1000);
-                                    r = new Random();
-                                    int randomMessageIndex = r.Next(0, MessagesList.Count() - 1);
+                                    r = _rng;
+                                    int randomMessageIndex = MessagesList.Count() <= 0 ? -1 : _rng.Next(0, MessagesList.Count());
+                                    if (randomMessageIndex < 0) { continue; }
                                     string randomMessage = MessagesList[randomMessageIndex];
                                     randomMessage = randomMessage.Replace("\r", "");
                                     try
@@ -211,17 +214,17 @@ namespace WASender
 
                                 }
                                 {
-                                    Random r = new Random();
+                                    Random r = _rng;
                                     int rInt = r.Next(warmerModel.delayFrom * 1000, warmerModel.delayTo * 1000);
-                                    r = new Random();
+                                    r = _rng;
                                     Thread.Sleep(rInt);
                                 }
                                 //if (IsRunning)
                                 //{
-                                //    Random r = new Random();
+                                //    Random r = _rng;
                                 //    int rInt = r.Next(warmerModel.delayFrom * 1000, warmerModel.delayTo * 1000);
-                                //    r = new Random();
-                                //    int randomMessageIndex = r.Next(0, MessagesList.Count() - 1);
+                                //    r = _rng;
+                                //    int randomMessageIndex = (MessagesList.Count() - 1 <= 1 ? 0 : r.Next(0, MessagesList.Count() - 1 - 1));
                                 //    string randomMessage = MessagesList[randomMessageIndex];
                                 //    try
                                 //    {
@@ -257,9 +260,9 @@ namespace WASender
                                 //    });
                                 //}
                                 //{
-                                //    Random r = new Random();
+                                //    Random r = _rng;
                                 //    int rInt = r.Next(warmerModel.delayFrom * 1000, warmerModel.delayTo * 1000);
-                                //    r = new Random();
+                                //    r = _rng;
                                 //    Thread.Sleep(rInt);
                                 //}
                             }
@@ -275,10 +278,11 @@ namespace WASender
                                 if (IsRunning)
                                 {
 
-                                    Random r = new Random();
+                                    Random r = _rng;
                                     int rInt = r.Next(warmerModel.delayFrom * 1000, warmerModel.delayTo * 1000);
-                                    r = new Random();
-                                    int randomMessageIndex = r.Next(0, MessagesList.Count() - 1);
+                                    r = _rng;
+                                    int randomMessageIndex = MessagesList.Count() <= 0 ? -1 : _rng.Next(0, MessagesList.Count());
+                                    if (randomMessageIndex < 0) { continue; }
                                     string randomMessage = MessagesList[randomMessageIndex];
                                     try
                                     {
@@ -313,17 +317,18 @@ namespace WASender
 
                                 }
                                 {
-                                    Random r = new Random();
+                                    Random r = _rng;
                                     int rInt = r.Next(warmerModel.delayFrom * 1000, warmerModel.delayTo * 1000);
-                                    r = new Random();
+                                    r = _rng;
                                     Thread.Sleep(rInt);
                                 }
                                 if (IsRunning)
                                 {
-                                    Random r = new Random();
+                                    Random r = _rng;
                                     int rInt = r.Next(warmerModel.delayFrom * 1000, warmerModel.delayTo * 1000);
-                                    r = new Random();
-                                    int randomMessageIndex = r.Next(0, MessagesList.Count() - 1);
+                                    r = _rng;
+                                    int randomMessageIndex = MessagesList.Count() <= 0 ? -1 : _rng.Next(0, MessagesList.Count());
+                                    if (randomMessageIndex < 0) { continue; }
                                     string randomMessage = MessagesList[randomMessageIndex];
                                     try
                                     {
@@ -354,9 +359,9 @@ namespace WASender
                                     });
                                 }
                                 {
-                                    Random r = new Random();
+                                    Random r = _rng;
                                     int rInt = r.Next(warmerModel.delayFrom * 1000, warmerModel.delayTo * 1000);
-                                    r = new Random();
+                                    r = _rng;
                                     Thread.Sleep(rInt);
                                 }
                             }
