@@ -345,7 +345,7 @@
     },
     {
         "name": "GrabGroupLinks",
-        "value": "Obter links de Grupo"
+        "value": "Obter links de grupos"
     },
     {
         "name": "OpenBrowser",
@@ -2482,70 +2482,6 @@
   {
     "name": "GrabChatListThisfeatureusesyourWhatsAppWebbrowser",
     "value": "Pegue a lista de bate -papo: esse recurso usa o seu navegador da WhatsApp para extrair a lista de bate -papo. Portanto, nem todos os bate -papos podem ser carregados na instância da Web do WhatsApp, diferentemente do seu dispositivo móvel, onde todos os bate -papos são armazenados."
-  },
-  {
-    "name": "ThemeCustomization",
-    "value": "Personalização de Tema"
-  },
-  {
-    "name": "Colors",
-    "value": "Cores"
-  },
-  {
-    "name": "Preview",
-    "value": "Visualização"
-  },
-  {
-    "name": "Dark",
-    "value": "Escuro"
-  },
-  {
-    "name": "Light",
-    "value": "Claro"
-  },
-  {
-    "name": "Accent",
-    "value": "Destaque"
-  },
-  {
-    "name": "TextShade",
-    "value": "Cor do Texto"
-  },
-  {
-    "name": "LightTheme",
-    "value": "Tema Claro"
-  },
-  {
-    "name": "DarkTheme",
-    "value": "Tema Escuro"
-  },
-  {
-    "name": "BlackText",
-    "value": "Texto Preto"
-  },
-  {
-    "name": "WhiteText",
-    "value": "Texto Branco"
-  },
-  {
-    "name": "Reset",
-    "value": "Redefinir"
-  },
-  {
-    "name": "ThemeSaved",
-    "value": "Tema Salvo"
-  },
-  {
-    "name": "ThemeSavedMessage",
-    "value": "Tema salvo! Por favor, reinicie a aplicação para aplicar as alterações."
-  },
-  {
-    "name": "AppNameLabel",
-    "value": "Nome do App"
-  },
-  {
-    "name": "Application",
-    "value": "Aplicativo"
   }
 
 

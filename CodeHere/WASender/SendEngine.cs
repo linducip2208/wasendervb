@@ -164,12 +164,20 @@ namespace WASender
                 string clicked = await Eval(wv, clickJs);
                 Log("search click -> " + (clicked ?? "null"));
                 string clickedClean = ((clicked ?? "").Trim().Trim('"') ?? "");
-                // JANGAN klik buta: hanya lanjut bila hasil cocok nomor persis.
                 if (!clickedClean.StartsWith("CLICKED:"))
                 {
-                    await ClearSearch(wv);
-                    return "NOTFOUND";
+                    // Tidak ada opsi cocok: coba Enter (buka hasil pertama) + catat isi hasil utk diagnosis.
+                    try
+                    {
+                        string dbg = await Eval(wv, "(function(){var els=document.querySelectorAll('#side [role=\"option\"], #side div[data-testid=\"cell-frame-container\"]');var o=[];for(var i=0;i<Math.min(3,els.length);i++){o.push(((els[i].innerText||els[i].textContent)||'').substring(0,60));}return 'N='+els.length+':'+o.join(' || ');})();");
+                        Log("search options -> " + (dbg ?? "null"));
+                        await Eval(wv, "(function(){var box=document.querySelector('#side input[type=\"text\"]')||document.querySelector('#side [contenteditable=\"true\"]');if(box){box.focus();var e=new KeyboardEvent('keydown',{key:'Enter',keyCode:13,which:13,bubbles:true});box.dispatchEvent(e);}return 'ENTER';})();");
+                        await Task.Delay(3000);
+                    }
+                    catch (Exception exE) { Log("search enter EX " + exE.Message); }
                 }
+                // Verifikasi via header chat (berlaku utk klik cocok MAUPUN Enter).
+                // JANGAN klaim OK bila header tidak cocok nomor (hindari kirim ke chat salah).
                 for (int i = 0; i < 5; i++)
                 {
                     await Task.Delay(2000);

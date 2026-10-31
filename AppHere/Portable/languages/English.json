@@ -2235,54 +2235,6 @@
     },{
         "name": "GrabChatListThisfeatureusesyourWhatsAppWebbrowser",
         "value": "Grab Chat List: This feature uses your WhatsApp Web browser to extract the chat list. Therefore, not all chats may be loaded on the WhatsApp Web instance, unlike on your mobile device where all chats are stored."
-    },{
-        "name": "ThemeCustomization",
-        "value": "Theme Customization"
-    },{
-        "name": "Colors",
-        "value": "Colors"
-    },{
-        "name": "Preview",
-        "value": "Preview"
-    },{
-        "name": "Dark",
-        "value": "Dark"
-    },{
-        "name": "Light",
-        "value": "Light"
-    },{
-        "name": "Accent",
-        "value": "Accent"
-    },{
-        "name": "TextShade",
-        "value": "Text Shade"
-    },{
-        "name": "LightTheme",
-        "value": "Light Theme"
-    },{
-        "name": "DarkTheme",
-        "value": "Dark Theme"
-    },{
-        "name": "BlackText",
-        "value": "Black Text"
-    },{
-        "name": "WhiteText",
-        "value": "White Text"
-    },{
-        "name": "Reset",
-        "value": "Reset"
-    },{
-        "name": "ThemeSaved",
-        "value": "Theme Saved"
-    },{
-        "name": "ThemeSavedMessage",
-        "value": "Theme saved! Please restart the application to apply changes."
-    },{
-        "name": "AppNameLabel",
-        "value": "App Name"
-    },{
-        "name": "Application",
-        "value": "Application"
     }
-
+	
 ]
