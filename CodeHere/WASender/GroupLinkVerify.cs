@@ -564,10 +564,10 @@ namespace WASender
                             else
                             {
                                 itemss.status = "Invalid";
+                                itemss.sendStatusModel.sendStatusEnum = SendStatusEnum.NotAvailable;
                             }
 
                             itemss.isDone = true;
-                            itemss.sendStatusModel.sendStatusEnum = SendStatusEnum.NotAvailable;
                             itemss.sendStatusModel.isDone = true;
 
                         }
@@ -592,10 +592,10 @@ namespace WASender
                             else
                             {
                                 itemss.status = "Invalid";
+                                itemss.sendStatusModel.sendStatusEnum = SendStatusEnum.NotAvailable;
                             }
 
                             itemss.isDone = true;
-                            itemss.sendStatusModel.sendStatusEnum = SendStatusEnum.NotAvailable;
                             itemss.sendStatusModel.isDone = true;
 
                         }
