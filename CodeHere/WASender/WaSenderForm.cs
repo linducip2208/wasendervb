@@ -778,6 +778,8 @@ namespace WASender
             webBrowser11.Document.InvokeScript("setEnableDesable", new string[] { "Box_Scheduler", Strings.All_Schedules.ToString() });
             webBrowser11.Document.InvokeScript("setEnableDesable", new string[] { "Box_WhatsAppWarmerGroup", Strings.Group_Warmer.ToString() });
             webBrowser11.Document.InvokeScript("setEnableDesable", new string[] { "Box_GroupLinkVerify", Strings.Bulk_Group_Links_Verify.ToString() });
+            webBrowser11.Document.InvokeScript("setEnableDesable", new string[] { "Box_AISetup", "True" });
+            webBrowser11.Document.InvokeScript("setEnableDesable", new string[] { "Box_WAHealth", "True" });
         }
 
         private void Body_MouseDown11(Object sender, HtmlElementEventArgs e)
@@ -904,6 +906,18 @@ namespace WASender
                         else if (btnId == "Scheduler")
                         {
                             AllSchedules form = new AllSchedules(this);
+                            this.Hide();
+                            form.Show();
+                        }
+                        else if (btnId == "AiSetup")
+                        {
+                            AiSettingsForm form = new AiSettingsForm(this);
+                            this.Hide();
+                            form.Show();
+                        }
+                        else if (btnId == "WaHealth")
+                        {
+                            HealthForm form = new HealthForm(this);
                             this.Hide();
                             form.Show();
                         }

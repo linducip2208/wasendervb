@@ -483,21 +483,67 @@ namespace WASender
 
         //}
 
+        public static string GetAppDataFolder()
+        {
+            try
+            {
+                string d = AppDomain.CurrentDomain.BaseDirectory;
+                if (string.IsNullOrEmpty(d)) d = Directory.GetCurrentDirectory();
+                if (!Directory.Exists(d)) Directory.CreateDirectory(d);
+                try
+                {
+                    string probe = Path.Combine(d, ".wtest");
+                    File.WriteAllText(probe, "1");
+                    File.Delete(probe);
+                    return d;
+                }
+                catch (Exception) { }
+            }
+            catch (Exception) { }
+            string w = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), Config.WaSenderFolderName);
+            try { if (!Directory.Exists(w)) Directory.CreateDirectory(w); } catch (Exception) { }
+            return w;
+        }
+
+        private static string OldDataFolder()
+        {
+            return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), Config.WaSenderFolderName);
+        }
+
+        public static string MigrateToApp(string fileName)
+        {
+            string dst = Path.Combine(GetAppDataFolder(), fileName);
+            try
+            {
+                if (!File.Exists(dst))
+                {
+                    string src = Path.Combine(OldDataFolder(), fileName);
+                    if (File.Exists(src)) File.Copy(src, dst, true);
+                }
+            }
+            catch (Exception) { }
+            return dst;
+        }
+
         public static string GetProcessLoggerFolderPath()
         {
-            String FolderPath = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
-
-            String WaSenderFolderpath = Path.Combine(FolderPath, Config.WaSenderFolderName);
-            if (!Directory.Exists(WaSenderFolderpath))
-            {
-                Directory.CreateDirectory(WaSenderFolderpath);
-            }
+            String WaSenderFolderpath = GetAppDataFolder();
             String returnableFolder = Path.Combine(WaSenderFolderpath, Config.ProcessLoggerFolderName);
 
             if (!Directory.Exists(returnableFolder))
             {
                 Directory.CreateDirectory(returnableFolder);
             }
+            try
+            {
+                string dstLog = Path.Combine(returnableFolder, "single_send.log");
+                if (!File.Exists(dstLog))
+                {
+                    string srcLog = Path.Combine(Path.Combine(OldDataFolder(), Config.ProcessLoggerFolderName), "single_send.log");
+                    if (File.Exists(srcLog)) File.Copy(srcLog, dstLog, true);
+                }
+            }
+            catch (Exception) { }
 
             return returnableFolder;
         }

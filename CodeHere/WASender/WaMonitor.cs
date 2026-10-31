@@ -46,13 +46,46 @@ namespace WASender
 
         private static string BaseDir()
         {
+            try { return Config.GetAppDataFolder(); }
+            catch (Exception) { return AppDomain.CurrentDomain.BaseDirectory; }
+        }
+
+        private static void MigrateOnce(string name)
+        {
+            try { Config.MigrateToApp(name); } catch (Exception) { }
+        }
+
+        private static bool _migrated = false;
+        private static void EnsureMigrated()
+        {
             try
             {
-                string w = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), Config.WaSenderFolderName);
-                if (!Directory.Exists(w)) Directory.CreateDirectory(w);
-                return w;
+                if (_migrated) return;
+                _migrated = true;
+                MigrateOnce("wa_monitor.db");
+                MigrateOnce("wa_status.txt");
+                MigrateOnce("wa_health.log");
+                try
+                {
+                    string oldRep = System.IO.Path.Combine(System.IO.Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.CommonApplicationData), Config.WaSenderFolderName), "Reports");
+                    string newRep = System.IO.Path.Combine(BaseDir(), "Reports");
+                    if (System.IO.Directory.Exists(oldRep))
+                    {
+                        if (!System.IO.Directory.Exists(newRep)) System.IO.Directory.CreateDirectory(newRep);
+                        foreach (string f in System.IO.Directory.GetFiles(oldRep))
+                        {
+                            try
+                            {
+                                string dst = System.IO.Path.Combine(newRep, System.IO.Path.GetFileName(f));
+                                if (!System.IO.File.Exists(dst)) System.IO.File.Copy(f, dst);
+                            }
+                            catch (Exception) { }
+                        }
+                    }
+                }
+                catch (Exception) { }
             }
-            catch (Exception) { return AppDomain.CurrentDomain.BaseDirectory; }
+            catch (Exception) { }
         }
 
         private static string DbPath() { return Path.Combine(BaseDir(), "wa_monitor.db"); }
@@ -122,6 +155,7 @@ namespace WASender
         {
             try
             {
+                try { EnsureMigrated(); } catch (Exception) { }
                 if ((DateTime.Now - _lastTick).TotalMinutes < 5) return;
                 _lastTick = DateTime.Now;
                 if (_sessionStart == DateTime.MinValue) _sessionStart = DateTime.Now;

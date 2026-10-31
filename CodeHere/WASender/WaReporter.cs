@@ -14,12 +14,7 @@ namespace WASender
     {
         private static string BaseDir()
         {
-            try
-            {
-                string w = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), Config.WaSenderFolderName);
-                if (!Directory.Exists(w)) Directory.CreateDirectory(w);
-                return w;
-            }
+            try { return Config.GetAppDataFolder(); }
             catch (Exception) { return AppDomain.CurrentDomain.BaseDirectory; }
         }
 

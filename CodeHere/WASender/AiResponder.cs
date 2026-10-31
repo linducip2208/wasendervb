@@ -67,18 +67,7 @@ namespace WASender
 
         public static string GetSettingsPath()
         {
-            try
-            {
-                string dir = Config.GetSysFolderPath();
-                try
-                {
-                    string w = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), Config.WaSenderFolderName);
-                    if (!System.IO.Directory.Exists(w)) System.IO.Directory.CreateDirectory(w);
-                    dir = w;
-                }
-                catch (Exception) { }
-                return System.IO.Path.Combine(dir, "ai_settings.json");
-            }
+            try { return Config.MigrateToApp("ai_settings.json"); }
             catch (Exception) { return "ai_settings.json"; }
         }
 
@@ -123,6 +112,20 @@ namespace WASender
                 return s;
             }
             catch (Exception) { return new AiSettings { Enabled = false }; }
+        }
+
+        public static void ClearCache()
+        {
+            try
+            {
+                try { System.Data.SQLite.SQLiteConnection.ClearAllPools(); } catch (Exception) { }
+                lock (_dbLock) { _dbReady = false; }
+                foreach (string f in new string[] { GetCachePath(), GetCachePath() + "-wal", GetCachePath() + "-journal" })
+                {
+                    try { if (System.IO.File.Exists(f)) System.IO.File.Delete(f); } catch (Exception) { }
+                }
+            }
+            catch (Exception) { }
         }
 
         public static bool IsConfigured()
@@ -199,8 +202,20 @@ namespace WASender
 
         public static string GetCachePath()
         {
-            try { return System.IO.Path.Combine(System.IO.Path.GetDirectoryName(GetSettingsPath()), "ai_cache.db"); }
+            try { return Config.MigrateToApp("ai_cache.db"); }
             catch (Exception) { return "ai_cache.db"; }
+        }
+
+        public static string GetOverridesPath()
+        {
+            try { return Config.MigrateToApp("ai_overrides.json"); }
+            catch (Exception) { return "ai_overrides.json"; }
+        }
+
+        public static string GetFaqPath()
+        {
+            try { return System.IO.Path.Combine(Config.GetAppDataFolder(), "ai_faq.txt"); }
+            catch (Exception) { return "ai_faq.txt"; }
         }
 
         private static long NowUnix() { return (long)(System.DateTime.UtcNow - new System.DateTime(1970, 1, 1)).TotalSeconds; }
@@ -283,7 +298,7 @@ namespace WASender
             try
             {
                 string dir = System.IO.Path.GetDirectoryName(GetCachePath());
-                string jp = System.IO.Path.Combine(dir ?? "", "ai_cache.json");
+                string jp = Config.MigrateToApp("ai_cache.json");
                 if (!System.IO.File.Exists(jp)) return;
                 Dictionary<string, string> d = null;
                 try { d = JsonConvert.DeserializeObject<Dictionary<string, string>>(System.IO.File.ReadAllText(jp)); } catch (Exception) { }
@@ -360,7 +375,7 @@ namespace WASender
             try
             {
                 string dir = System.IO.Path.GetDirectoryName(GetCachePath());
-                string jp = System.IO.Path.Combine(dir ?? "", "ai_overrides.json");
+                string jp = GetOverridesPath();
                 if (!System.IO.File.Exists(jp)) return;
                 System.Collections.Generic.List<OverrideSeed> seeds = null;
                 try { seeds = JsonConvert.DeserializeObject<System.Collections.Generic.List<OverrideSeed>>(System.IO.File.ReadAllText(jp)); } catch (Exception) { }
@@ -534,7 +549,7 @@ namespace WASender
                     }
                 }
                 string dir = System.IO.Path.GetDirectoryName(GetCachePath());
-                System.IO.File.WriteAllText(System.IO.Path.Combine(dir ?? "", "ai_faq.txt"), sb.ToString());
+                System.IO.File.WriteAllText(GetFaqPath(), sb.ToString());
             }
             catch (Exception) { }
         }
