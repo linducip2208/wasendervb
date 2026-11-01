@@ -564,6 +564,7 @@ namespace WASender
                             SendEngine.Log("update tersedia: " + latest + " (saat ini " + _cur + ")");
                     }
                     catch (Exception) { }
+                    try { await LicenseServer.RefreshAsync(); } catch (Exception) { }
                 });
             }
             catch (Exception) { }

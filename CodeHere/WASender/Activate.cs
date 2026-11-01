@@ -58,8 +58,51 @@ namespace WASender
             Environment.Exit(1);
         }
 
-        private void btnActivate_Click(object sender, EventArgs e)
+        private async void btnActivate_Click(object sender, EventArgs e)
         {
+
+            try
+            {
+                string rawKey = (txtKey.Text ?? "").Trim();
+                // Jalur panel online https://license.pandusolusi.com (kode XXXX-XXXX-XXXX-XXXX).
+                if (LicenseServer.LooksLikePanelCode(rawKey))
+                {
+                    string hwid = "";
+                    try { hwid = LicenseServer.CurrentHwid(); } catch (Exception) { }
+                    if (string.IsNullOrEmpty(hwid))
+                    {
+                        Utils.showError("Tidak dapat membaca fingerprint PC ini.");
+                        return;
+                    }
+                    btnActivate.Enabled = false;
+                    var r = await LicenseServer.VerifyAsync(rawKey, hwid);
+                    btnActivate.Enabled = true;
+                    if (r == null)
+                    {
+                        Utils.showError("Tidak dapat menghubungi server lisensi. Periksa koneksi internet lalu coba lagi.");
+                        return;
+                    }
+                    if (!r.Item1)
+                    {
+                        MaterialSnackBar SnackBarMessage = new MaterialSnackBar(Strings.InvalidActivationKey + ". " + r.Item2, Strings.OK, true);
+                        SnackBarMessage.Show(this);
+                        return;
+                    }
+                    LicenseServer.Save(r.Item3);
+                    MaterialSnackBar SnackBarOk = new MaterialSnackBar(Strings.ActivationSuccessfull, Strings.OK, true);
+                    SnackBarOk.Show(this);
+                    this.Hide();
+                    waSenderForm.Show();
+                    logger.Complete();
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+                try { btnActivate.Enabled = true; } catch (Exception) { }
+                MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
 
             try
             {

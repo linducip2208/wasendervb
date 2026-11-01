@@ -23,7 +23,31 @@ namespace WASender
             lblSoftwarename.Text = Strings.AppName;
             materialLabel2.Text = Strings.SoftwareVersion;
             DateTime? _date = Config.getEndDate();
-            if (_date == null)
+            var _online = LicenseServer.Load();
+            if (_online != null)
+            {
+                // Lisensi panel online: tampilkan dari server, bukan file legacy.
+                string exp = LicenseServer.ExpiryText();
+                int sisa = LicenseServer.RemainingDays();
+                if (string.IsNullOrEmpty(exp) || sisa == int.MaxValue)
+                {
+                    materialLabel5.Text = "Lifetime";
+                    materialLabel8.Text = "Unlimited";
+                    materialLabel8.ForeColor = System.Drawing.Color.FromArgb(0, 150, 0);
+                }
+                else
+                {
+                    materialLabel5.Text = exp;
+                    if (sisa < 0) sisa = 0;
+                    bool en = false;
+                    try { en = (Strings.selectedLanguage ?? "").StartsWith("Eng", StringComparison.OrdinalIgnoreCase); } catch (Exception) { }
+                    materialLabel8.Text = sisa.ToString() + (en ? " days" : " hari");
+                    if (sisa <= 7) materialLabel8.ForeColor = System.Drawing.Color.FromArgb(200, 0, 0);
+                    else if (sisa <= 30) materialLabel8.ForeColor = System.Drawing.Color.FromArgb(200, 120, 0);
+                    else materialLabel8.ForeColor = System.Drawing.Color.FromArgb(0, 150, 0);
+                }
+            }
+            else if (_date == null)
             {
                 materialLabel5.Text = "Lifetime";
                 materialLabel8.Text = "Unlimited";

@@ -322,17 +322,26 @@ namespace WASender
             return null;
         }
 
+        public static Func<bool> OnlineActiveCheck = null;
+
         public static bool IsProductActive()
         {
             try
             {
-                return KeySecurity.KeySecurity.IsProductActive(Config.WaSenderFolderName, Config.ActivationFile);
+                if (KeySecurity.KeySecurity.IsProductActive(Config.WaSenderFolderName, Config.ActivationFile)) return true;
             }
             catch (Exception ex)
             {
                 Config.deActivateProduct();
-                return false;
             }
+            // Lisensi online panel (https://license.pandusolusi.com). Hook diisi app saat startup.
+            try
+            {
+                if (OnlineActiveCheck != null && OnlineActiveCheck()) return true;
+            }
+            catch (Exception) { }
+            return false;
+        }
             //String FolderPath = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
 
             //String WaSenderFolderpath = Path.Combine(FolderPath, Config.WaSenderFolderName);
@@ -412,7 +421,6 @@ namespace WASender
             //    }
             //}
             //return false;
-        }
 
         public static string RemoveSpecialCharacters(string str)
         {
