@@ -12,6 +12,8 @@ namespace WASender
         public int DailyPerAccount { get; set; } = 500;
         public int MinScore { get; set; } = 40;
         public bool BlockOnLowScore { get; set; } = true;
+        public int MinDelaySec { get; set; } = 3;
+        public int MaxDelaySec { get; set; } = 15;
     }
 
     /// <summary>Governor anti-banned: kuota harian per akun + blokir skor rendah.</summary>
