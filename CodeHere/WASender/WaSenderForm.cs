@@ -537,6 +537,32 @@ namespace WASender
             _Config.KillChromeDriverProcess();
             init();
             setTooltips();
+            // Verifikasi lisensi online HANYA saat aplikasi dibuka, dan HANYA bila server online.
+            // Server online + lisensi invalid/dihapus -> file lokal dihapus -> form Activate muncul.
+            // Server offline -> pakai lisensi lokal (grace), tidak tanya kunci.
+            try
+            {
+                bool online = false;
+                try { online = Task.Run(async () => await LicenseServer.PingAsync()).Wait(9000); }
+                catch (Exception) { online = false; }
+                if (online)
+                {
+                    try
+                    {
+                        Task.Run(async () =>
+                        {
+                            var info = LicenseServer.Load();
+                            if (info == null) return;
+                            var r = await LicenseServer.VerifyAsync(info.Code, LicenseServer.CurrentHwid());
+                            if (r == null) return; // gagal baca respons: anggap offline, grace
+                            if (r.Item1) LicenseServer.Save(r.Item3);
+                            else LicenseServer.Clear(); // dihapus/suspend/expired di server
+                        }).Wait(15000);
+                    }
+                    catch (Exception) { }
+                }
+            }
+            catch (Exception) { }
             CHeckForActivation();
             lblSection.Hide();
             webBrowser11.ScriptErrorsSuppressed = true;
@@ -564,7 +590,6 @@ namespace WASender
                             SendEngine.Log("update tersedia: " + latest + " (saat ini " + _cur + ")");
                     }
                     catch (Exception) { }
-                    try { await LicenseServer.RefreshAsync(); } catch (Exception) { }
                     try { this.Invoke(new Action(() => { try { UpdateNetStatus(); } catch (Exception) { } })); } catch (Exception) { }
                 });
             }
@@ -804,7 +829,7 @@ namespace WASender
                 {
                     dashTimer = new System.Windows.Forms.Timer();
                     dashTimer.Interval = 60000;
-                    dashTimer.Tick += (s, ev) => { try { RefreshDashboardStats(); } catch (Exception) { } try { UpdateNetStatus(); } catch (Exception) { } };
+                    dashTimer.Tick += (s, ev) => { try { RefreshDashboardStats(); } catch (Exception) { } };
                     dashTimer.Start();
                 }
             }
