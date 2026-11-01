@@ -1791,11 +1791,12 @@ namespace WASender
                 return false;
             }
             int before = await SendEngine.OutboxCount(wv);
+            bool sentAccepted = false;
             try
             {
                 bool dllOk = await SendMessageSync(mesageModel, isFirstMessage, item, wv);
                 writetrace("REWRITE DLL result=" + dllOk);
-                if (dllOk) { string _cfT = ""; try { _cfT = ProjectCommon.ReplaceKeyMarker(mesageModel.longMessage ?? "", item.parameterModelList); } catch (Exception) { } string _cfD = System.Text.RegularExpressions.Regex.Replace(item.number ?? "", "[^0-9]", ""); var _cf = await SendEngine.ConfirmDelivered(wv, _cfD, _cfT); writetrace("REWRITE DLL confirm=" + _cf.Item1 + " " + _cf.Item2); if (_cf.Item1) { isDOne = true; } }
+                if (dllOk) { sentAccepted = true; string _cfT = ""; try { _cfT = ProjectCommon.ReplaceKeyMarker(mesageModel.longMessage ?? "", item.parameterModelList); } catch (Exception) { } string _cfD = System.Text.RegularExpressions.Regex.Replace(item.number ?? "", "[^0-9]", ""); var _cf = await SendEngine.ConfirmDelivered(wv, _cfD, _cfT); writetrace("REWRITE DLL confirm=" + _cf.Item1 + " " + _cf.Item2); if (_cf.Item1) { isDOne = true; } }
             }
             catch (Exception ex) { writetrace("REWRITE DLL EX " + ex.Message); }
             if (!isDOne && generalSettingsModel.browserType == 2)
@@ -1869,6 +1870,13 @@ namespace WASender
                 }
             }
             writetrace("REWRITE final=" + isDOne);
+            if (!isDOne && sentAccepted)
+            {
+                // API WA terima pesan tapi verifikasi baca-timeline gagal (race/lag).
+                // Pesan benar terkirim — jangan laporkan Failed.
+                writetrace("REWRITE sentAccepted tapi verify gagal, anggap terkirim");
+                isDOne = true;
+            }
             return isDOne;
         }
 
@@ -2343,11 +2351,12 @@ namespace WASender
                                                 else
                                                 {
                                                     int before = await SendEngine.OutboxCount(wv);
+                                                    bool sentAccepted = false;
                                                     try
                                                     {
                                                         bool dllOk = await SendMessageSync(mesageModel, isFirstMessage, item, wv);
                                                         writetrace("REWRITE DLL result=" + dllOk);
-                                                        if (dllOk) { string _cfT = ""; try { _cfT = ProjectCommon.ReplaceKeyMarker(mesageModel.longMessage ?? "", item.parameterModelList); } catch (Exception) { } string _cfD = System.Text.RegularExpressions.Regex.Replace(item.number ?? "", "[^0-9]", ""); var _cf = await SendEngine.ConfirmDelivered(wv, _cfD, _cfT); writetrace("REWRITE DLL confirm=" + _cf.Item1 + " " + _cf.Item2); if (_cf.Item1) { isDOne = true; } }
+                                                        if (dllOk) { sentAccepted = true; string _cfT = ""; try { _cfT = ProjectCommon.ReplaceKeyMarker(mesageModel.longMessage ?? "", item.parameterModelList); } catch (Exception) { } string _cfD = System.Text.RegularExpressions.Regex.Replace(item.number ?? "", "[^0-9]", ""); var _cf = await SendEngine.ConfirmDelivered(wv, _cfD, _cfT); writetrace("REWRITE DLL confirm=" + _cf.Item1 + " " + _cf.Item2); if (_cf.Item1) { isDOne = true; } }
                                                     }
                                                     catch (Exception ex) { writetrace("REWRITE DLL EX " + ex.Message); }
                                                     if (!isDOne)
@@ -2394,9 +2403,11 @@ namespace WASender
                                                                 var trw = await SendEngine.SendTextWpp(wv, digitsW, txtW);
                                                                 writetrace("REWRITE WPP text=" + trw.Item1);
                                                                 wppTxtOk = trw.Item1;
+                                                                if (trw.Item1) sentAccepted = true;
                                                             }
                                                             if (wppMediaOk && wppTxtOk)
                                                             {
+                                                                sentAccepted = true;
                                                                 var cf = await SendEngine.ConfirmDelivered(wv, digitsW, txtW);
                                                                 writetrace("REWRITE WPP confirm=" + cf.Item1 + " " + cf.Item2);
                                                                 if (cf.Item1) { isDOne = true; }
@@ -2481,6 +2492,11 @@ namespace WASender
                                                         }
                                                     }
                                                     writetrace("REWRITE final=" + isDOne);
+                                                    if (!isDOne && sentAccepted)
+                                                    {
+                                                        writetrace("REWRITE sentAccepted tapi verify gagal, anggap terkirim");
+                                                        isDOne = true;
+                                                    }
                                                 }
                                                 writetrace("SendMessageSync 1618 end--- result=" + isDOne);
                                                 if (!isDOne)

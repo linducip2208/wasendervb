@@ -379,9 +379,9 @@ namespace WASender
             Log("confirm-id -> " + res);
             if (res.StartsWith("FOUND"))
             {
-                int ack = 0;
-                try { ack = int.Parse(new string(res.SkipWhile(c => !char.IsDigit(c)).TakeWhile(char.IsDigit).ToArray())); } catch (Exception) { }
-                return Tuple.Create(ack >= 1, res);
+                // Pesan ada di outbox dari kita = TERKIRIM. ack>=1 itu DELIVERED ke HP,
+                // jangan dipakai untuk status kirim (HP offline pun pesan tetap terkirim).
+                return Tuple.Create(true, res);
             }
             return Tuple.Create(false, res);
         }
@@ -412,9 +412,8 @@ namespace WASender
                 Log("confirm -> " + res);
                 if (res.StartsWith("FOUND"))
                 {
-                    int ack = 0;
-                    try { ack = int.Parse(new string(res.SkipWhile(c => !char.IsDigit(c)).TakeWhile(char.IsDigit).ToArray())); } catch (Exception) { }
-                    return Tuple.Create(ack >= 1, res);
+                    // Sama: FOUND dari kita = TERKIRIM, ack hanya info delivered.
+                    return Tuple.Create(true, res);
                 }
                 return Tuple.Create(false, res);
             }
