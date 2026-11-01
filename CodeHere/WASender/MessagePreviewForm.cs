@@ -3,6 +3,7 @@ using Microsoft.Web.WebView2.WinForms;
 using System;
 using System.Web;
 using System.Windows.Forms;
+using WaAutoReplyBot;
 
 namespace WASender
 {
