@@ -761,7 +761,19 @@ namespace WASender
                             logger.WriteLog("checking Next button ");
 
 
-                            if (driver.FindElements(By.CssSelector("a#pnnext")).Count <= 0)
+                            bool hasNext = driver.FindElements(By.CssSelector("a#pnnext")).Count > 0;
+                            string nextCss = "a#pnnext";
+                            if (!hasNext)
+                            {
+                                // UI Google baru: paginator lama sering tidak ada, coba tombol Next/Berikutnya.
+                                string[] cands = new string[] { "a[aria-label='Next']", "a[aria-label='Halaman berikutnya']", "button[aria-label='Next']", "button[aria-label='Halaman berikutnya']" };
+                                foreach (string c in cands)
+                                {
+                                    try { if (driver.FindElements(By.CssSelector(c)).Count > 0) { hasNext = true; nextCss = c; break; } }
+                                    catch (Exception) { }
+                                }
+                            }
+                            if (!hasNext)
                             {
                                 string ss = "";
                                 e.Cancel = true;
@@ -769,7 +781,7 @@ namespace WASender
                                 return;
                             }
                             string str = driver.Url.ToString();
-                            driver.FindElement(By.CssSelector("a#pnnext")).Click();
+                            driver.FindElement(By.CssSelector(nextCss)).Click();
                             Thread.Sleep(3000);
                             while (driver.Url.ToString() == str)
                             {
@@ -806,16 +818,22 @@ namespace WASender
 
         private void worker_DoWorkWebView2(object sender, DoWorkEventArgs e)
         {
-            // Ekstraksi berulang via WebView2 JS. timerRunnerChecker_Tick tetap yang render ke grid.
+            // Ekstraksi multi-halaman via WebView2 JS: scroll feed sampai stagnan,
+            // lalu klik Next/Berikutnya. timerRunnerChecker_Tick tetap yang render ke grid.
+            // Google hanya render ~20/panel — angka "500.000" di halaman adalah total
+            // hasil, yang bisa ditarik hanya yang sempat di-render per halaman.
             try
             {
                 var wv = scraperBrowser != null ? scraperBrowser.View : null;
                 if (wv == null) return;
+                int stagnant = 0;
+                int deadRounds = 0; // ronde tanpa data baru; pengaman loop.Next yang muter di tempat
                 while (!isStop)
                 {
+                    int added = 0;
                     try
                     {
-                        var t = GMapWebView2Extractor.ExtractAsync(wv, 30);
+                        var t = GMapWebView2Extractor.ExtractAsync(wv, 120);
                         t.Wait(30000);
                         var items = t.Result;
                         if (items != null)
@@ -825,7 +843,8 @@ namespace WASender
                                 try
                                 {
                                     if (string.IsNullOrWhiteSpace(it.Name)) continue;
-                                    int exist = gMapModelList.Where(x => x.Name == it.Name).Count();
+                                    string key = (it.Name ?? "").Trim().ToLowerInvariant() + "|" + (it.Address ?? "").Trim().ToLowerInvariant();
+                                    int exist = gMapModelList.Where(x => ((x.Name ?? "").Trim().ToLowerInvariant() + "|" + (x.address ?? "").Trim().ToLowerInvariant()) == key).Count();
                                     if (exist > 0) continue;
                                     GMapModel m = new GMapModel();
                                     m.Name = it.Name;
@@ -835,13 +854,41 @@ namespace WASender
                                     m.mobilenumber = it.Phone ?? "";
                                     m.Logged = false;
                                     gMapModelList.Add(m);
+                                    added++;
                                 }
                                 catch (Exception) { }
                             }
                         }
                     }
                     catch (Exception ex) { try { logger.WriteLog("wv-ex=" + ex.Message); } catch (Exception) { } }
-                    System.Threading.Thread.Sleep(5000);
+                    try { logger.WriteLog("wv-page added=" + added + " total=" + gMapModelList.Count); } catch (Exception) { }
+                    if (added > 0) { stagnant = 0; deadRounds = 0; } else { stagnant++; deadRounds++; }
+                    if (deadRounds >= 12) { try { logger.WriteLog("wv-stop: 12 ronde tanpa data baru"); } catch (Exception) { } break; }
+                    // Tanpa batas jumlah (unlimited): berhenti hanya saat halaman habis / user Stop.
+                    if (stagnant >= 2)
+                    {
+                        bool next = false;
+                        try
+                        {
+                            var nt = GMapWebView2Extractor.ClickNextAsync(wv);
+                            nt.Wait(30000);
+                            next = nt.Result;
+                        }
+                        catch (Exception) { next = false; }
+                        try { logger.WriteLog("wv-next=" + next); } catch (Exception) { }
+                        if (next) { stagnant = 0; System.Threading.Thread.Sleep(4000); }
+                        else break; // tidak ada halaman lagi -> selesai, lanjut query berikut via doPerform
+                    }
+                    else
+                    {
+                        try
+                        {
+                            var st = GMapWebView2Extractor.ScrollResultsAsync(wv);
+                            st.Wait(15000);
+                        }
+                        catch (Exception) { }
+                        System.Threading.Thread.Sleep(2500);
+                    }
                     if (worker != null && worker.CancellationPending) { e.Cancel = true; return; }
                 }
             }
@@ -1044,12 +1091,37 @@ namespace WASender
             this.waSenderForm.gmapDataReturn(this.gMapModelList);
         }
 
+        private string ResolveTemplateXlsx(string fileName)
+        {
+            try
+            {
+                string[] cands = new string[]
+                {
+                    Path.Combine(AppDomain.CurrentDomain.BaseDirectory, fileName),
+                    Path.Combine(Directory.GetCurrentDirectory(), fileName),
+                    Path.Combine(Config.GetSysFolderPath(), fileName),
+                    fileName
+                };
+                foreach (string p in cands) { try { if (!string.IsNullOrEmpty(p) && File.Exists(p)) return p; } catch (Exception) { } }
+            }
+            catch (Exception) { }
+            return fileName;
+        }
+
         private void materialButton3_Click(object sender, EventArgs e)
         {
-            String FolderPath = Config.GetTempFolderPath();
-            String file = Path.Combine(FolderPath, "GMapData" + Guid.NewGuid().ToString() + ".xlsx");
-            string NewFileName = file.ToString();
-            File.Copy("ChatListTemplate.xlsx", NewFileName, true);
+            try
+            {
+                if (gMapModelList == null || gMapModelList.Count == 0)
+                {
+                    MessageBox.Show("Belum ada data untuk di-export.", Strings.Info, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+                String FolderPath = Config.GetTempFolderPath();
+                try { if (!Directory.Exists(FolderPath)) Directory.CreateDirectory(FolderPath); } catch (Exception) { }
+                String file = Path.Combine(FolderPath, "GMapData" + Guid.NewGuid().ToString() + ".xlsx");
+                string NewFileName = file.ToString();
+                File.Copy(ResolveTemplateXlsx("ChatListTemplate.xlsx"), NewFileName, true);
             var newFile = new FileInfo(NewFileName);
             ExcelPackage.LicenseContext = OfficeOpenXml.LicenseContext.NonCommercial;
             using (ExcelPackage xlPackage = new ExcelPackage(newFile))
@@ -1097,11 +1169,15 @@ namespace WASender
                     ws.Cells[i + 2, 16].Value = gMapModelList[i].twitterprofile;
 
 
-                    if (gMapModelList[i].imagesFolder != null)
+                    if (!string.IsNullOrEmpty(gMapModelList[i].imagesFolder))
                     {
-                        ws.Cells[i + 2, 17].Hyperlink = new Uri(gMapModelList[i].imagesFolder);
-                        ws.Cells[i + 2, 17].Style.Font.Color.SetColor(Color.Blue);
-                        ws.Cells[i + 2, 17].Style.Font.UnderLine = true;
+                        Uri imgUri;
+                        if (Uri.TryCreate(gMapModelList[i].imagesFolder, UriKind.Absolute, out imgUri))
+                        {
+                            ws.Cells[i + 2, 17].Hyperlink = imgUri;
+                            ws.Cells[i + 2, 17].Style.Font.Color.SetColor(Color.Blue);
+                            ws.Cells[i + 2, 17].Style.Font.UnderLine = true;
+                        }
                         ws.Cells[i + 2, 17].Value = gMapModelList[i].imagesFolder;
                     }
                     
@@ -1118,6 +1194,12 @@ namespace WASender
             {
                 File.Copy(NewFileName, savesampleExceldialog.FileName.EndsWith(".xlsx") ? savesampleExceldialog.FileName : savesampleExceldialog.FileName + ".xlsx", true);
                 Utils.showAlert(Strings.Filedownloadedsuccessfully, Alerts.Alert.enmType.Success);
+            }
+            }
+            catch (Exception ex)
+            {
+                try { logger.WriteLog("export EX " + ex.Message); } catch (Exception) { }
+                MessageBox.Show("Export gagal: " + ex.Message, Strings.Error, MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -1171,10 +1253,18 @@ namespace WASender
 
         private void materialButton5_Click(object sender, EventArgs e)
         {
-            String FolderPath = Config.GetTempFolderPath();
-            String file = Path.Combine(FolderPath, "GMapData_Numbers" + Guid.NewGuid().ToString() + ".xlsx");
-            string NewFileName = file.ToString();
-            File.Copy("ChatListTemplate.xlsx", NewFileName, true);
+            try
+            {
+                if (gMapModelList == null || gMapModelList.Count == 0)
+                {
+                    MessageBox.Show("Belum ada data untuk di-export.", Strings.Info, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+                String FolderPath = Config.GetTempFolderPath();
+                try { if (!Directory.Exists(FolderPath)) Directory.CreateDirectory(FolderPath); } catch (Exception) { }
+                String file = Path.Combine(FolderPath, "GMapData_Numbers" + Guid.NewGuid().ToString() + ".xlsx");
+                string NewFileName = file.ToString();
+                File.Copy(ResolveTemplateXlsx("ChatListTemplate.xlsx"), NewFileName, true);
             var newFile = new FileInfo(NewFileName);
             ExcelPackage.LicenseContext = OfficeOpenXml.LicenseContext.NonCommercial;
             using (ExcelPackage xlPackage = new ExcelPackage(newFile))
@@ -1202,6 +1292,12 @@ namespace WASender
             {
                 File.Copy(NewFileName, savesampleExceldialog.FileName.EndsWith(".xlsx") ? savesampleExceldialog.FileName : savesampleExceldialog.FileName + ".xlsx", true);
                 Utils.showAlert(Strings.Filedownloadedsuccessfully, Alerts.Alert.enmType.Success);
+            }
+            }
+            catch (Exception ex)
+            {
+                try { logger.WriteLog("export numbers EX " + ex.Message); } catch (Exception) { }
+                MessageBox.Show("Export gagal: " + ex.Message, Strings.Error, MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
     }
