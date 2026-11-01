@@ -87,6 +87,17 @@ const
   WV2_CLIENT_32 = 'SOFTWARE\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}';
   WV2_CLIENT_HKCU = 'Software\Microsoft\EdgeUpdate\ClientState\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}';
   WV2_DOWNLOAD_URL = 'https://developer.microsoft.com/microsoft-edge/webview2/';
+  DOTNET48_DOWNLOAD_URL = 'https://dotnet.microsoft.com/download/dotnet-framework/net48';
+  DOTNET48_MIN_RELEASE = 528040;
+
+function IsDotNet48Installed(): Boolean;
+var
+  Release: Cardinal;
+begin
+  Result := False;
+  if RegQueryDWordValue(HKEY_LOCAL_MACHINE, 'SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full', 'Release', Release) then
+    Result := Release >= DOTNET48_MIN_RELEASE;
+end;
 
 function IsWebView2Installed(): Boolean;
 var
@@ -125,6 +136,25 @@ var
   ErrorCode: Integer;
 begin
   Result := True;
+
+  // 1) .NET Framework 4.8 wajib ada (aplikasi C#). Cek dulu sebelum WebView2.
+  if not IsDotNet48Installed() then
+  begin
+    ResponseCode := MsgBox(
+      'WASender membutuhkan Microsoft .NET Framework 4.8, tapi belum terinstall di PC ini.' + #13#10 + #13#10 +
+      'Klik [Yes] untuk membuka halaman download .NET Framework 4.8 dari microsoft.com.' + #13#10 +
+      'Klik [No] untuk membatalkan installer (silakan install .NET 4.8 dulu, lalu jalankan installer ini lagi).' + #13#10 + #13#10 +
+      'Catatan: .NET 4.8 sudah bawaan Windows 10 versi 1903+ dan Windows 11.',
+      mbConfirmation,
+      MB_YESNO or MB_DEFBUTTON1
+    );
+    if ResponseCode = IDYES then
+    begin
+      ShellExec('open', DOTNET48_DOWNLOAD_URL, '', '', SW_SHOWNORMAL, ewNoWait, ErrorCode);
+    end;
+    Result := False;
+    Exit;
+  end;
 
   if IsWebView2Installed() then
     Exit;
