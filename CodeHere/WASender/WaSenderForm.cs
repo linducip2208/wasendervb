@@ -935,6 +935,33 @@ namespace WASender
                 catch (Exception) { d["session"] = "-"; }
                 try { d["update"] = AppUpdater.StatusText(); }
                 catch (Exception) { d["update"] = "-"; }
+                try
+                {
+                    var actsb = new System.Text.StringBuilder();
+                    actsb.Append("<div class=\"row\"><div class=\"ic t-green\"><i class=\"fas fa-paper-plane\"></i></div><div>" + (d.ContainsKey("sent") ? d["sent"] : "0") + " pesan terkirim hari ini</div><div class=\"time\">hari ini</div></div>");
+                    try
+                    {
+                        string dir = Config.GetProcessLoggerFolderPath();
+                        string lp = System.IO.Path.Combine(dir ?? "", "single_send.log");
+                        if (System.IO.File.Exists(lp))
+                        {
+                            string[] all = System.IO.File.ReadAllLines(lp);
+                            int from = all.Length > 4 ? all.Length - 4 : 0;
+                            for (int i = all.Length - 1; i >= from; i--)
+                            {
+                                string line = all[i] ?? "";
+                                string tm = "";
+                                try { if (line.Length >= 8) tm = System.Text.RegularExpressions.Regex.Match(line.Substring(0, 8), @"\d{2}:\d{2}").Value; } catch (Exception) { }
+                                string body = line.Length > 9 ? line.Substring(9) : line;
+                                if (body.Length > 90) body = body.Substring(0, 90) + "...";
+                                actsb.Append("<div class=\"row\"><div class=\"ic t-slate\"><i class=\"fas fa-info\"></i></div><div>" + System.Security.SecurityElement.Escape(body) + "</div><div class=\"time\">" + tm + "</div></div>");
+                            }
+                        }
+                    }
+                    catch (Exception) { }
+                    d["activity"] = actsb.ToString();
+                }
+                catch (Exception) { }
                 string json = Newtonsoft.Json.JsonConvert.SerializeObject(d);
                 await DashEval("setDashStats(" + JsStr(json) + ");");
             }
@@ -1025,7 +1052,11 @@ namespace WASender
             try { btnId = e.TryGetWebMessageAsString(); } catch (Exception) { }
             if (!string.IsNullOrEmpty(btnId) && btnId != "")
             {
-                        if (btnId == "Tutorial")
+                        if (btnId == "BulkSender")
+                        {
+                            try { tabMain.SelectedIndex = 0; } catch (Exception) { }
+                        }
+                        else if (btnId == "Tutorial")
                         {
                             TutorialForm tform = new TutorialForm();
                             tform.Show();
