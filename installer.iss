@@ -1,10 +1,11 @@
 ; ===========================================================================
-;  WASender — Inno Setup installer script
+;  WASender — Inno Setup installer script (C# WinForms build)
 ; ---------------------------------------------------------------------------
 ;  Build via:
 ;      iscc installer.iss
 ;  Prereq:
-;      - dist\WASender.exe sudah di-build via `python build.py`
+;      - CodeHere\WASender\bin\Release sudah di-build Release via MSBuild
+;        (buka WASender.sln di Visual Studio, atau jalankan build Release)
 ;      - Inno Setup 6+ terpasang (https://jrsoftware.org/isdl.php)
 ;  Output:
 ;      dist\installer\WASender-Setup-6.1.exe
@@ -34,8 +35,8 @@ Compression=lzma2/ultra
 SolidCompression=yes
 WizardStyle=modern
 PrivilegesRequired=admin
-ArchitecturesInstallIn64BitMode=x64
-ArchitecturesAllowed=x64
+ArchitecturesInstallIn64BitMode=x64compatible
+ArchitecturesAllowed=x64compatible
 UninstallDisplayIcon={app}\{#MyAppExeName}
 UninstallDisplayName={#MyAppName} {#MyAppVersion}
 ; SetupIconFile=assets\icon.ico
@@ -52,8 +53,11 @@ Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; \
     GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked; OnlyBelowVersion: 6.1
 
 [Files]
-; Main exe (hasil onefile build dari PyInstaller)
-Source: "dist\WASender.exe"; DestDir: "{app}"; Flags: ignoreversion
+; Aplikasi C# (MSBuild Release). Ambil semua isi bin\Release termasuk
+; DLL, HelpDocs (dashboard/tutorial), template Excel, bahasa, dan JS bridge.
+; Dikecualikan: file debug (*.pdb, *.xml dokumentasi) + chromedriver.exe
+; legacy (jalur Selenium sudah nonaktif, WebView2 tidak butuhnya).
+Source: "CodeHere\WASender\bin\Release\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs; Excludes: "*.pdb,*.xml,chromedriver.exe,msedgedriver.exe"
 ; Optional README — copy ke install dir kalau ada
 Source: "README.md"; DestDir: "{app}"; Flags: ignoreversion skipifsourcedoesntexist
 
