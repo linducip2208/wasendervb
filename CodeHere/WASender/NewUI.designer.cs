@@ -37,7 +37,7 @@
             this.lblRunStatus = new System.Windows.Forms.Label();
             this.label7 = new System.Windows.Forms.Label();
             this.materialCard3 = new MaterialSkin.Controls.MaterialCard();
-            this.pictureBox2 = new System.Windows.Forms.PictureBox();
+            this.ringProgress1 = new WASender.RingProgress();
             this.materialButton2 = new MaterialSkin.Controls.MaterialButton();
             this.materialButton1 = new MaterialSkin.Controls.MaterialButton();
             this.materialCard1 = new MaterialSkin.Controls.MaterialCard();
@@ -62,8 +62,15 @@
             this.materialButton3 = new MaterialSkin.Controls.MaterialButton();
             this.materialButton4 = new MaterialSkin.Controls.MaterialButton();
             this.materialButton5 = new MaterialSkin.Controls.MaterialButton();
+            this.lblSearchCap = new System.Windows.Forms.Label();
+            this.txtSearchBox = new System.Windows.Forms.TextBox();
+            this.lblMaxCap = new System.Windows.Forms.Label();
+            this.numMaxCount = new System.Windows.Forms.NumericUpDown();
+            this.lblRatingCap = new System.Windows.Forms.Label();
+            this.cmbMinRating = new System.Windows.Forms.ComboBox();
+            this.lblElapsed = new System.Windows.Forms.Label();
+            this.lblDetail = new System.Windows.Forms.Label();
             this.materialCard3.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             this.materialCard1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.materialCard2.SuspendLayout();
@@ -154,7 +161,7 @@
             this.materialCard3.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.materialCard3.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
-            this.materialCard3.Controls.Add(this.pictureBox2);
+            this.materialCard3.Controls.Add(this.ringProgress1);
             this.materialCard3.Controls.Add(this.materialCheckbox1);
             this.materialCard3.Controls.Add(this.label1);
             this.materialCard3.Controls.Add(this.label2);
@@ -162,6 +169,13 @@
             this.materialCard3.Controls.Add(this.lblRunStatus);
             this.materialCard3.Controls.Add(this.label7);
             this.materialCard3.Controls.Add(this.materialButton1);
+            this.materialCard3.Controls.Add(this.lblSearchCap);
+            this.materialCard3.Controls.Add(this.txtSearchBox);
+            this.materialCard3.Controls.Add(this.lblMaxCap);
+            this.materialCard3.Controls.Add(this.numMaxCount);
+            this.materialCard3.Controls.Add(this.lblRatingCap);
+            this.materialCard3.Controls.Add(this.cmbMinRating);
+            this.materialCard3.Controls.Add(this.lblElapsed);
             this.materialCard3.Depth = 0;
             this.materialCard3.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(222)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))));
             this.materialCard3.Location = new System.Drawing.Point(17, 188);
@@ -169,19 +183,19 @@
             this.materialCard3.MouseState = MaterialSkin.MouseState.HOVER;
             this.materialCard3.Name = "materialCard3";
             this.materialCard3.Padding = new System.Windows.Forms.Padding(13, 14, 13, 14);
-            this.materialCard3.Size = new System.Drawing.Size(1024, 142);
+            this.materialCard3.Size = new System.Drawing.Size(1024, 170);
             this.materialCard3.TabIndex = 30;
             // 
-            // pictureBox2
-            // 
-            this.pictureBox2.Image = global::WASender.Properties.Resources.nn2;
-            this.pictureBox2.Location = new System.Drawing.Point(29, 24);
-            this.pictureBox2.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.pictureBox2.Name = "pictureBox2";
-            this.pictureBox2.Size = new System.Drawing.Size(77, 78);
-            this.pictureBox2.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
-            this.pictureBox2.TabIndex = 20;
-            this.pictureBox2.TabStop = false;
+            // ringProgress1
+            //
+            this.ringProgress1.Location = new System.Drawing.Point(29, 24);
+            this.ringProgress1.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.ringProgress1.Maximum2 = 100;
+            this.ringProgress1.Name = "ringProgress1";
+            this.ringProgress1.Size = new System.Drawing.Size(77, 78);
+            this.ringProgress1.Spinning = false;
+            this.ringProgress1.TabIndex = 20;
+            this.ringProgress1.Value = 0;
             // 
             // materialButton2
             // 
@@ -234,14 +248,15 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.materialCard1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
             this.materialCard1.Controls.Add(this.dataGridView1);
+            this.materialCard1.Controls.Add(this.lblDetail);
             this.materialCard1.Depth = 0;
             this.materialCard1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(222)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))));
-            this.materialCard1.Location = new System.Drawing.Point(17, 348);
+            this.materialCard1.Location = new System.Drawing.Point(17, 366);
             this.materialCard1.Margin = new System.Windows.Forms.Padding(13, 14, 13, 14);
             this.materialCard1.MouseState = MaterialSkin.MouseState.HOVER;
             this.materialCard1.Name = "materialCard1";
             this.materialCard1.Padding = new System.Windows.Forms.Padding(13, 14, 13, 14);
-            this.materialCard1.Size = new System.Drawing.Size(1024, 401);
+            this.materialCard1.Size = new System.Drawing.Size(1024, 383);
             this.materialCard1.TabIndex = 31;
             // 
             // dataGridView1
@@ -268,7 +283,7 @@
             this.dataGridView1.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.dataGridView1.Name = "dataGridView1";
             this.dataGridView1.RowTemplate.Height = 24;
-            this.dataGridView1.Size = new System.Drawing.Size(987, 368);
+            this.dataGridView1.Size = new System.Drawing.Size(987, 336);
             this.dataGridView1.TabIndex = 0;
             // 
             // Column1
@@ -484,6 +499,93 @@
             this.materialButton5.UseVisualStyleBackColor = true;
             this.materialButton5.Click += new System.EventHandler(this.materialButton5_Click);
             // 
+            //
+            // lblSearchCap
+            //
+            this.lblSearchCap.AutoSize = true;
+            this.lblSearchCap.Location = new System.Drawing.Point(14, 134);
+            this.lblSearchCap.Name = "lblSearchCap";
+            this.lblSearchCap.Size = new System.Drawing.Size(36, 17);
+            this.lblSearchCap.TabIndex = 40;
+            this.lblSearchCap.Text = "Cari:";
+            //
+            // txtSearchBox
+            //
+            this.txtSearchBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtSearchBox.Location = new System.Drawing.Point(60, 130);
+            this.txtSearchBox.Name = "txtSearchBox";
+            this.txtSearchBox.Size = new System.Drawing.Size(220, 26);
+            this.txtSearchBox.TabIndex = 41;
+            this.txtSearchBox.TextChanged += new System.EventHandler(this.txtSearchBox_TextChanged);
+            //
+            // lblMaxCap
+            //
+            this.lblMaxCap.AutoSize = true;
+            this.lblMaxCap.Location = new System.Drawing.Point(295, 134);
+            this.lblMaxCap.Name = "lblMaxCap";
+            this.lblMaxCap.Size = new System.Drawing.Size(41, 17);
+            this.lblMaxCap.TabIndex = 42;
+            this.lblMaxCap.Text = "Maks:";
+            //
+            // numMaxCount
+            //
+            this.numMaxCount.Location = new System.Drawing.Point(340, 130);
+            this.numMaxCount.Maximum = new decimal(new int[] {
+            100000,
+            0,
+            0,
+            0});
+            this.numMaxCount.Name = "numMaxCount";
+            this.numMaxCount.Size = new System.Drawing.Size(70, 22);
+            this.numMaxCount.TabIndex = 43;
+            //
+            // lblRatingCap
+            //
+            this.lblRatingCap.AutoSize = true;
+            this.lblRatingCap.Location = new System.Drawing.Point(425, 134);
+            this.lblRatingCap.Name = "lblRatingCap";
+            this.lblRatingCap.Size = new System.Drawing.Size(58, 17);
+            this.lblRatingCap.TabIndex = 44;
+            this.lblRatingCap.Text = "Rating >=";
+            //
+            // cmbMinRating
+            //
+            this.cmbMinRating.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbMinRating.FormattingEnabled = true;
+            this.cmbMinRating.Items.AddRange(new object[] {
+            "Semua",
+            "3+",
+            "4+",
+            "4,5+"});
+            this.cmbMinRating.Location = new System.Drawing.Point(490, 130);
+            this.cmbMinRating.Name = "cmbMinRating";
+            this.cmbMinRating.Size = new System.Drawing.Size(110, 24);
+            this.cmbMinRating.TabIndex = 45;
+            this.cmbMinRating.Text = "Semua";
+            this.cmbMinRating.SelectedIndexChanged += new System.EventHandler(this.cmbMinRating_SelectedIndexChanged);
+            //
+            // lblElapsed
+            //
+            this.lblElapsed.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblElapsed.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Pixel);
+            this.lblElapsed.Location = new System.Drawing.Point(830, 132);
+            this.lblElapsed.Name = "lblElapsed";
+            this.lblElapsed.Size = new System.Drawing.Size(140, 20);
+            this.lblElapsed.TabIndex = 46;
+            this.lblElapsed.Text = "00:00";
+            this.lblElapsed.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            //
+            // lblDetail
+            //
+            this.lblDetail.AutoEllipsis = true;
+            this.lblDetail.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblDetail.Location = new System.Drawing.Point(17, 356);
+            this.lblDetail.Name = "lblDetail";
+            this.lblDetail.Size = new System.Drawing.Size(987, 20);
+            this.lblDetail.TabIndex = 47;
+
             // NewUI
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
@@ -499,7 +601,6 @@
             this.Load += new System.EventHandler(this.NewUI_Load);
             this.materialCard3.ResumeLayout(false);
             this.materialCard3.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
             this.materialCard1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
             this.materialCard2.ResumeLayout(false);
@@ -542,8 +643,16 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn State;
         private System.Windows.Forms.DataGridViewTextBoxColumn City;
         private System.Windows.Forms.PictureBox pictureBox1;
-        private System.Windows.Forms.PictureBox pictureBox2;
+        private WASender.RingProgress ringProgress1;
         private MaterialSkin.Controls.MaterialButton materialButton4;
         private MaterialSkin.Controls.MaterialButton materialButton5;
+        private System.Windows.Forms.Label lblSearchCap;
+        private System.Windows.Forms.TextBox txtSearchBox;
+        private System.Windows.Forms.Label lblMaxCap;
+        private System.Windows.Forms.NumericUpDown numMaxCount;
+        private System.Windows.Forms.Label lblRatingCap;
+        private System.Windows.Forms.ComboBox cmbMinRating;
+        private System.Windows.Forms.Label lblElapsed;
+        private System.Windows.Forms.Label lblDetail;
     }
 }

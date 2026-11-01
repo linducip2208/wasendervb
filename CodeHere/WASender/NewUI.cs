@@ -27,6 +27,11 @@ namespace WASender
         GmExtractorForm gmExtractorForm;
         bool isStop = false;
         bool isManuallyStopped = false;
+        private System.Windows.Forms.Timer elapsedTimer;
+        private DateTime _t0 = DateTime.Now;
+        private int _maxCount = 0;
+        private double _minRating = 0;
+        private bool _maxReached = false;
         public NewUI(GmExtractorForm _gmExtractorForm)
         {
             InitializeComponent();
@@ -45,6 +50,116 @@ namespace WASender
             initLanguage();
             logger = new Logger("GMAPExtractor");
             init();
+            try
+            {
+                cmbMinRating.SelectedIndex = 0;
+                dataGridView1.SelectionChanged += (s, ev) => { try { ShowSelectedDetail(); } catch (Exception) { } };
+            }
+            catch (Exception) { }
+        }
+
+        private void ShowSelectedDetail()
+        {
+            try
+            {
+                if (dataGridView1.SelectedRows.Count == 0 || dataGridView1.SelectedRows[0].IsNewRow) { lblDetail.Text = ""; return; }
+                var r = dataGridView1.SelectedRows[0];
+                string cell(int i) { try { var v = r.Cells[i].Value; return v == null ? "" : v.ToString(); } catch (Exception) { return ""; } }
+                lblDetail.Text = (cell(1) + "  ★ " + cell(4) + "  •  " + cell(2) + "  •  " + cell(6)).Trim();
+            }
+            catch (Exception) { }
+        }
+
+        private void txtSearchBox_TextChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                string q = (txtSearchBox.Text ?? "").Trim().ToLowerInvariant();
+                dataGridView1.CurrentCell = null;
+                foreach (DataGridViewRow row in dataGridView1.Rows)
+                {
+                    try
+                    {
+                        if (row.IsNewRow) continue;
+                        if (string.IsNullOrEmpty(q)) { row.Visible = true; continue; }
+                        bool hit = false;
+                        foreach (DataGridViewCell c in row.Cells)
+                        {
+                            string v = c.Value == null ? "" : c.Value.ToString().ToLowerInvariant();
+                            if (v.Contains(q)) { hit = true; break; }
+                        }
+                        row.Visible = hit;
+                    }
+                    catch (Exception) { }
+                }
+            }
+            catch (Exception) { }
+        }
+
+        private void cmbMinRating_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                string s = Convert.ToString(cmbMinRating.SelectedItem ?? "Semua");
+                if (s.StartsWith("4,5") || s.StartsWith("4.5")) _minRating = 4.5;
+                else if (s.StartsWith("4")) _minRating = 4.0;
+                else if (s.StartsWith("3")) _minRating = 3.0;
+                else _minRating = 0;
+            }
+            catch (Exception) { _minRating = 0; }
+        }
+
+        private void StartElapsed()
+        {
+            try
+            {
+                StopElapsed();
+                _t0 = DateTime.Now;
+                if (elapsedTimer == null)
+                {
+                    elapsedTimer = new System.Windows.Forms.Timer();
+                    elapsedTimer.Interval = 1000;
+                    elapsedTimer.Tick += (s, ev) =>
+                    {
+                        try
+                        {
+                            TimeSpan ts = DateTime.Now - _t0;
+                            lblElapsed.Text = ts.Hours > 0 ? ts.ToString(@"h\:mm\:ss") : ts.ToString(@"mm\:ss");
+                        }
+                        catch (Exception) { }
+                    };
+                }
+                lblElapsed.Text = "00:00";
+                elapsedTimer.Start();
+            }
+            catch (Exception) { }
+        }
+
+        private void StopElapsed()
+        {
+            try { if (elapsedTimer != null) elapsedTimer.Stop(); } catch (Exception) { }
+        }
+
+        private void FinishAll()
+        {
+            // Berhenti total (cap tercapai): tiru alur selesai normal.
+            try
+            {
+                StopElapsed();
+                try { if (ringProgress1 != null) { ringProgress1.Spinning = false; if (_maxCount > 0) ringProgress1.Value = 100; } } catch (Exception) { }
+                if (b != null) { try { b.stop(); } catch (Exception) { } try { b.Close(); } catch (Exception) { } b = null; }
+                if (materialCheckbox1.Checked && isManuallyStopped == false)
+                {
+                    isGebaEamilIEnd = false;
+                    startcheckingEMailIds();
+                    ChangeCampStatus(CampaignStatusEnum.GettingEmailIds);
+                }
+                else
+                {
+                    ChangeCampStatus(CampaignStatusEnum.Finish);
+                }
+            }
+            catch (Exception) { }
         }
 
         public void InputReturnList(List<GMapGlobal> _inputs)
@@ -210,6 +325,17 @@ namespace WASender
             {
                 return;
             }
+            // Filter rating minimal (0 = semua).
+            try
+            {
+                if (_minRating > 0)
+                {
+                    string rs = (data.Rating ?? "").Trim().Replace(',', '.');
+                    double rv;
+                    if (double.TryParse(rs, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out rv) && rv < _minRating) return;
+                }
+            }
+            catch (Exception) { }
             // Hindari baris ganda (data live + harvest bisa overlap)
             foreach (DataGridViewRow row in dataGridView1.Rows)
             {
@@ -249,6 +375,20 @@ namespace WASender
             label1.Text = (dataGridView1.Rows.Count - 1).ToString();
 
             dataGridView1.FirstDisplayedScrollingRowIndex = dataGridView1.RowCount - 1;
+
+            // Progres + batas maks.
+            try
+            {
+                if (_maxCount > 0 && ringProgress1 != null)
+                    ringProgress1.Value = Math.Min(100, (int)((long)allData.Count * 100 / Math.Max(1, _maxCount)));
+                if (_maxCount > 0 && allData.Count >= _maxCount && !_maxReached)
+                {
+                    _maxReached = true;
+                    try { Browser.GmapDebugLog("cap tercapai (" + allData.Count + "), stop otomatis"); } catch (Exception) { }
+                    FinishAll();
+                }
+            }
+            catch (Exception) { }
 
         }
         private void getSelectedLanguage()
@@ -341,6 +481,10 @@ namespace WASender
         private void StartCapturing()
         {
             totalCounter = 0;
+            _maxReached = false;
+            try { _maxCount = Convert.ToInt32(numMaxCount.Value); } catch (Exception) { _maxCount = 0; }
+            try { if (ringProgress1 != null) { ringProgress1.Value = 0; ringProgress1.Spinning = true; } } catch (Exception) { }
+            StartElapsed();
             b.start(inputs[totalCounter].searchQuery);
             ChangeCampStatus(CampaignStatusEnum.Running);
         }
@@ -354,6 +498,8 @@ namespace WASender
             }
             else
             {
+                try { StopElapsed(); } catch (Exception) { }
+                try { if (ringProgress1 != null) ringProgress1.Spinning = false; } catch (Exception) { }
                 if (b !=null)
                 {
                     b.Close();
@@ -403,6 +549,8 @@ namespace WASender
         {
             isManuallyStopped = true;
             isStop = true;
+            try { StopElapsed(); } catch (Exception) { }
+            try { if (ringProgress1 != null) ringProgress1.Spinning = false; } catch (Exception) { }
             if (b != null)
             {
                 b.stop();
