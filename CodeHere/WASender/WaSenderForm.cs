@@ -956,7 +956,12 @@ namespace WASender
             try { btnId = e.TryGetWebMessageAsString(); } catch (Exception) { }
             if (!string.IsNullOrEmpty(btnId) && btnId != "")
             {
-                        if (btnId == "GrabGroupMembers")
+                        if (btnId == "Tutorial")
+                        {
+                            TutorialForm tform = new TutorialForm();
+                            tform.Show();
+                        }
+                        else if (btnId == "GrabGroupMembers")
                         {
                             GetGroupMember getGroupMember = new GetGroupMember(this);
                             this.Hide();

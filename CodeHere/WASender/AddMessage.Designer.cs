@@ -57,6 +57,7 @@
             this.materialCard1.Controls.Add(this.materialButton1);
             this.materialCard1.Controls.Add(this.lstViewFiles);
             this.materialCard1.Controls.Add(this.txtLongMessage);
+            this.materialCard1.Controls.Add(this.lblSpintaxHint);
             this.materialCard1.Depth = 0;
             this.materialCard1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(222)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))));
             this.materialCard1.Location = new System.Drawing.Point(17, 90);
@@ -249,11 +250,23 @@
             this.txtLongMessage.SelectionLength = 0;
             this.txtLongMessage.SelectionStart = 0;
             this.txtLongMessage.ShortcutsEnabled = true;
-            this.txtLongMessage.Size = new System.Drawing.Size(479, 388);
+            this.txtLongMessage.Size = new System.Drawing.Size(479, 330);
             this.txtLongMessage.TabIndex = 71;
             this.txtLongMessage.TabStop = false;
             this.txtLongMessage.TextAlign = System.Windows.Forms.HorizontalAlignment.Left;
             this.txtLongMessage.UseSystemPasswordChar = false;
+            // 
+            // lblSpintaxHint
+            // 
+            this.lblSpintaxHint.AutoSize = true;
+            this.lblSpintaxHint.Depth = 0;
+            this.lblSpintaxHint.Font = new System.Drawing.Font("Roboto", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Pixel);
+            this.lblSpintaxHint.Location = new System.Drawing.Point(17, 352);
+            this.lblSpintaxHint.MouseState = MaterialSkin.MouseState.HOVER;
+            this.lblSpintaxHint.Name = "lblSpintaxHint";
+            this.lblSpintaxHint.Size = new System.Drawing.Size(460, 30);
+            this.lblSpintaxHint.TabIndex = 77;
+            this.lblSpintaxHint.Text = "Tips Spintax: {selamat siang|selamat pagi|halo} — 1 variasi dipilih acak tiap kirim. Bisa nested.";
             // 
             // AddMessage
             // 
@@ -282,6 +295,7 @@
         private MaterialSkin.Controls.MaterialButton materialButton1;
         private MaterialSkin.Controls.MaterialListView lstViewFiles;
         private MaterialSkin.Controls.MaterialMultiLineTextBox2 txtLongMessage;
+        private MaterialSkin.Controls.MaterialLabel lblSpintaxHint;
         private MaterialSkin.Controls.MaterialButton materialButton3;
         private MaterialSkin.Controls.MaterialButton materialButton2;
         private System.Windows.Forms.ColumnHeader Files;

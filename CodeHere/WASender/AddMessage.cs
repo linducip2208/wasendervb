@@ -152,6 +152,14 @@ namespace WaAutoReplyBot
         {
             this.Text = Strings.ReplyMessage;
             txtLongMessage.Hint = Strings.TypeYourMessagehere;
+            try
+            {
+                bool en = (Strings.selectedLanguage ?? "").StartsWith("Eng", StringComparison.OrdinalIgnoreCase);
+                lblSpintaxHint.Text = en
+                    ? "Spintax tips: {good morning|good afternoon|hi} — 1 variation picked randomly per send. Nesting allowed."
+                    : "Tips Spintax: {selamat siang|selamat pagi|halo} — 1 variasi dipilih acak tiap kirim. Bisa nested.";
+            }
+            catch (Exception) { }
             materialButton1.Text = Strings.Addfile;
             materialButton3.Text = Strings.Cancel;
             materialButton2.Text = Strings.Add;

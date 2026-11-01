@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panduan WASender</title>
+<link href="css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="fontawesome.min.css">
+<style>
+body{background:#f2f2f2;font-family:Roboto,Arial,sans-serif;padding:16px;color:#333;}
+h4{margin-top:26px;color:#111;}
+.card{background:#fff;border-radius:8px;padding:16px 18px;margin:12px 0;box-shadow:2px 2px 6px rgba(0,0,0,.08);}
+code{background:#f0f0f0;border-radius:4px;padding:1px 6px;font-size:13px;}
+pre{background:#263238;color:#e0e0e0;border-radius:8px;padding:12px 14px;font-size:13px;white-space:pre-wrap;}
+.tip{border-left:4px solid #29b6f6;background:#e8f6fd;padding:10px 14px;border-radius:0 8px 8px 0;margin:12px 0;}
+.warn{border-left:4px solid #ffa000;background:#fff8e6;padding:10px 14px;border-radius:0 8px 8px 0;margin:12px 0;}
+ul{padding-left:20px;}
+li{margin-bottom:6px;}
+.toc a{color:#1565c0;}
+</style>
+</head>
+<body>
+<div style="max-width:900px;margin:0 auto;">
+<h3><i class="fas fa-book-open"></i> Panduan WASender</h3>
+<div class="card toc">
+<b>Daftar isi</b>
+<ol>
+<li><a href="#mulai">Mulai cepat (3 langkah)</a></li>
+<li><a href="#spintax">Spintax — variasi pesan otomatis</a></li>
+<li><a href="#jeda">Time interval / jeda antar pesan</a></li>
+<li><a href="#variabel">Menyebut nomor &amp; nama (banyak kontak)</a></li>
+<li><a href="#lisensi">Lisensi &amp; aktivasi</a></li>
+</ol>
+</div>
+
+<h4 id="mulai">1. Mulai cepat</h4>
+<div class="card">
+<ol>
+<li>Buka fitur yang dipakai (mis. <b>Bulk Sender</b>), klik <b>Start</b> untuk membuka browser WhatsApp, lalu <b>scan QR</b> dari HP sampai status <b>Initialised</b>.</li>
+<li>Tambah kontak: ketik manual, <b>Import Excel</b> (kolom pertama = nomor, kolom berikutnya = nama/variabel), atau ambil dari <b>Contact List Grabber</b>.</li>
+<li>Tulis pesan, atur jeda, klik <b>Start</b>. Pantau kolom <b>Status</b> di grid: <code>Success</code> = terkirim.</li>
+</ol>
+<div class="tip">Nomor ditulis format internasional tanpa +/spasi, mis. <code>6281234567890</code>. Gunakan <b>Number Filter</b> dulu untuk membuang nomor yang tidak aktif.</div>
+</div>
+
+<h4 id="spintax">2. Spintax — variasi pesan otomatis</h4>
+<div class="card">
+<p>Spintax memutar kata/kalimat agar tiap penerima dapat versi berbeda (mengurangi risiko terdeteksi spam). Formatnya:</p>
+<pre>{variasi1|variasi2|variasi3}</pre>
+<p>Contoh:</p>
+<pre>{Selamat siang|Selamat pagi|Selamat malam|Halo|Hi} kak, {promo|diskon|penawaran} spesial hari ini!</pre>
+<p>Sistem memilih <b>1 variasi secara acak</b> setiap kirim. Aturannya:</p>
+<ul>
+<li>Wajib dibungkus kurung kurawal <code>{ }</code> dan dipisahkan pipe <code>|</code>.</li>
+<li>Bisa <b>nested</b> (bersarang): <code>{Hi|Halo} {Bapak|Ibu} {{nama}}</code>.</li>
+<li>Berlaku di pesan teks <b>dan</b> caption gambar/file, untuk pengiriman single, grup, broadcast, dan auto-reply.</li>
+<li>Format lama <code>{{ KEY :a|b }}</code>, <code>{{ RANDOM }}</code>, dan <code>{{sys.date}}</code> tetap didukung.</li>
+</ul>
+<div class="warn">Tanpa <code>{ }</code> teks dikirim apa adanya — itu sebabnya spintax yang ditulis polos "tidak jalan".</div>
+</div>
+
+<h4 id="jeda">3. Time interval / jeda antar pesan</h4>
+<div class="card">
+<p>Jeda diatur di form pengiriman (Bulk Sender single &amp; grup):</p>
+<ul>
+<li><b>Delay after every message (From–To, detik)</b> — jeda acak tiap pesan, mis. 3–15 detik. Makin besar makin aman, makin lambat.</li>
+<li><b>Delay after N messages</b> — istirahat panjang tiap N pesan terkirim, mis. tiap 50 pesan istirahat 120–300 detik.</li>
+<li><b>Daily limit</b> (General Settings &gt; Anti-Ban) — batas pesan per akun per hari, default 500. Jika limit tercapai pengiriman berhenti otomatis dan lanjut besok.</li>
+<li><b>Skor kesehatan WA</b> — di bawah batas (default 40) pengiriman diblokir otomatis sampai akun pulih. Lihat di menu <b>Ringkasan Hari Ini</b>.</li>
+</ul>
+<div class="tip">Akun baru: mulai 20–30 pesan/hari, naikkan bertahap tiap minggu (warm-up). Jangan kirim template yang 100% sama — kombinasikan dengan spintax.</div>
+</div>
+
+<h4 id="variabel">4. Menyebut nomor &amp; nama (banyak kontak)</h4>
+<div class="card">
+<p>Personalisasi pesan pakai variabel dari file Excel. Kolom pertama = nomor HP, kolom berikutnya bisa dipakai sebagai variabel:</p>
+<pre>62812xxxxxxx | Budi
+62813xxxxxxx | Siti</pre>
+<p>Lalu di pesan tulis <code>{{nama}}</code> (nama kolom, huruf kecil). Contoh pesan:</p>
+<pre>{Selamat siang|Halo} {{nama}}, ada promo khusus buat kamu hari ini.</pre>
+<p>Hasil untuk Budi: <i>"Selamat siang Budi, ada promo khusus buat kamu hari ini."</i></p>
+<ul>
+<li><b>[NAME]</b> dan <b>[SPOILER]</b> — variabel bawaan, bisa disisipkan lewat tombol key-marker di form pesan.</li>
+<li>Variabel custom lain mengikuti nama kolom di Excel (mis. <code>{{kota}}</code>, <code>{{produk}}</code>).</li>
+<li>Selalu <b>Export Numbers Only</b> / cek ulang daftar sebelum blast massal.</li>
+</ul>
+</div>
+
+<h4 id="lisensi">5. Lisensi &amp; aktivasi</h4>
+<div class="card">
+<ul>
+<li>Kode lisensi format <code>XXXX-XXXX-XXXX-XXXX</code> didapat dari admin/panel.</li>
+<li>Buka <b>About &gt; Licence</b> untuk melihat sisa masa aktif dan tombol De-Activate.</li>
+<li>1 lisensi = 1 PC (terikat HWID). Pindah PC: minta admin <b>cabut (revoke)</b> HWID lama di panel, lalu aktivasi ulang di PC baru.</li>
+<li>Butuh bantuan: <b>Pandusolusi.com — WhatsApp 6281296052010</b>.</li>
+</ul>
+</div>
+
+<p style="color:#888;font-size:12px;margin:20px 0;">WASender — panduan singkat. Detail tiap fitur ada di tombol <i>Start/Grab Now</i> masing-masing.</p>
+</div>
+</body>
+</html>
