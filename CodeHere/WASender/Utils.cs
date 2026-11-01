@@ -47,6 +47,7 @@ namespace WASender
             set { _waSenderBrowser = value; }
         }
 
+        [System.Obsolete("Selenium legacy. WA Web wajib WebView2 (BrowserPolicy). Scraper pakai ScraperWebView2.")]
         public static OpenQA.Selenium.IWebDriver Driver
         {
             get
@@ -258,25 +259,13 @@ namespace WASender
             }
         }
 
+        [System.Obsolete("Jangan panggil untuk WA. WebView2 adalah satu-satunya jalur (lihat BrowserPolicy + WaSenderBrowser). Dibiarkan no-op agar kompil lama tidak rusak.")]
         public static void SetDriver()
         {
-            if (_driver == null)
-            {
-
-                var chromeDriverService = OpenQA.Selenium.Chrome.ChromeDriverService.CreateDefaultService(Config.GetChromeDriverFolder());
-                chromeDriverService.HideCommandPromptWindow = true;
-
-                _driver = new OpenQA.Selenium.Chrome.ChromeDriver(chromeDriverService, Config.GetChromeOptions());
-                try
-                {
-                    _driver.Url = "https://web.whatsapp.com";
-                }
-                catch (Exception ex)
-                {
-
-                }
-            }
-
+            // Migrasi WebView2: tidak lagi membuat ChromeDriver untuk WA Web.
+            // Scraper yang masih butuh browser memakai ScraperWebView2 (WebView2).
+            // Biarkan _driver null agar pemanggil legacy masuk jalur WebView2 (initWABrowser).
+            return;
         }
 
 

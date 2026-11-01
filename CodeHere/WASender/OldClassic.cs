@@ -31,6 +31,7 @@ namespace WASender
         InitStatusEnum initStatusEnum;
         System.Windows.Forms.Timer timerInitChecker;
         public IWebDriver driver;
+        private Browser scraperBrowser;
         BackgroundWorker worker;
         CampaignStatusEnum campaignStatusEnum;
         Logger logger;
@@ -168,6 +169,26 @@ namespace WASender
             InputReturn(inputs[0].searchQuery);
         }
         public void InputReturn(string searchTurm)
+        {
+            try { InputReturnWebView2(searchTurm); return; }
+            catch (Exception) { }
+            InputReturnLegacy(searchTurm);
+        }
+
+        public void InputReturnWebView2(string searchTurm)
+        {
+            logger.WriteLog("btnInitWA_Click webview2");
+            ChangeInitStatus(InitStatusEnum.Initialising);
+            grabEmailId = false;
+            scraperBrowser = new Browser();
+            scraperBrowser.url = "https://www.google.com/search?q=" + searchTurm + "&tbm=lcl&hl=en";
+            scraperBrowser.isGmap = true;
+            scraperBrowser.Show();
+            ChangeInitStatus(InitStatusEnum.Initialised);
+        }
+
+        [System.Obsolete("Legacy Selenium. Pakai InputReturnWebView2.")]
+        public void InputReturnLegacy(string searchTurm)
         {
             logger.WriteLog("btnInitWA_Click");
             ChangeInitStatus(InitStatusEnum.Initialising);
