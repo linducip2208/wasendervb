@@ -46,6 +46,7 @@ namespace WASender
         string ScheduleId = "";
         public SchedulesModel schedulesModel;
         Progressbar pgbar;
+        private System.Windows.Forms.Timer dashTimer;
         public List<string> tmpfriendlyNumbers { get; set; }
         public int tmpsendTofriendlyNumbersAfterMessages { get; set; }
 
@@ -794,9 +795,109 @@ namespace WASender
             await Task.Delay(1000);
             setLanguages();
             setEnableDesableTools();
+            try { RefreshDashboardStats(); } catch (Exception) { }
+            try
+            {
+                if (dashTimer == null)
+                {
+                    dashTimer = new System.Windows.Forms.Timer();
+                    dashTimer.Interval = 60000;
+                    dashTimer.Tick += (s, ev) => { try { RefreshDashboardStats(); } catch (Exception) { } };
+                    dashTimer.Start();
+                }
+            }
+            catch (Exception) { }
             webBrowser11.Visible = true;
             pictureBox1.Visible = false;
             this.webBrowser11.Document.Body.MouseUp += new HtmlElementEventHandler(Body_MouseDown11);
+        }
+
+        private static string DashHtml(string s)
+        {
+            try
+            {
+                if (s == null) return "";
+                return s.Replace("&", "&amp;").Replace("<", "&lt;").Replace(">", "&gt;");
+            }
+            catch (Exception) { return ""; }
+        }
+
+        /// <summary>Ringkasan harian dashboard: kirim/kuota/skor/antrian/AI/update/log.</summary>
+        private void RefreshDashboardStats()
+        {
+            try
+            {
+                if (webBrowser11 == null || webBrowser11.Document == null) return;
+                // 1) Terkirim + kuota per akun
+                int total = 0, limitSum = 0;
+                var rows = new System.Text.StringBuilder();
+                try
+                {
+                    foreach (string line in SendGovernor.TodayAll())
+                    {
+                        try
+                        {
+                            string[] p = (line ?? "").Split('|');
+                            if (p.Length < 3) continue;
+                            string acct = p[0].Trim();
+                            int n, lim;
+                            if (!int.TryParse(p[1].Trim(), out n)) n = 0;
+                            if (!int.TryParse(p[2].Trim(), out lim)) lim = 0;
+                            total += n; limitSum += lim;
+                            rows.Append("<div>" + DashHtml(acct) + ": <b>" + n + "</b> / " + lim + "</div>");
+                        }
+                        catch (Exception) { }
+                    }
+                }
+                catch (Exception) { }
+                if (rows.Length == 0) rows.Append("<div>Belum ada pengiriman hari ini.</div>");
+                int left = limitSum - total;
+                if (left < 0) left = 0;
+                // 2) Skor + antrian
+                int score = -1;
+                try { score = SendGovernor.LastScore(); } catch (Exception) { }
+                int pending = 0;
+                try { pending = SendQueue.Pending; } catch (Exception) { }
+                webBrowser11.Document.InvokeScript("setDashboardStats", new object[] {
+                    total.ToString(), left.ToString() + " / " + limitSum.ToString(),
+                    score < 0 ? "-" : score.ToString(), pending.ToString() });
+                webBrowser11.Document.InvokeScript("setAccountList", new object[] { rows.ToString() });
+                // 3) AI hari ini
+                try
+                {
+                    int[] ai = AiResponder.GetTodayStats();
+                    string aiHtml = "<div>Pertanyaan: <b>" + ai[0] + "</b></div>"
+                        + "<div>Cache hit: <b>" + ai[1] + "</b> | API call: <b>" + ai[2] + "</b></div>"
+                        + "<div>Override: <b>" + ai[3] + "</b></div>";
+                    webBrowser11.Document.InvokeScript("setAiStats", new object[] { aiHtml });
+                }
+                catch (Exception) { }
+                // 4) Update badge
+                try { webBrowser11.Document.InvokeScript("setUpdateBadge", new object[] { AppUpdater.StatusText() }); }
+                catch (Exception) { }
+                // 5) Log terakhir
+                try
+                {
+                    string logHtml = "<div>-</div>";
+                    try
+                    {
+                        string dir = Config.GetProcessLoggerFolderPath();
+                        string lp = System.IO.Path.Combine(dir ?? "", "single_send.log");
+                        if (System.IO.File.Exists(lp))
+                        {
+                            string[] all = System.IO.File.ReadAllLines(lp);
+                            int from = all.Length > 6 ? all.Length - 6 : 0;
+                            var sb = new System.Text.StringBuilder();
+                            for (int i = from; i < all.Length; i++) sb.Append("<div>" + DashHtml(all[i]) + "</div>");
+                            if (sb.Length > 0) logHtml = sb.ToString();
+                        }
+                    }
+                    catch (Exception) { }
+                    webBrowser11.Document.InvokeScript("setRecentLog", new object[] { logHtml });
+                }
+                catch (Exception) { }
+            }
+            catch (Exception) { }
         }
 
         private void setEnableDesableTools()
@@ -998,6 +1099,15 @@ namespace WASender
             webBrowser11.Document.InvokeScript("changeLabel", new string[] { "txtScheduler", Strings.AllSchedules });
             webBrowser11.Document.InvokeScript("changeLabel", new string[] { "txtWhatsAppWarmerGroup", Strings.WhatsAppGroupWarmer });
             webBrowser11.Document.InvokeScript("changeLabel", new string[] { "txtGroupLinkVerify", Strings.BulkGroupLinksVerify });
+            webBrowser11.Document.InvokeScript("changeLabel", new string[] { "txt_TodaySummary", "Ringkasan Hari Ini" });
+            webBrowser11.Document.InvokeScript("changeLabel", new string[] { "statSentLabel", "Terkirim Hari Ini" });
+            webBrowser11.Document.InvokeScript("changeLabel", new string[] { "statQuotaLabel", "Sisa Kuota / Limit" });
+            webBrowser11.Document.InvokeScript("changeLabel", new string[] { "statHealthLabel", "Skor Kesehatan WA" });
+            webBrowser11.Document.InvokeScript("changeLabel", new string[] { "statQueueLabel", "Antrian Kirim" });
+            webBrowser11.Document.InvokeScript("changeLabel", new string[] { "statAccountsLabel", "Akun Hari Ini" });
+            webBrowser11.Document.InvokeScript("changeLabel", new string[] { "statAiLabel", "AI Hari Ini" });
+            webBrowser11.Document.InvokeScript("changeLabel", new string[] { "statUpdateLabel", "Pembaruan" });
+            webBrowser11.Document.InvokeScript("changeLabel", new string[] { "statLogLabel", "Log Terakhir" });
 
             webBrowser11.Document.InvokeScript("changeLabelByClass", new string[] { "grabnow", Strings.GrabNow });
             webBrowser11.Document.InvokeScript("changeLabelByClass", new string[] { "startnow", Strings.StartNow });

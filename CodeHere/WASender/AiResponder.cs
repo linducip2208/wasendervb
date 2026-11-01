@@ -77,6 +77,40 @@ namespace WASender
         public static bool ReplyToGroupsEnabled() { try { RefreshFlags(); return _rgVal; } catch (Exception) { return false; } }
         public static bool VisionEnabled() { try { RefreshFlags(); return _visVal; } catch (Exception) { return true; } }
 
+        /// <summary>Statistik AI hari ini: questions, cacheHits, aiCalls, overrides.</summary>
+        public static int[] GetTodayStats()
+        {
+            var z = new int[] { 0, 0, 0, 0 };
+            try
+            {
+                DbInit();
+                lock (_dbLock)
+                {
+                    using (var c = new SQLiteConnection("Data Source=" + GetCachePath() + ";Version=3;"))
+                    {
+                        c.Open();
+                        using (var cmd = c.CreateCommand())
+                        {
+                            cmd.CommandText = "SELECT COALESCE(SUM(questions),0),COALESCE(SUM(cache_hits),0),COALESCE(SUM(ai_calls),0),COALESCE(SUM(overrides),0) FROM ai_stats WHERE date=@d;";
+                            cmd.Parameters.AddWithValue("@d", System.DateTime.Now.ToString("yyyy-MM-dd"));
+                            using (var r = cmd.ExecuteReader())
+                            {
+                                if (r.Read())
+                                {
+                                    z[0] = r.IsDBNull(0) ? 0 : System.Convert.ToInt32(r.GetValue(0));
+                                    z[1] = r.IsDBNull(1) ? 0 : System.Convert.ToInt32(r.GetValue(1));
+                                    z[2] = r.IsDBNull(2) ? 0 : System.Convert.ToInt32(r.GetValue(2));
+                                    z[3] = r.IsDBNull(3) ? 0 : System.Convert.ToInt32(r.GetValue(3));
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception) { }
+            return z;
+        }
+
 
         public const string AiMarker = "[AI]";
 
