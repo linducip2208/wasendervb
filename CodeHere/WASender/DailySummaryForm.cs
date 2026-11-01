@@ -22,6 +22,7 @@ namespace WASender
         private MaterialLabel lblAi;
         private MaterialLabel lblUpdate;
         private TextBox txtLog;
+        private TextBox txtHistory;
 
         public DailySummaryForm()
         {
@@ -92,9 +93,10 @@ namespace WASender
 
             var right = new TableLayoutPanel();
             right.Dock = DockStyle.Fill;
-            right.RowCount = 2;
-            right.RowStyles.Add(new RowStyle(SizeType.Percent, 55F));
-            right.RowStyles.Add(new RowStyle(SizeType.Percent, 45F));
+            right.RowCount = 3;
+            right.RowStyles.Add(new RowStyle(SizeType.Percent, 38F));
+            right.RowStyles.Add(new RowStyle(SizeType.Percent, 22F));
+            right.RowStyles.Add(new RowStyle(SizeType.Percent, 40F));
             mid.Controls.Add(right, 1, 0);
 
             var cardAi = new MaterialCard();
@@ -124,6 +126,25 @@ namespace WASender
             lblUpdate.Dock = DockStyle.Fill;
             cardUp.Controls.Add(lblUpdate);
             right.Controls.Add(cardUp, 0, 1);
+
+            var cardHist = new MaterialCard();
+            cardHist.Dock = DockStyle.Fill;
+            cardHist.Padding = new Padding(12);
+            var lblHistTitle = new MaterialLabel();
+            lblHistTitle.Text = "7 Hari Terakhir";
+            lblHistTitle.FontType = MaterialSkin.MaterialSkinManager.fontType.H6;
+            lblHistTitle.Dock = DockStyle.Top;
+            lblHistTitle.Height = 28;
+            cardHist.Controls.Add(lblHistTitle);
+            txtHistory = new TextBox();
+            txtHistory.Dock = DockStyle.Fill;
+            txtHistory.Multiline = true;
+            txtHistory.ReadOnly = true;
+            txtHistory.ScrollBars = ScrollBars.Vertical;
+            txtHistory.BorderStyle = BorderStyle.None;
+            txtHistory.Font = new System.Drawing.Font("Consolas", 9F);
+            cardHist.Controls.Add(txtHistory);
+            right.Controls.Add(cardHist, 0, 2);
 
             var cardLog = new MaterialCard();
             cardLog.Dock = DockStyle.Fill;
@@ -228,6 +249,37 @@ namespace WASender
 
                 try { lblUpdate.Text = AppUpdater.StatusText(); }
                 catch (Exception) { lblUpdate.Text = "-"; }
+
+                try
+                {
+                    var sb = new StringBuilder();
+                    string mdb = "";
+                    try { mdb = System.IO.Path.Combine(Config.GetAppDataFolder(), "wa_monitor.db"); } catch (Exception) { }
+                    if (!string.IsNullOrEmpty(mdb) && System.IO.File.Exists(mdb))
+                    {
+                        using (var c = new System.Data.SQLite.SQLiteConnection("Data Source=" + mdb + ";Version=3;"))
+                        {
+                            c.Open();
+                            using (var cmd = c.CreateCommand())
+                            {
+                                string since = System.DateTime.Now.AddDays(-6).ToString("yyyy-MM-dd");
+                                cmd.CommandText = "SELECT date, SUM(n) FROM send_quota WHERE date >= @d GROUP BY date ORDER BY date DESC LIMIT 7;";
+                                cmd.Parameters.AddWithValue("@d", since);
+                                using (var r = cmd.ExecuteReader())
+                                {
+                                    while (r.Read())
+                                    {
+                                        string dt = r.IsDBNull(0) ? "?" : r.GetString(0);
+                                        long n = r.IsDBNull(1) ? 0 : r.GetInt64(1);
+                                        sb.AppendLine(dt + " | " + n);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    txtHistory.Text = sb.Length > 0 ? sb.ToString() : "(belum ada data)";
+                }
+                catch (Exception) { try { txtHistory.Text = "(gagal baca riwayat)"; } catch (Exception) { } }
 
                 try
                 {
