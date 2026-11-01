@@ -449,6 +449,27 @@ namespace WASender
             return fileName;
         }
 
+        private string PrepareExportFile(string prefix)
+        {
+            // Export wajib jalan: pakai template bila ada, kalau tidak bikin workbook kosong.
+            ExcelPackage.LicenseContext = OfficeOpenXml.LicenseContext.NonCommercial;
+            String FolderPath = Config.GetTempFolderPath();
+            try { if (!Directory.Exists(FolderPath)) Directory.CreateDirectory(FolderPath); } catch (Exception) { }
+            string NewFileName = Path.Combine(FolderPath, prefix + Guid.NewGuid().ToString() + ".xlsx");
+            string tpl = ResolveTemplateXlsx("ChatListTemplate.xlsx");
+            if (File.Exists(tpl))
+            {
+                File.Copy(tpl, NewFileName, true);
+                return NewFileName;
+            }
+            using (var pkg = new ExcelPackage())
+            {
+                pkg.Workbook.Worksheets.Add("Data");
+                pkg.SaveAs(new FileInfo(NewFileName));
+            }
+            return NewFileName;
+        }
+
         private void materialButton3_Click(object sender, EventArgs e)
         {
             try
@@ -458,11 +479,7 @@ namespace WASender
                     MessageBox.Show("Belum ada data untuk di-export.", Strings.Info, MessageBoxButtons.OK, MessageBoxIcon.Information);
                     return;
                 }
-                String FolderPath = Config.GetTempFolderPath();
-                try { if (!Directory.Exists(FolderPath)) Directory.CreateDirectory(FolderPath); } catch (Exception) { }
-                String file = Path.Combine(FolderPath, "GMapData" + Guid.NewGuid().ToString() + ".xlsx");
-                string NewFileName = file.ToString();
-                File.Copy(ResolveTemplateXlsx("ChatListTemplate.xlsx"), NewFileName, true);
+                string NewFileName = PrepareExportFile("GMapData");
             var newFile = new FileInfo(NewFileName);
             ExcelPackage.LicenseContext = OfficeOpenXml.LicenseContext.NonCommercial;
             using (ExcelPackage xlPackage = new ExcelPackage(newFile))
@@ -526,11 +543,7 @@ namespace WASender
                     MessageBox.Show("Belum ada data untuk di-export.", Strings.Info, MessageBoxButtons.OK, MessageBoxIcon.Information);
                     return;
                 }
-                String FolderPath = Config.GetTempFolderPath();
-                try { if (!Directory.Exists(FolderPath)) Directory.CreateDirectory(FolderPath); } catch (Exception) { }
-                String file = Path.Combine(FolderPath, "GMapData_Numbers" + Guid.NewGuid().ToString() + ".xlsx");
-                string NewFileName = file.ToString();
-                File.Copy(ResolveTemplateXlsx("ChatListTemplate.xlsx"), NewFileName, true);
+                string NewFileName = PrepareExportFile("GMapData_Numbers");
             var newFile = new FileInfo(NewFileName);
             ExcelPackage.LicenseContext = OfficeOpenXml.LicenseContext.NonCommercial;
             using (ExcelPackage xlPackage = new ExcelPackage(newFile))
