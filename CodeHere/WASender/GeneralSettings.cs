@@ -115,8 +115,9 @@ namespace WASender
                     txtChromePath.Text = generalSettingsModel.ChromeProfilePath;
                 }
                
-                if (generalSettingsModel.browserType == 0)
+                if (generalSettingsModel.browserType == 0 || generalSettingsModel.browserType == 1)
                 {
+                    // Migrasi WebView2: 0=belum set, 1=Selenium legacy -> paksa 2.
                     generalSettingsModel.browserType = 2;
                 }
 

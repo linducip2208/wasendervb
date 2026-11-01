@@ -3814,6 +3814,8 @@ namespace WASender
         {
             try
             {
+                // Migrasi sekali: paksa file settings ke WebView2 agar 100+ cabang browserType==1 mati total.
+                try { BrowserPolicy.EnforceWebView2SettingsFile(); } catch (Exception) { }
                 GeneralSettingsModel settings = Config.GetSettings();
                 if (settings.browserType == 1)
                 {
