@@ -3,6 +3,7 @@ using FluentValidation.Results;
 using FontAwesome.Sharp;
 using MaterialSkin;
 using MaterialSkin.Controls;
+using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
 using Models;
 using Newtonsoft.Json;
@@ -564,7 +565,6 @@ namespace WASender
             catch (Exception) { }
             CHeckForActivation();
             lblSection.Hide();
-            webBrowser11.ScriptErrorsSuppressed = true;
             LoadDocument();
             if (ScheduleId == "")
             {
@@ -802,28 +802,74 @@ namespace WASender
             }));
         }
 
+        private bool _dashNavHooked = false;
+
         private void LoadDocument()
         {
             webBrowser11.Visible = false;
             pictureBox1.Visible = true;
             string curDir = Directory.GetCurrentDirectory();
             var uri = new Uri(String.Format("file:///{0}/HelpDocs/Dashboard.html", curDir));
-            webBrowser11.DocumentCompleted += browser11_DocumentCompleted;
-
-            webBrowser11.Url = uri;
-
-
+            if (!_dashNavHooked)
+            {
+                _dashNavHooked = true;
+                webBrowser11.NavigationCompleted += browser11_NavigationCompleted;
+                webBrowser11.CoreWebView2InitializationCompleted += (s, e) =>
+                {
+                    try
+                    {
+                        if (webBrowser11.CoreWebView2 != null)
+                            webBrowser11.CoreWebView2.WebMessageReceived += dashboardMessageReceived;
+                    }
+                    catch (Exception) { }
+                };
+            }
+            if (webBrowser11.Source == null || !string.Equals(webBrowser11.Source.AbsoluteUri, uri.AbsoluteUri, StringComparison.OrdinalIgnoreCase))
+                webBrowser11.Source = uri;
+            else
+                webBrowser11.Reload();
         }
 
-        private async void browser11_DocumentCompleted(Object sender, WebBrowserDocumentCompletedEventArgs e)
+        private async void browser11_NavigationCompleted(object sender, CoreWebView2NavigationCompletedEventArgs e)
         {
-            setPrimaryColor(materialSkinManager.ColorScheme.PrimaryColor.R, materialSkinManager.ColorScheme.PrimaryColor.G, materialSkinManager.ColorScheme.PrimaryColor.B);
-            await Task.Delay(1000);
-            setLanguages();
-            setEnableDesableTools();
-            webBrowser11.Visible = true;
-            pictureBox1.Visible = false;
-            this.webBrowser11.Document.Body.MouseUp += new HtmlElementEventHandler(Body_MouseDown11);
+            try
+            {
+                if (!e.IsSuccess) return;
+                try { await webBrowser11.EnsureCoreWebView2Async(); } catch (Exception) { }
+                // Klik box dashboard -> kirim data-id ke C# (pengganti MouseUp IE).
+                try
+                {
+                    await webBrowser11.ExecuteScriptAsync(
+                        "if(!window.__dashClick){window.__dashClick=true;"
+                        + "document.addEventListener('click',function(ev){"
+                        + "var el=ev.target&&ev.target.closest?ev.target.closest('[data-id]'):null;"
+                        + "if(el&&window.chrome&&window.chrome.webview)window.chrome.webview.postMessage(el.getAttribute('data-id'));"
+                        + "});}");
+                }
+                catch (Exception) { }
+                await setPrimaryColor(materialSkinManager.ColorScheme.PrimaryColor.R, materialSkinManager.ColorScheme.PrimaryColor.G, materialSkinManager.ColorScheme.PrimaryColor.B);
+                await Task.Delay(500);
+                await setLanguagesAsync();
+                await setEnableDesableToolsAsync();
+                webBrowser11.Visible = true;
+                pictureBox1.Visible = false;
+            }
+            catch (Exception) { }
+        }
+
+        private static string JsStr(string s)
+        {
+            try
+            {
+                return "'" + (s ?? "").Replace("\\", "\\\\").Replace("'", "\\'").Replace("\r", " ").Replace("\n", " ") + "'";
+            }
+            catch (Exception) { return "''"; }
+        }
+
+        private async Task DashEval(string js)
+        {
+            try { if (webBrowser11 != null && webBrowser11.CoreWebView2 != null) await webBrowser11.ExecuteScriptAsync(js); }
+            catch (Exception) { }
         }
 
         private void lblLicenseNet_Click(object sender, EventArgs e)
@@ -877,41 +923,39 @@ namespace WASender
             }
         }
 
-        private void setEnableDesableTools()
+        private async Task setEnableDesableToolsAsync()
         {
-            webBrowser11.Document.InvokeScript("setEnableDesable", new string[] { "Box_GetGroupMembers", Strings.Get_Group_Member.ToString() });
-            webBrowser11.Document.InvokeScript("setEnableDesable", new string[] { "Box_GetWhatsAppGroupLinksfromweb", Strings.Grab_WhatsApp_Group_Links_from_web.ToString() });
-            webBrowser11.Document.InvokeScript("setEnableDesable", new string[] { "Box_WhatsAppAutoreplyBot", Strings.WhatsApp_Auto_Responder_Bot.ToString() });
-            webBrowser11.Document.InvokeScript("setEnableDesable", new string[] { "Box_ContactListGrabber", Strings.Contact_List_Grabber.ToString() });
-            webBrowser11.Document.InvokeScript("setEnableDesable", new string[] { "Box_GoogleMagDataExtractor", Strings.Google_Map_Data_Extractor.ToString() });
-            webBrowser11.Document.InvokeScript("setEnableDesable", new string[] { "Box_AutoGroupJoiner", Strings.Auto_Group_Joiner.ToString() });
-            webBrowser11.Document.InvokeScript("setEnableDesable", new string[] { "Box_WhatsAppNumberFilter", Strings.WhatsApp_Number_Filter.ToString() });
-            webBrowser11.Document.InvokeScript("setEnableDesable", new string[] { "Box_GrabActiveGroupMembers", Strings.Grab_Active_Group_Members.ToString() });
-            webBrowser11.Document.InvokeScript("setEnableDesable", new string[] { "Box_GrabChatList", Strings.Grab_Chat_List.ToString() });
-            webBrowser11.Document.InvokeScript("setEnableDesable", new string[] { "Box_BulkAddGroupMembers", Strings.Bulk_Add_Group_Members.ToString() });
-            webBrowser11.Document.InvokeScript("setEnableDesable", new string[] { "Box_GroupFinder", Strings.Group_Finder.ToString() });
-            webBrowser11.Document.InvokeScript("setEnableDesable", new string[] { "Box_BulkGroupGenerator", Strings.Bulk_Group_Generator.ToString() });
-            webBrowser11.Document.InvokeScript("setEnableDesable", new string[] { "Box_GoogleContactCSVGenerator", Strings.Google_Contact_CSV_Generator.ToString() });
-            webBrowser11.Document.InvokeScript("setEnableDesable", new string[] { "Box_WebsiteEmailMobileExtractor", Strings.Website_Email_Mobile_Extractor.ToString() });
-            webBrowser11.Document.InvokeScript("setEnableDesable", new string[] { "Box_WhatsAppWarmer", Strings.WhatsApp_Warmer.ToString() });
-            webBrowser11.Document.InvokeScript("setEnableDesable", new string[] { "Box_PollReport", Strings.Poll_Report.ToString() });
-            webBrowser11.Document.InvokeScript("setEnableDesable", new string[] { "Box_SocialMediaExtractor", Strings.Social_Media_Data_Extractor.ToString() });
-            webBrowser11.Document.InvokeScript("setEnableDesable", new string[] { "Box_Scheduler", Strings.All_Schedules.ToString() });
-            webBrowser11.Document.InvokeScript("setEnableDesable", new string[] { "Box_WhatsAppWarmerGroup", Strings.Group_Warmer.ToString() });
-            webBrowser11.Document.InvokeScript("setEnableDesable", new string[] { "Box_GroupLinkVerify", Strings.Bulk_Group_Links_Verify.ToString() });
-            webBrowser11.Document.InvokeScript("setEnableDesable", new string[] { "Box_AISetup", "True" });
-            webBrowser11.Document.InvokeScript("setEnableDesable", new string[] { "Box_WAHealth", "True" });
+            await DashEval("setEnableDesable(" + JsStr("Box_GetGroupMembers") + "," + JsStr(Strings.Get_Group_Member.ToString()) + ")");
+            await DashEval("setEnableDesable(" + JsStr("Box_GetWhatsAppGroupLinksfromweb") + "," + JsStr(Strings.Grab_WhatsApp_Group_Links_from_web.ToString()) + ")");
+            await DashEval("setEnableDesable(" + JsStr("Box_WhatsAppAutoreplyBot") + "," + JsStr(Strings.WhatsApp_Auto_Responder_Bot.ToString()) + ")");
+            await DashEval("setEnableDesable(" + JsStr("Box_ContactListGrabber") + "," + JsStr(Strings.Contact_List_Grabber.ToString()) + ")");
+            await DashEval("setEnableDesable(" + JsStr("Box_GoogleMagDataExtractor") + "," + JsStr(Strings.Google_Map_Data_Extractor.ToString()) + ")");
+            await DashEval("setEnableDesable(" + JsStr("Box_AutoGroupJoiner") + "," + JsStr(Strings.Auto_Group_Joiner.ToString()) + ")");
+            await DashEval("setEnableDesable(" + JsStr("Box_WhatsAppNumberFilter") + "," + JsStr(Strings.WhatsApp_Number_Filter.ToString()) + ")");
+            await DashEval("setEnableDesable(" + JsStr("Box_GrabActiveGroupMembers") + "," + JsStr(Strings.Grab_Active_Group_Members.ToString()) + ")");
+            await DashEval("setEnableDesable(" + JsStr("Box_GrabChatList") + "," + JsStr(Strings.Grab_Chat_List.ToString()) + ")");
+            await DashEval("setEnableDesable(" + JsStr("Box_BulkAddGroupMembers") + "," + JsStr(Strings.Bulk_Add_Group_Members.ToString()) + ")");
+            await DashEval("setEnableDesable(" + JsStr("Box_GroupFinder") + "," + JsStr(Strings.Group_Finder.ToString()) + ")");
+            await DashEval("setEnableDesable(" + JsStr("Box_BulkGroupGenerator") + "," + JsStr(Strings.Bulk_Group_Generator.ToString()) + ")");
+            await DashEval("setEnableDesable(" + JsStr("Box_GoogleContactCSVGenerator") + "," + JsStr(Strings.Google_Contact_CSV_Generator.ToString()) + ")");
+            await DashEval("setEnableDesable(" + JsStr("Box_WebsiteEmailMobileExtractor") + "," + JsStr(Strings.Website_Email_Mobile_Extractor.ToString()) + ")");
+            await DashEval("setEnableDesable(" + JsStr("Box_WhatsAppWarmer") + "," + JsStr(Strings.WhatsApp_Warmer.ToString()) + ")");
+            await DashEval("setEnableDesable(" + JsStr("Box_PollReport") + "," + JsStr(Strings.Poll_Report.ToString()) + ")");
+            await DashEval("setEnableDesable(" + JsStr("Box_SocialMediaExtractor") + "," + JsStr(Strings.Social_Media_Data_Extractor.ToString()) + ")");
+            await DashEval("setEnableDesable(" + JsStr("Box_Scheduler") + "," + JsStr(Strings.All_Schedules.ToString()) + ")");
+            await DashEval("setEnableDesable(" + JsStr("Box_WhatsAppWarmerGroup") + "," + JsStr(Strings.Group_Warmer.ToString()) + ")");
+            await DashEval("setEnableDesable(" + JsStr("Box_GroupLinkVerify") + "," + JsStr(Strings.Bulk_Group_Links_Verify.ToString()) + ")");
+            await DashEval("setEnableDesable(" + JsStr("Box_AISetup") + "," + JsStr("True") + ")");
+            await DashEval("setEnableDesable(" + JsStr("Box_WAHealth") + "," + JsStr("True") + ")");
         }
 
-        private void Body_MouseDown11(Object sender, HtmlElementEventArgs e)
+        private void dashboardMessageReceived(object sender, CoreWebView2WebMessageReceivedEventArgs e)
         {
-            switch (e.MouseButtonsPressed)
+            // Pengganti Body_MouseDown11 IE: data-id dikirim via window.chrome.webview.postMessage.
+            string btnId = "";
+            try { btnId = e.TryGetWebMessageAsString(); } catch (Exception) { }
+            if (!string.IsNullOrEmpty(btnId) && btnId != "")
             {
-                case MouseButtons.Left:
-                    HtmlElement element = this.webBrowser11.Document.GetElementFromPoint(e.ClientMousePosition);
-                    var btnId = element.GetAttribute("data-id");
-                    if (btnId != "")
-                    {
                         if (btnId == "GrabGroupMembers")
                         {
                             GetGroupMember getGroupMember = new GetGroupMember(this);
@@ -1049,59 +1093,57 @@ namespace WASender
                             form.Show();
                         }
                     }
-                    break;
-            }
         }
 
-        private void setLanguages()
+        private async Task setLanguagesAsync()
         {
-            webBrowser11.Document.InvokeScript("changeLabel", new string[] { "txtGetGroupMembers", Strings.GetGroupMember });
-            webBrowser11.Document.InvokeScript("changeLabel", new string[] { "txtGetWhatsAppGroupLinksfromweb", Strings.GrabWhatsAppGroupLinksfromwebpage });
+            await DashEval("changeLabel(" + JsStr("txtGetGroupMembers") + "," + JsStr(Strings.GetGroupMember) + ")");
+            await DashEval("changeLabel(" + JsStr("txtGetWhatsAppGroupLinksfromweb") + "," + JsStr(Strings.GrabWhatsAppGroupLinksfromwebpage) + ")");
 
-            webBrowser11.Document.InvokeScript("changeLabel", new string[] { "txtWhatsAppAutoreplyBot", Strings.WhatsAppAutoResponderBot });
-            webBrowser11.Document.InvokeScript("changeLabel", new string[] { "txtGoogleMagDataExtractor", Strings.GoogleMapDataEExtractor });
-            webBrowser11.Document.InvokeScript("changeLabel", new string[] { "txtAutoGroupJoiner", Strings.AutoGroupJoiner });
-            webBrowser11.Document.InvokeScript("changeLabel", new string[] { "txtWhatsAppNumberFilter", Strings.WhatsAppNumberFilter });
-            webBrowser11.Document.InvokeScript("changeLabel", new string[] { "txtGrabActiveGroupMembers", Strings.GrabActiveGroupMembers });
-            webBrowser11.Document.InvokeScript("changeLabel", new string[] { "txtContactListGrabber", Strings.ContactListGrabber });
-            webBrowser11.Document.InvokeScript("changeLabel", new string[] { "txtGrabChatList", Strings.GrabChatList });
-            webBrowser11.Document.InvokeScript("changeLabel", new string[] { "txtBulkAddGroupMembers", Strings.BulkAddGroupMembers });
-            webBrowser11.Document.InvokeScript("changeLabel", new string[] { "txtGroupFinder", Strings.GroupFinder });
-            webBrowser11.Document.InvokeScript("changeLabel", new string[] { "txtBulkGroupGenerator", Strings.BulkGroupGenerator });
-            webBrowser11.Document.InvokeScript("changeLabel", new string[] { "txtGoogleContactCSVGenerator", Strings.GoogleContactsCSVGenerator });
-            webBrowser11.Document.InvokeScript("changeLabel", new string[] { "txtWebsiteEmailMobileExtractor", Strings.WebsiteEMailMobileExtractor });
-            webBrowser11.Document.InvokeScript("changeLabel", new string[] { "txtWhatsAppWarmer", Strings.WhatsAppWarmer });
-            webBrowser11.Document.InvokeScript("changeLabel", new string[] { "txtPollReport", Strings.GetPollResults });
-            webBrowser11.Document.InvokeScript("changeLabel", new string[] { "txtSocialMediaExtractor", Strings.SocialMediaDataExtractor });
-            webBrowser11.Document.InvokeScript("changeLabel", new string[] { "txtScheduler", Strings.AllSchedules });
-            webBrowser11.Document.InvokeScript("changeLabel", new string[] { "txtWhatsAppWarmerGroup", Strings.WhatsAppGroupWarmer });
-            webBrowser11.Document.InvokeScript("changeLabel", new string[] { "txtGroupLinkVerify", Strings.BulkGroupLinksVerify });
+            await DashEval("changeLabel(" + JsStr("txtWhatsAppAutoreplyBot") + "," + JsStr(Strings.WhatsAppAutoResponderBot) + ")");
+            await DashEval("changeLabel(" + JsStr("txtGoogleMagDataExtractor") + "," + JsStr(Strings.GoogleMapDataEExtractor) + ")");
+            await DashEval("changeLabel(" + JsStr("txtAutoGroupJoiner") + "," + JsStr(Strings.AutoGroupJoiner) + ")");
+            await DashEval("changeLabel(" + JsStr("txtWhatsAppNumberFilter") + "," + JsStr(Strings.WhatsAppNumberFilter) + ")");
+            await DashEval("changeLabel(" + JsStr("txtGrabActiveGroupMembers") + "," + JsStr(Strings.GrabActiveGroupMembers) + ")");
+            await DashEval("changeLabel(" + JsStr("txtContactListGrabber") + "," + JsStr(Strings.ContactListGrabber) + ")");
+            await DashEval("changeLabel(" + JsStr("txtGrabChatList") + "," + JsStr(Strings.GrabChatList) + ")");
+            await DashEval("changeLabel(" + JsStr("txtBulkAddGroupMembers") + "," + JsStr(Strings.BulkAddGroupMembers) + ")");
+            await DashEval("changeLabel(" + JsStr("txtGroupFinder") + "," + JsStr(Strings.GroupFinder) + ")");
+            await DashEval("changeLabel(" + JsStr("txtBulkGroupGenerator") + "," + JsStr(Strings.BulkGroupGenerator) + ")");
+            await DashEval("changeLabel(" + JsStr("txtGoogleContactCSVGenerator") + "," + JsStr(Strings.GoogleContactsCSVGenerator) + ")");
+            await DashEval("changeLabel(" + JsStr("txtWebsiteEmailMobileExtractor") + "," + JsStr(Strings.WebsiteEMailMobileExtractor) + ")");
+            await DashEval("changeLabel(" + JsStr("txtWhatsAppWarmer") + "," + JsStr(Strings.WhatsAppWarmer) + ")");
+            await DashEval("changeLabel(" + JsStr("txtPollReport") + "," + JsStr(Strings.GetPollResults) + ")");
+            await DashEval("changeLabel(" + JsStr("txtSocialMediaExtractor") + "," + JsStr(Strings.SocialMediaDataExtractor) + ")");
+            await DashEval("changeLabel(" + JsStr("txtScheduler") + "," + JsStr(Strings.AllSchedules) + ")");
+            await DashEval("changeLabel(" + JsStr("txtWhatsAppWarmerGroup") + "," + JsStr(Strings.WhatsAppGroupWarmer) + ")");
+            await DashEval("changeLabel(" + JsStr("txtGroupLinkVerify") + "," + JsStr(Strings.BulkGroupLinksVerify) + ")");
 
-            webBrowser11.Document.InvokeScript("changeLabelByClass", new string[] { "grabnow", Strings.GrabNow });
-            webBrowser11.Document.InvokeScript("changeLabelByClass", new string[] { "startnow", Strings.StartNow });
+            await DashEval("changeLabelByClass(" + JsStr("grabnow") + "," + JsStr(Strings.GrabNow) + ")");
+            await DashEval("changeLabelByClass(" + JsStr("startnow") + "," + JsStr(Strings.StartNow) + ")");
 
 
-            webBrowser11.Document.InvokeScript("changeLabel", new string[] { "txt_DataExtractor", Strings.DataExtractors });
-            webBrowser11.Document.InvokeScript("changeLabel", new string[] { "txt_Grouptools", Strings.Grouptools });
-            webBrowser11.Document.InvokeScript("changeLabel", new string[] { "txt_Automations_n_Filtrations", Strings.AutomationsFiltrations });
-            webBrowser11.Document.InvokeScript("changeLabel", new string[] { "txt_LeadGenerationtools", Strings.LeadGenerationtools });
+            await DashEval("changeLabel(" + JsStr("txt_DataExtractor") + "," + JsStr(Strings.DataExtractors) + ")");
+            await DashEval("changeLabel(" + JsStr("txt_Grouptools") + "," + JsStr(Strings.Grouptools) + ")");
+            await DashEval("changeLabel(" + JsStr("txt_Automations_n_Filtrations") + "," + JsStr(Strings.AutomationsFiltrations) + ")");
+            await DashEval("changeLabel(" + JsStr("txt_LeadGenerationtools") + "," + JsStr(Strings.LeadGenerationtools) + ")");
 
         }
 
-        private void setPrimaryColor(int R, int G, int B)
+        private async Task setPrimaryColor(int R, int G, int B)
         {
-            addNewCss(@" .btn-primary {background-color:rgb(" + R + ", " + G + ", " + B + "); };");
-            addNewCss(@" .btn-primary.active, .btn-primary:active, .btn-primary:focus, .btn-primary:hover{background-color:rgb(" + R + ", " + G + ", " + B + ")!important}; ");
-            addNewCss(@" .btn-primary.disabled, .btn-primary:disabled {background-color:rgb(" + R + ", " + G + ", " + B + "); };");
-            addNewCss(@" .badge-primary {background-color:rgb(" + R + ", " + G + ", " + B + "); };");
+            await addNewCss(@" .btn-primary {background-color:rgb(" + R + ", " + G + ", " + B + "); };");
+            await addNewCss(@" .btn-primary.active, .btn-primary:active, .btn-primary:focus, .btn-primary:hover{background-color:rgb(" + R + ", " + G + ", " + B + ")!important}; ");
+            await addNewCss(@" .btn-primary.disabled, .btn-primary:disabled {background-color:rgb(" + R + ", " + G + ", " + B + "); };");
+            await addNewCss(@" .badge-primary {background-color:rgb(" + R + ", " + G + ", " + B + "); };");
         }
 
-        private void addNewCss(string CSS)
+        private Task addNewCss(string CSS)
         {
-            System.Windows.Forms.HtmlElement head = webBrowser11.Document.GetElementsByTagName("head")[0];
-            System.Windows.Forms.HtmlElement styleEl = webBrowser11.Document.CreateElement("style");
-            styleEl.InnerHtml = CSS;
-            head.AppendChild(styleEl);
+            string js = "(function(){var s=document.createElement('style');s.type='text/css';"
+                + "s.appendChild(document.createTextNode(" + JsStr(CSS) + "));"
+                + "var h=document.getElementsByTagName('head');if(h&&h.length)h[0].appendChild(s);})();";
+            return DashEval(js);
         }
         public void CHeckForActivation()
         {

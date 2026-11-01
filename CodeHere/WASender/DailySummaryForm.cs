@@ -1,3 +1,4 @@
+using MaterialSkin.Controls;
 using System;
 using System.Text;
 using System.Windows.Forms;
@@ -13,13 +14,13 @@ namespace WASender
     public partial class DailySummaryForm : MyMaterialPopOp
     {
         private Timer refreshTimer;
-        private Label lblSent;
-        private Label lblQuota;
-        private Label lblHealth;
-        private Label lblQueue;
+        private MaterialLabel lblSent;
+        private MaterialLabel lblQuota;
+        private MaterialLabel lblHealth;
+        private MaterialLabel lblQueue;
         private DataGridView gridAccounts;
-        private Label lblAi;
-        private Label lblUpdate;
+        private MaterialLabel lblAi;
+        private MaterialLabel lblUpdate;
         private TextBox txtLog;
 
         public DailySummaryForm()
@@ -41,14 +42,15 @@ namespace WASender
         private void InitializeComponentManual()
         {
             this.SuspendLayout();
-            this.ClientSize = new System.Drawing.Size(720, 560);
+            this.ClientSize = new System.Drawing.Size(760, 600);
             this.StartPosition = FormStartPosition.CenterParent;
             this.MaximizeBox = false;
+            this.Padding = new Padding(12);
 
             var top = new FlowLayoutPanel();
             top.Dock = DockStyle.Top;
-            top.Height = 90;
-            top.Padding = new Padding(10);
+            top.Height = 110;
+            top.Padding = new Padding(0, 0, 0, 8);
             this.Controls.Add(top);
 
             lblSent = MakeStat(top, "Terkirim Hari Ini");
@@ -58,27 +60,34 @@ namespace WASender
 
             var mid = new TableLayoutPanel();
             mid.Dock = DockStyle.Top;
-            mid.Height = 220;
+            mid.Height = 240;
             mid.ColumnCount = 2;
             mid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
             mid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            mid.Padding = new Padding(10, 0, 10, 0);
             this.Controls.Add(mid);
 
-            var grpAcc = new GroupBox();
-            grpAcc.Text = "Akun Hari Ini";
-            grpAcc.Dock = DockStyle.Fill;
+            var cardAcc = new MaterialCard();
+            cardAcc.Dock = DockStyle.Fill;
+            cardAcc.Padding = new Padding(12);
+            var lblAccTitle = new MaterialLabel();
+            lblAccTitle.Text = "Akun Hari Ini";
+            lblAccTitle.FontType = MaterialSkin.MaterialSkinManager.fontType.H6;
+            lblAccTitle.Dock = DockStyle.Top;
+            lblAccTitle.Height = 28;
+            cardAcc.Controls.Add(lblAccTitle);
             gridAccounts = new DataGridView();
             gridAccounts.Dock = DockStyle.Fill;
             gridAccounts.ReadOnly = true;
             gridAccounts.AllowUserToAddRows = false;
             gridAccounts.RowHeadersVisible = false;
             gridAccounts.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            gridAccounts.BackgroundColor = System.Drawing.Color.White;
+            gridAccounts.BorderStyle = BorderStyle.None;
             gridAccounts.Columns.Add("c0", "Akun");
             gridAccounts.Columns.Add("c1", "Terkirim");
             gridAccounts.Columns.Add("c2", "Limit");
-            grpAcc.Controls.Add(gridAccounts);
-            mid.Controls.Add(grpAcc, 0, 0);
+            cardAcc.Controls.Add(gridAccounts);
+            mid.Controls.Add(cardAcc, 0, 0);
 
             var right = new TableLayoutPanel();
             right.Dock = DockStyle.Fill;
@@ -87,41 +96,59 @@ namespace WASender
             right.RowStyles.Add(new RowStyle(SizeType.Percent, 45F));
             mid.Controls.Add(right, 1, 0);
 
-            var grpAi = new GroupBox();
-            grpAi.Text = "AI Hari Ini";
-            grpAi.Dock = DockStyle.Fill;
-            lblAi = new Label();
+            var cardAi = new MaterialCard();
+            cardAi.Dock = DockStyle.Fill;
+            cardAi.Padding = new Padding(12);
+            var lblAiTitle = new MaterialLabel();
+            lblAiTitle.Text = "AI Hari Ini";
+            lblAiTitle.FontType = MaterialSkin.MaterialSkinManager.fontType.H6;
+            lblAiTitle.Dock = DockStyle.Top;
+            lblAiTitle.Height = 28;
+            cardAi.Controls.Add(lblAiTitle);
+            lblAi = new MaterialLabel();
             lblAi.Dock = DockStyle.Fill;
-            lblAi.Padding = new Padding(6);
-            grpAi.Controls.Add(lblAi);
-            right.Controls.Add(grpAi, 0, 0);
+            cardAi.Controls.Add(lblAi);
+            right.Controls.Add(cardAi, 0, 0);
 
-            var grpUp = new GroupBox();
-            grpUp.Text = "Pembaruan";
-            grpUp.Dock = DockStyle.Fill;
-            lblUpdate = new Label();
+            var cardUp = new MaterialCard();
+            cardUp.Dock = DockStyle.Fill;
+            cardUp.Padding = new Padding(12);
+            var lblUpTitle = new MaterialLabel();
+            lblUpTitle.Text = "Pembaruan";
+            lblUpTitle.FontType = MaterialSkin.MaterialSkinManager.fontType.H6;
+            lblUpTitle.Dock = DockStyle.Top;
+            lblUpTitle.Height = 28;
+            cardUp.Controls.Add(lblUpTitle);
+            lblUpdate = new MaterialLabel();
             lblUpdate.Dock = DockStyle.Fill;
-            lblUpdate.Padding = new Padding(6);
-            grpUp.Controls.Add(lblUpdate);
-            right.Controls.Add(grpUp, 0, 1);
+            cardUp.Controls.Add(lblUpdate);
+            right.Controls.Add(cardUp, 0, 1);
 
-            var grpLog = new GroupBox();
-            grpLog.Text = "Log Terakhir";
-            grpLog.Dock = DockStyle.Fill;
-            grpLog.Padding = new Padding(6);
+            var cardLog = new MaterialCard();
+            cardLog.Dock = DockStyle.Fill;
+            cardLog.Padding = new Padding(12);
+            var lblLogTitle = new MaterialLabel();
+            lblLogTitle.Text = "Log Terakhir";
+            lblLogTitle.FontType = MaterialSkin.MaterialSkinManager.fontType.H6;
+            lblLogTitle.Dock = DockStyle.Top;
+            lblLogTitle.Height = 28;
+            cardLog.Controls.Add(lblLogTitle);
             txtLog = new TextBox();
             txtLog.Dock = DockStyle.Fill;
             txtLog.Multiline = true;
             txtLog.ReadOnly = true;
             txtLog.ScrollBars = ScrollBars.Vertical;
+            txtLog.BorderStyle = BorderStyle.None;
             txtLog.Font = new System.Drawing.Font("Consolas", 9F);
-            grpLog.Controls.Add(txtLog);
-            this.Controls.Add(grpLog);
+            cardLog.Controls.Add(txtLog);
+            this.Controls.Add(cardLog);
 
-            var btnRefresh = new Button();
+            var btnRefresh = new MaterialButton();
             btnRefresh.Text = "Refresh";
             btnRefresh.Dock = DockStyle.Bottom;
-            btnRefresh.Height = 34;
+            btnRefresh.Height = 36;
+            btnRefresh.Type = MaterialButton.MaterialButtonType.Contained;
+            btnRefresh.UseAccentColor = false;
             btnRefresh.Click += (s, e) => { try { RefreshStats(); } catch (Exception) { } };
             this.Controls.Add(btnRefresh);
 
@@ -129,18 +156,23 @@ namespace WASender
             this.ResumeLayout(false);
         }
 
-        private Label MakeStat(Control parent, string caption)
+        private MaterialLabel MakeStat(Control parent, string caption)
         {
-            var box = new GroupBox();
-            box.Text = caption;
-            box.Width = 165;
-            box.Height = 70;
+            var box = new MaterialCard();
+            box.Width = 172;
+            box.Height = 96;
             box.Margin = new Padding(4);
-            var v = new Label();
+            box.Padding = new Padding(8);
+            var cap = new MaterialLabel();
+            cap.Text = caption;
+            cap.FontType = MaterialSkin.MaterialSkinManager.fontType.Subtitle2;
+            cap.Dock = DockStyle.Top;
+            cap.Height = 22;
+            box.Controls.Add(cap);
+            var v = new MaterialLabel();
             v.Text = "-";
-            v.Font = new System.Drawing.Font("Segoe UI", 16F, System.Drawing.FontStyle.Bold);
+            v.FontType = MaterialSkin.MaterialSkinManager.fontType.H4;
             v.Dock = DockStyle.Fill;
-            v.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             box.Controls.Add(v);
             parent.Controls.Add(box);
             return v;

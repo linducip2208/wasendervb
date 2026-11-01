@@ -61,6 +61,8 @@ namespace WASender
             
             materialCheckbox2.Text = Strings.Dontlinkpreviewwhilesendingmessage;
             materialCheckbox3.Text = Strings.FilterNumbersBeforeSendingMessages;
+            // Jalur Chrome/Selenium sudah pensiun (WebView2 only) — field path disembunyikan, nilainya tetap tersimpan.
+            try { txtChromePath.Visible = false; } catch (Exception) { }
             materialLabel1.Text = Strings.Browser;
 
             tabPage1.Text = Strings.General;

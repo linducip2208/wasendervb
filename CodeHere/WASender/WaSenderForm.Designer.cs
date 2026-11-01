@@ -248,7 +248,7 @@
             this.CanSend = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Tools = new System.Windows.Forms.TabPage();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
-            this.webBrowser11 = new System.Windows.Forms.WebBrowser();
+            this.webBrowser11 = new Microsoft.Web.WebView2.WinForms.WebView2();
             this.imageListMainTabs = new System.Windows.Forms.ImageList(this.components);
             this.lblSection = new System.Windows.Forms.Label();
             this.savesampleExceldialog = new System.Windows.Forms.SaveFileDialog();
@@ -3804,6 +3804,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1771, 945);
+            this.MinimumSize = new System.Drawing.Size(1280, 720);
             this.Controls.Add(this.materialButton35);
             this.Controls.Add(this.materialButton34);
             this.Controls.Add(this.materialButton31);
@@ -4093,7 +4094,7 @@
         private System.Windows.Forms.Label lblLicenseNet;
         private MaterialSkin.Controls.MaterialButton materialButton35;
         private System.Windows.Forms.ToolStripMenuItem removeDuplicatesToolStripMenuItem;
-        private System.Windows.Forms.WebBrowser webBrowser11;
+        private Microsoft.Web.WebView2.WinForms.WebView2 webBrowser11;
         private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.ToolStripMenuItem builtInVariableToolStripMenuItem;
         private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn2;
