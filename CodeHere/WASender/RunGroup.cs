@@ -313,6 +313,13 @@ namespace WASender
 
         private async Task<bool> SendMessagetoGroup(MesageModel mesageModel, GroupModel item, WebView2 wv, bool isFirstMessage)
         {
+            // Governor anti-ban: stop kalau limit harian / skor rendah.
+            try
+            {
+                var _g = await SendGovernor.CanSendAsync(wv, null, 2);
+                if (_g != null && !_g.Item1) { try { SendEngine.Log("governor block group: " + _g.Item2); } catch (Exception) { } return false; }
+            }
+            catch (Exception) { }
             bool ok = true;
             bool AutoSend = false;
             bool isAlreadySent = false;

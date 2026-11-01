@@ -514,6 +514,13 @@ namespace WASender
         {
             try
             {
+                // Governor anti-ban: stop kalau limit harian / skor rendah.
+                try
+                {
+                    var _g = SendGovernor.CanSendAsync(wv, null, 2).Result;
+                    if (_g != null && !_g.Item1) { try { SendEngine.Log("governor block single: " + _g.Item2); } catch (Exception) { } return; }
+                }
+                catch (Exception) { }
                 bool AutoSend = false;
                 bool isAlreadySent = false;
                 if (mesageModel.buttons != null && mesageModel.buttons.Count() > 0)
