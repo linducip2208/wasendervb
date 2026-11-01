@@ -39,15 +39,19 @@ namespace WASender
             try
             {
                 if (!await EnsureWpp(wv)) return Tuple.Create(false, "nowpp");
+                string url = SendEngine.ToDataUrl(base64, fileName);
+                string mtype = SendEngine.MediaWppType(fileName);
+                if (!await SendEngine.StagePayloadAsync(wv, url)) return Tuple.Create(false, "stage-fail");
                 string js = "window." + mailbox + "='PENDING';"
-                    + "WPP.chat.sendFileMessage(" + JsonConvert.SerializeObject(chatId) + "," + JsonConvert.SerializeObject(base64)
+                    + "WPP.chat.sendFileMessage(" + JsonConvert.SerializeObject(chatId) + ",window.__upl"
                     + ",{filename:" + JsonConvert.SerializeObject(fileName ?? "file")
+                    + ",type:" + JsonConvert.SerializeObject(mtype)
                     + (string.IsNullOrEmpty(caption) ? "" : ",caption:" + JsonConvert.SerializeObject(caption))
                     + extraOptions
                     + "}).then(function(r){window." + mailbox + "='OK:'+JSON.stringify(r).substring(0,200);})"
                     + ".catch(function(e){window." + mailbox + "='FAIL:'+((e&&e.message)||e);});'DISPATCHED';";
                 await Eval(wv, js);
-                string res = await Mailbox(wv, mailbox, 20);
+                string res = await Mailbox(wv, mailbox, SendEngine.MediaTriesFor(url.Length));
                 return Tuple.Create(res.StartsWith("OK:{"), res);
             }
             catch (Exception ex) { return Tuple.Create(false, "ex:" + ex.Message); }
@@ -257,17 +261,20 @@ namespace WASender
             {
                 if (!await EnsureWpp(wv)) return false;
                 string gid = (groupId ?? "").Contains("@") ? groupId : groupId + "@g.us";
+                string url = SendEngine.ToDataUrl(base64, fileName);
+                string mtype = SendEngine.MediaWppType(fileName);
+                if (!await SendEngine.StagePayloadAsync(wv, url)) return false;
                 string mbox = "__gmd" + Guid.NewGuid().ToString("N").Substring(0, 6);
                 string js = "window." + mbox + "='PENDING';(function(){try{"
-                    + "WPP.chat.sendFileMessage(" + JsonConvert.SerializeObject(gid) + "," + JsonConvert.SerializeObject(base64 ?? "")
-                    + ",{filename:" + JsonConvert.SerializeObject(fileName ?? "file") + ",caption:" + JsonConvert.SerializeObject(caption ?? "") + "})"
+                    + "WPP.chat.sendFileMessage(" + JsonConvert.SerializeObject(gid) + ",window.__upl"
+                    + ",{filename:" + JsonConvert.SerializeObject(fileName ?? "file") + ",type:" + JsonConvert.SerializeObject(mtype) + ",caption:" + JsonConvert.SerializeObject(caption ?? "") + "})"
                     + ".then(function(r){var mid='';try{mid=(r&&r.id&&(r.id._serialized||r.id.id||String(r.id)))||'';}catch(e){}"
                     + "WPP.chat.getMessages(" + JsonConvert.SerializeObject(gid) + ",{count:10}).then(function(ms){try{var arr=(ms&&ms.map)?ms:((ms&&ms.models)?ms.models:[]);var ok=false;"
                     + "for(var i=arr.length-1;i>=0;i--){var m=arr[i]||{};var id='';try{id=(m.id&&(m.id._serialized||m.id.id||String(m.id)))||'';}catch(e){}var fm=false;try{fm=!!(m.fromMe||(m.id&&m.id.fromMe));}catch(e){}"
                     + "if(fm&&(id===mid||mid=='')){ok=true;break;}}window." + mbox + "=ok?'OK':'NOTFOUND';}catch(e){window." + mbox + "='ERR';}}).catch(function(e){window." + mbox + "='FAIL';});"
                     + "}).catch(function(e){window." + mbox + "='FAIL:'+(e&&e.message);});}catch(e){window." + mbox + "='EX';}})();'DISPATCHED';";
                 await Eval(wv, js);
-                string res = await Mailbox(wv, mbox, 25);
+                string res = await Mailbox(wv, mbox, SendEngine.MediaTriesFor(url.Length));
                 return res == "OK";
             }
             catch (Exception) { return false; }

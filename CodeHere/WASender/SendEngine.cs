@@ -31,6 +31,79 @@ namespace WASender
             catch (Exception ex) { return "EX:" + ex.GetType().Name; }
         }
 
+        /// <summary>Normalisasi konten file menjadi data URL. Penerima lama mengirim base64 mentah
+        /// tanpa prefix data: — wa-js menolaknya. Fungsi ini menerima keduanya.</summary>
+        public static string ToDataUrl(string content, string fileName)
+        {
+            try
+            {
+                string c = (content ?? "").Trim();
+                if (c.StartsWith("data:")) return c;
+                string mime = "application/octet-stream";
+                try
+                {
+                    string ext = (System.IO.Path.GetExtension(fileName ?? "") ?? "").ToLower();
+                    if (!string.IsNullOrEmpty(ext))
+                    {
+                        try { mime = System.Web.MimeMapping.GetMimeMapping("x" + ext); } catch (Exception) { }
+                        if (ext == ".mp4") mime = "video/mp4";
+                        else if (ext == ".opus" || ext == ".ogg") mime = "audio/ogg; codecs=opus";
+                    }
+                }
+                catch (Exception) { }
+                return "data:" + mime + ";base64," + c;
+            }
+            catch (Exception) { return content; }
+        }
+
+        /// <summary>Tipe media eksplisit untuk WPP.chat.sendFileMessage (tanpa ini wa-js bisa FAIL).</summary>
+        public static string MediaWppType(string fileName)
+        {
+            try
+            {
+                string ext = (System.IO.Path.GetExtension(fileName ?? "") ?? "").ToLower();
+                if (ext == ".jpg" || ext == ".jpeg" || ext == ".png" || ext == ".gif" || ext == ".webp") return "image";
+                if (ext == ".mp4" || ext == ".3gp" || ext == ".mov") return "video";
+                if (ext == ".mp3" || ext == ".ogg" || ext == ".opus" || ext == ".m4a" || ext == ".wav" || ext == ".aac") return "audio";
+                return "document";
+            }
+            catch (Exception) { return "document"; }
+        }
+
+        /// <summary>Staging payload besar via banyak Eval kecil (anti gagal kirim script raksasa sekali jalan).
+        /// Isi tersedia sebagai window.__upl. Return false bila ada chunk yg gagal.</summary>
+        public static async Task<bool> StagePayloadAsync(WebView2 wv, string dataUrl)
+        {
+            try
+            {
+                string r0 = await Eval(wv, "window.__upl='';'READY';");
+                if (r0 == null || r0.StartsWith("EX")) return false;
+                const int CH = 700000;
+                int n = 0;
+                for (int i = 0; i < dataUrl.Length; i += CH)
+                {
+                    string part = dataUrl.Substring(i, Math.Min(CH, dataUrl.Length - i));
+                    string r = await Eval(wv, "window.__upl+=" + JsonConvert.SerializeObject(part) + ";'" + n + "';");
+                    if (r == null || r.StartsWith("EX")) return false;
+                    n++;
+                }
+                return true;
+            }
+            catch (Exception) { return false; }
+        }
+
+        public static int MediaTriesFor(int dataUrlLen)
+        {
+            try
+            {
+                int t = 20 + dataUrlLen / 400000;
+                if (t < 20) t = 20;
+                if (t > 120) t = 120;
+                return t;
+            }
+            catch (Exception) { return 20; }
+        }
+
         public static async Task<int> OutboxCount(WebView2 wv)
         {
             try
@@ -459,17 +532,20 @@ namespace WASender
                 string ct = System.Web.MimeMapping.GetMimeMapping(filePath);
                 if (ext == ".mp4") { ct = "video/mp4"; }
                 string b64 = "data:" + ct + ";base64," + System.Convert.ToBase64String(bytes);
+                string mtype = MediaWppType(System.IO.Path.GetFileName(filePath));
+                if (!await StagePayloadAsync(wv, b64)) { Log("wpp media stage-fail"); return Tuple.Create(false, "stage-fail"); }
                 string chatIdJs = JsonConvert.SerializeObject(digits + "@c.us");
                 await Eval(wv, "try{WPP.chat.openChatBottom(" + chatIdJs + ").catch(function(){});}catch(e){}");
                 await Task.Delay(1500);
                 string js = "window.__wppMedia='PENDING';"
-                    + "WPP.chat.sendFileMessage(" + chatIdJs + "," + JsonConvert.SerializeObject(b64)
+                    + "WPP.chat.sendFileMessage(" + chatIdJs + ",window.__upl"
                     + ",{filename:" + JsonConvert.SerializeObject(System.IO.Path.GetFileName(filePath))
+                    + ",type:" + JsonConvert.SerializeObject(mtype)
                     + ",caption:" + JsonConvert.SerializeObject(caption ?? "") + "})"
                     + ".then(function(r){window.__wppMedia='OK:'+JSON.stringify(r).substring(0,300);})"
                     + ".catch(function(e){window.__wppMedia='FAIL:'+((e&&e.message)||e);});'DISPATCHED';";
                 await Eval(wv, js);
-                string res = await PollMailbox(wv, "__wppMedia", 20);
+                string res = await PollMailbox(wv, "__wppMedia", MediaTriesFor(b64.Length));
                 Log("wpp media -> " + (res ?? "").Substring(0, System.Math.Min(160, (res ?? "").Length)));
                 if (!res.StartsWith("OK:{")) { return Tuple.Create(false, res); }
                 string mmid = ExtractMsgId(res);
@@ -494,15 +570,17 @@ namespace WASender
                 string ct = System.Web.MimeMapping.GetMimeMapping(filePath);
                 if (ext == ".mp4") { ct = "video/mp4"; }
                 string b64 = "data:" + ct + ";base64," + Convert.ToBase64String(bytes);
+                string mtype = MediaWppType(System.IO.Path.GetFileName(filePath));
+                if (!await StagePayloadAsync(wv, b64)) { Log("fmark media stage-fail"); return Tuple.Create(false, "stage-fail"); }
                 string chatIdJs = JsonConvert.SerializeObject(digits + "@c.us");
                 string js = "window.__fmarkMedia='PENDING';"
-                    + "FMARK.sendFileMessage(" + chatIdJs + "," + JsonConvert.SerializeObject(b64)
+                    + "FMARK.sendFileMessage(" + chatIdJs + ",window.__upl"
                     + ",{filename:" + JsonConvert.SerializeObject(System.IO.Path.GetFileName(filePath))
                     + ",caption:" + JsonConvert.SerializeObject(caption ?? "") + "})"
                     + ".then(function(r){window.__fmarkMedia='OK:'+JSON.stringify(r).substring(0,300);})"
                     + ".catch(function(e){window.__fmarkMedia='FAIL:'+((e&&e.message)||e);});'DISPATCHED';";
                 await Eval(wv, js);
-                string res = await PollMailbox(wv, "__fmarkMedia", 16);
+                string res = await PollMailbox(wv, "__fmarkMedia", MediaTriesFor(b64.Length));
                 Log("fmark media -> " + (res ?? "").Substring(0, Math.Min(160, (res ?? "").Length)));
                 return Tuple.Create(res.StartsWith("OK:{"), res);
             }
