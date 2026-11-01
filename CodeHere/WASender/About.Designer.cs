@@ -53,6 +53,8 @@
             this.materialCard1.Controls.Add(this.pictureBox1);
             this.materialCard1.Controls.Add(this.materialButton2);
             this.materialCard1.Controls.Add(this.materialButton1);
+            this.materialCard1.Controls.Add(this.materialLabel8);
+            this.materialCard1.Controls.Add(this.materialLabel7);
             this.materialCard1.Controls.Add(this.materialLabel6);
             this.materialCard1.Controls.Add(this.materialLabel5);
             this.materialCard1.Controls.Add(this.materialLabel4);
@@ -67,7 +69,7 @@
             this.materialCard1.MouseState = MaterialSkin.MouseState.HOVER;
             this.materialCard1.Name = "materialCard1";
             this.materialCard1.Padding = new System.Windows.Forms.Padding(13, 14, 13, 14);
-            this.materialCard1.Size = new System.Drawing.Size(493, 379);
+            this.materialCard1.Size = new System.Drawing.Size(493, 410);
             this.materialCard1.TabIndex = 0;
             // 
             // pictureBox1
@@ -90,7 +92,7 @@
             this.materialButton2.Depth = 0;
             this.materialButton2.HighEmphasis = true;
             this.materialButton2.Icon = global::WASender.Properties.Resources.icons8_delete_document_24px;
-            this.materialButton2.Location = new System.Drawing.Point(22, 324);
+            this.materialButton2.Location = new System.Drawing.Point(22, 355);
             this.materialButton2.Margin = new System.Windows.Forms.Padding(4, 6, 4, 6);
             this.materialButton2.MouseState = MaterialSkin.MouseState.HOVER;
             this.materialButton2.Name = "materialButton2";
@@ -112,7 +114,7 @@
             this.materialButton1.Depth = 0;
             this.materialButton1.HighEmphasis = true;
             this.materialButton1.Icon = global::WASender.Properties.Resources.icons8_thumbs_up_24px;
-            this.materialButton1.Location = new System.Drawing.Point(342, 316);
+            this.materialButton1.Location = new System.Drawing.Point(342, 347);
             this.materialButton1.Margin = new System.Windows.Forms.Padding(4, 6, 4, 6);
             this.materialButton1.MouseState = MaterialSkin.MouseState.HOVER;
             this.materialButton1.Name = "materialButton1";
@@ -124,6 +126,28 @@
             this.materialButton1.UseAccentColor = false;
             this.materialButton1.UseVisualStyleBackColor = true;
             this.materialButton1.Click += new System.EventHandler(this.materialButton1_Click);
+            // 
+            // materialLabel8
+            // 
+            this.materialLabel8.AutoSize = true;
+            this.materialLabel8.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Pixel);
+            this.materialLabel8.ForeColor = System.Drawing.Color.Black;
+            this.materialLabel8.Location = new System.Drawing.Point(21, 300);
+            this.materialLabel8.Name = "materialLabel8";
+            this.materialLabel8.Size = new System.Drawing.Size(20, 18);
+            this.materialLabel8.TabIndex = 11;
+            this.materialLabel8.Text = "-";
+            // 
+            // materialLabel7
+            // 
+            this.materialLabel7.AutoSize = true;
+            this.materialLabel7.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Pixel);
+            this.materialLabel7.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))));
+            this.materialLabel7.Location = new System.Drawing.Point(19, 272);
+            this.materialLabel7.Name = "materialLabel7";
+            this.materialLabel7.Size = new System.Drawing.Size(110, 18);
+            this.materialLabel7.TabIndex = 10;
+            this.materialLabel7.Text = "Sisa Masa Aktif";
             // 
             // materialLabel6
             // 
@@ -202,7 +226,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(527, 508);
+            this.ClientSize = new System.Drawing.Size(527, 539);
             this.Controls.Add(this.materialCard1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
@@ -230,6 +254,8 @@
         private System.Windows.Forms.Label materialLabel4;
         private System.Windows.Forms.Label materialLabel5;
         private System.Windows.Forms.Label materialLabel6;
+        private System.Windows.Forms.Label materialLabel7;
+        private System.Windows.Forms.Label materialLabel8;
         private MaterialSkin.Controls.MaterialButton materialButton1;
         private MaterialSkin.Controls.MaterialButton materialButton2;
         private System.Windows.Forms.PictureBox pictureBox1;

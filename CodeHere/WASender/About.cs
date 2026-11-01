@@ -25,11 +25,21 @@ namespace WASender
             DateTime? _date = Config.getEndDate();
             if (_date == null)
             {
-                materialLabel5.Text = "Never";
+                materialLabel5.Text = "Lifetime";
+                materialLabel8.Text = "Unlimited";
+                materialLabel8.ForeColor = System.Drawing.Color.FromArgb(0, 150, 0);
             }
             else
             {
                 materialLabel5.Text = _date.Value.Day.ToString() + "-" + _date.Value.ToString("MMM") + "-" + _date.Value.Year + " " + _date.Value.Hour + ":" + _date.Value.Minute;
+                int sisa = (int)System.Math.Ceiling((_date.Value - DateTime.Now).TotalDays);
+                if (sisa < 0) sisa = 0;
+                bool en = false;
+                try { en = (Strings.selectedLanguage ?? "").StartsWith("Eng", StringComparison.OrdinalIgnoreCase); } catch (Exception) { }
+                materialLabel8.Text = sisa.ToString() + (en ? " days" : " hari");
+                if (sisa <= 7) materialLabel8.ForeColor = System.Drawing.Color.FromArgb(200, 0, 0);
+                else if (sisa <= 30) materialLabel8.ForeColor = System.Drawing.Color.FromArgb(200, 120, 0);
+                else materialLabel8.ForeColor = System.Drawing.Color.FromArgb(0, 150, 0);
             }
 
             materialButton2.Text = Strings.DeActivateLicence;
@@ -65,6 +75,12 @@ namespace WASender
             materialLabel3.Text = Strings.LicenceInformation;
             materialLabel4.Text = Strings.Activated;
             materialLabel6.Text = Strings.LicenceExpiresOn;
+            try
+            {
+                bool en = (Strings.selectedLanguage ?? "").StartsWith("Eng", StringComparison.OrdinalIgnoreCase);
+                materialLabel7.Text = en ? "Days Remaining" : "Sisa Masa Aktif";
+            }
+            catch (Exception) { materialLabel7.Text = "Sisa Masa Aktif"; }
             materialButton1.Text = Strings.OK;
         }
     }
