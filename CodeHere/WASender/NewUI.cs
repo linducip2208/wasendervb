@@ -54,8 +54,40 @@ namespace WASender
             {
                 cmbMinRating.SelectedIndex = 0;
                 dataGridView1.SelectionChanged += (s, ev) => { try { ShowSelectedDetail(); } catch (Exception) { } };
+                dataGridView1.DoubleClick += (s, ev) => { try { OpenSelectedOnMap(); } catch (Exception) { } };
+                lblDetail.Text = "Klik baris untuk detail - Klik 2x untuk buka di Google Maps (tanpa API key)";
             }
             catch (Exception) { }
+        }
+
+        private void OpenSelectedOnMap()
+        {
+            // Buka lokasi di Google Maps (browser luar) — tanpa API key, cukup URL publik.
+            try
+            {
+                if (dataGridView1.SelectedRows.Count == 0 || dataGridView1.SelectedRows[0].IsNewRow) return;
+                var r = dataGridView1.SelectedRows[0];
+                string lat = "", lng = "", name = "", addr = "";
+                try
+                {
+                    lat = Convert.ToString(r.Cells["Latitude"].Value ?? "").Trim();
+                    lng = Convert.ToString(r.Cells["Longitude"].Value ?? "").Trim();
+                    name = Convert.ToString(r.Cells["Org_Name"].Value ?? "").Trim();
+                    addr = Convert.ToString(r.Cells["address"].Value ?? "").Trim();
+                }
+                catch (Exception) { }
+                string url;
+                if (!string.IsNullOrEmpty(lat) && !string.IsNullOrEmpty(lng))
+                    url = "https://www.google.com/maps/search/?api=1&query=" + Uri.EscapeDataString(lat + "," + lng);
+                else if (!string.IsNullOrEmpty(name))
+                    url = "https://www.google.com/maps/search/?api=1&query=" + Uri.EscapeUriString(name + " " + addr);
+                else return;
+                System.Diagnostics.Process.Start(url);
+            }
+            catch (Exception ex)
+            {
+                try { MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error); } catch (Exception) { }
+            }
         }
 
         private void ShowSelectedDetail()
