@@ -565,6 +565,7 @@ namespace WASender
                     }
                     catch (Exception) { }
                     try { await LicenseServer.RefreshAsync(); } catch (Exception) { }
+                    try { this.Invoke(new Action(() => { try { UpdateNetStatus(); } catch (Exception) { } })); } catch (Exception) { }
                 });
             }
             catch (Exception) { }
@@ -803,7 +804,7 @@ namespace WASender
                 {
                     dashTimer = new System.Windows.Forms.Timer();
                     dashTimer.Interval = 60000;
-                    dashTimer.Tick += (s, ev) => { try { RefreshDashboardStats(); } catch (Exception) { } };
+                    dashTimer.Tick += (s, ev) => { try { RefreshDashboardStats(); } catch (Exception) { } try { UpdateNetStatus(); } catch (Exception) { } };
                     dashTimer.Start();
                 }
             }
@@ -811,6 +812,44 @@ namespace WASender
             webBrowser11.Visible = true;
             pictureBox1.Visible = false;
             this.webBrowser11.Document.Body.MouseUp += new HtmlElementEventHandler(Body_MouseDown11);
+        }
+
+        private void lblLicenseNet_Click(object sender, EventArgs e)
+        {
+            try { UpdateNetStatus(true); } catch (Exception) { }
+        }
+
+        private void UpdateNetStatus(bool force = false)
+        {
+            try
+            {
+                if (lblLicenseNet == null) return;
+                if (lblLicenseNet.Tag as string == "checking") return;
+                lblLicenseNet.Tag = "checking";
+                Task.Run(async () =>
+                {
+                    bool online = false;
+                    try { online = await LicenseServer.PingAsync(); } catch (Exception) { }
+                    try
+                    {
+                        this.Invoke(new Action(() =>
+                        {
+                            try
+                            {
+                                lblLicenseNet.Text = online ? "● Online" : "● Offline";
+                                lblLicenseNet.ForeColor = online
+                                    ? System.Drawing.Color.FromArgb(0, 180, 0)
+                                    : System.Drawing.Color.FromArgb(200, 0, 0);
+                                toolTip1.SetToolTip(lblLicenseNet, (online ? "Terhubung" : "Tidak terhubung") + " ke license.pandusolusi.com — klik untuk cek ulang.");
+                            }
+                            catch (Exception) { }
+                            lblLicenseNet.Tag = "";
+                        }));
+                    }
+                    catch (Exception) { try { lblLicenseNet.Tag = ""; } catch (Exception) { } }
+                });
+            }
+            catch (Exception) { }
         }
 
         private static string DashHtml(string s)

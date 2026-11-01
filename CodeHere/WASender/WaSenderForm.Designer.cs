@@ -269,6 +269,7 @@
             this.materialButton31 = new MaterialSkin.Controls.MaterialButton();
             this.materialButton34 = new MaterialSkin.Controls.MaterialButton();
             this.chkDarkMode = new System.Windows.Forms.CheckBox();
+            this.lblLicenseNet = new System.Windows.Forms.Label();
             this.materialButton35 = new MaterialSkin.Controls.MaterialButton();
             this.contextMenuStrip4 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
@@ -3677,6 +3678,21 @@
             this.chkDarkMode.UseVisualStyleBackColor = true;
             this.chkDarkMode.CheckedChanged += new System.EventHandler(this.chkDarkMode_CheckedChanged);
             // 
+            // lblLicenseNet
+            // 
+            this.lblLicenseNet.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblLicenseNet.AutoSize = true;
+            this.lblLicenseNet.BackColor = System.Drawing.Color.Transparent;
+            this.lblLicenseNet.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.lblLicenseNet.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Pixel);
+            this.lblLicenseNet.ForeColor = System.Drawing.Color.Gray;
+            this.lblLicenseNet.Location = new System.Drawing.Point(1630, 28);
+            this.lblLicenseNet.Name = "lblLicenseNet";
+            this.lblLicenseNet.Size = new System.Drawing.Size(90, 13);
+            this.lblLicenseNet.TabIndex = 9;
+            this.lblLicenseNet.Text = "● ...";
+            this.lblLicenseNet.Click += new System.EventHandler(this.lblLicenseNet_Click);
+            // 
             // materialButton35
             // 
             this.materialButton35.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
@@ -3772,6 +3788,7 @@
             this.Controls.Add(this.comboBox1);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.chkDarkMode);
+            this.Controls.Add(this.lblLicenseNet);
             this.Controls.Add(this.lblSection);
             this.Controls.Add(this.tabMain);
             this.DrawerShowIconsWhenHidden = true;
@@ -4049,6 +4066,7 @@
         private MaterialSkin.Controls.MaterialButton materialButton31;
         private MaterialSkin.Controls.MaterialButton materialButton34;
         private System.Windows.Forms.CheckBox chkDarkMode;
+        private System.Windows.Forms.Label lblLicenseNet;
         private MaterialSkin.Controls.MaterialButton materialButton35;
         private System.Windows.Forms.ToolStripMenuItem removeDuplicatesToolStripMenuItem;
         private System.Windows.Forms.WebBrowser webBrowser11;

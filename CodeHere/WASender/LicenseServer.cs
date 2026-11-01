@@ -212,6 +212,29 @@ namespace WASender
             catch (Exception) { return -1; }
         }
 
+        /// <summary>Cek cepat koneksi ke server lisensi (tanpa login). True bila server menjawab HTTP apa pun.</summary>
+        public static async Task<bool> PingAsync()
+        {
+            try
+            {
+                var req = (HttpWebRequest)WebRequest.Create(ServerUrl + "/");
+                req.Method = "GET";
+                req.Timeout = 8000;
+                req.UserAgent = "WASender";
+                try
+                {
+                    using (var rp = (HttpWebResponse)await req.GetResponseAsync()) return true;
+                }
+                catch (WebException wx)
+                {
+                    // 4xx/5xx = server hidup, hanya path/akses yg ditolak. Timeout/DNS = mati.
+                    if (wx.Response is HttpWebResponse) return true;
+                    return false;
+                }
+            }
+            catch (Exception) { return false; }
+        }
+
         /// <summary>Refresh di background; hanya respons invalid eksplisit yg menghapus lisensi lokal.</summary>
         public static async Task RefreshAsync()
         {
