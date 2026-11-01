@@ -1086,6 +1086,8 @@
 
     <Compile Include="HumanDelay.cs" />
 
+    <Compile Include="GridTheme.cs" />
+
     <Compile Include="BrowserPolicy.cs" />
 
     <Compile Include="AiHandover.cs" />

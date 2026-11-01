@@ -53,6 +53,7 @@ namespace WASender
         private void GMapExtractor_Load(object sender, EventArgs e)
         {
             initLanguage();
+            try { GridTheme.Apply(dataGridView1); } catch (Exception) { }
             logger = new Logger("ContactGrabber");
             init();
             gMapModelList = new List<GMapModel>();

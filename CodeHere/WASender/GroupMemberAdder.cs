@@ -238,6 +238,7 @@ namespace WASender
         {
             init();
             InitLanguage();
+            try { GridTheme.ApplyAll(gridTargetsGroup, gridStatus); } catch (Exception) { }
             System.Threading.Tasks.Task.Factory.StartNew(() =>
             {
                 Thread.Sleep(100);

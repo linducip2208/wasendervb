@@ -29,6 +29,7 @@ namespace WASender
         {
             initLanguages();
             loadData();
+            try { GridTheme.Apply(dataGridView1); } catch (Exception) { }
         }
 
         private string getStatusString(string hcStatus)

@@ -259,6 +259,7 @@ namespace WaAutoReplyBot
             dtEmp.Columns.Add(Strings.Type, typeof(string));
             dtEmp.Columns.Add(Strings.Messages, typeof(string));
             gridRulesets.DataSource = dtEmp;
+            try { GridTheme.Apply(gridRulesets); } catch (Exception) { }
             gridRulesets.Columns[0].Width = 60;
             gridRulesets.Columns[0].ReadOnly = false;
             gridRulesets.Columns[1].ReadOnly = true;

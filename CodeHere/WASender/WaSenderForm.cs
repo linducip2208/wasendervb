@@ -1275,6 +1275,13 @@ namespace WASender
             materialCheckbox2.Checked = true;
             materialCheckbox4.Checked = true;
             materialCheckbox3.Checked = true;
+            try
+            {
+                GridTheme.ApplyAll(gridTargets, gridTargetsGroup,
+                    dataGridView1, dataGridView2, dataGridView3, dataGridView4, dataGridView5,
+                    dataGridView6, dataGridView7, dataGridView8, dataGridView9, dataGridView10);
+            }
+            catch (Exception) { }
             defaultColorSchime();
             getSelectedLanguage();
             lblSection.Text = Strings.ContectSender;

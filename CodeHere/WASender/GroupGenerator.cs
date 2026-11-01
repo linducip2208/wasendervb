@@ -387,6 +387,7 @@ namespace WASender
         {
             init();
             InitLanguage();
+            try { GridTheme.Apply(gridStatus); } catch (Exception) { }
             System.Threading.Tasks.Task.Factory.StartNew(() =>
             {
                 Thread.Sleep(100);

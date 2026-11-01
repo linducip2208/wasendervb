@@ -69,7 +69,7 @@ namespace WASender
 
         private void GroupLinkVerify_Load(object sender, EventArgs e)
         {
-
+            try { GridTheme.ApplyAll(gridTargetsGroup, gridStatus); } catch (Exception) { }
         }
 
         private void initWABrowser()

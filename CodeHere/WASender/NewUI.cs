@@ -290,6 +290,7 @@ namespace WASender
         {
             ChangeInitStatus(InitStatusEnum.NotInitialised);
             ChangeCampStatus(CampaignStatusEnum.NotStarted);
+            try { GridTheme.Apply(dataGridView1); } catch (Exception) { }
         }
 
         private void ChangeCampStatus(CampaignStatusEnum _campaignStatus)

@@ -28,6 +28,7 @@ namespace WASender
             InitializeComponentManual();
             this.Icon = Strings.AppIcon;
             this.Text = "Ringkasan Hari Ini";
+            try { GridTheme.Apply(gridAccounts); } catch (Exception) { }
             RefreshStats();
             try
             {

@@ -217,6 +217,7 @@ namespace WASender
         private void init()
         {
             label4.ForeColor = Color.Red;
+            try { GridTheme.Apply(gridStatus); } catch (Exception) { }
             ChangeInitStatus(InitStatusEnum.NotInitialised);
             ChangeCampStatus(CampaignStatusEnum.NotStarted);
         }

@@ -28,6 +28,7 @@ namespace WASender
         {
             initLanguage();
             loadData();
+            try { GridTheme.Apply(dataGridView1); } catch (Exception) { }
             if (Utils.waSenderBrowser != null)
             {
                 browser = Utils.waSenderBrowser;
