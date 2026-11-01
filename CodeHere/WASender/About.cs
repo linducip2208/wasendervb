@@ -26,12 +26,13 @@ namespace WASender
             var _online = LicenseServer.Load();
             if (_online != null)
             {
-                // Lisensi panel online: tampilkan dari server, bukan file legacy.
+                // Lisensi panel online: tampilkan masa aktif dari server, bukan file legacy.
                 string exp = LicenseServer.ExpiryText();
                 int sisa = LicenseServer.RemainingDays();
+                string mulai = LicenseServer.IssuedText();
                 if (string.IsNullOrEmpty(exp) || sisa == int.MaxValue)
                 {
-                    materialLabel5.Text = "Lifetime";
+                    materialLabel5.Text = string.IsNullOrEmpty(mulai) ? "Lifetime" : "Sejak " + mulai;
                     materialLabel8.Text = "Unlimited";
                     materialLabel8.ForeColor = System.Drawing.Color.FromArgb(0, 150, 0);
                 }

@@ -20,6 +20,7 @@ namespace WASender
         public string Code { get; set; } = "";
         public string Hwid { get; set; } = "";
         public string Customer { get; set; } = "";
+        public string IssuedOn { get; set; } = "";
         public string ExpiresOn { get; set; } = "";
         public string CheckedAt { get; set; } = "";
     }
@@ -106,6 +107,7 @@ namespace WASender
                 info.Code = norm;
                 info.Hwid = (hwid ?? "").Trim().ToLowerInvariant();
                 try { info.Customer = obj.Value<string>("customer") ?? ""; } catch (Exception) { }
+                try { info.IssuedOn = obj.Value<string>("issued_on") ?? ""; } catch (Exception) { }
                 try { info.ExpiresOn = obj.Value<string>("expires_on") ?? ""; } catch (Exception) { }
                 info.CheckedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
                 return Tuple.Create(true, string.IsNullOrEmpty(msg) ? "License is valid." : msg, info);
@@ -166,6 +168,19 @@ namespace WASender
                 return NotExpired(info.ExpiresOn);
             }
             catch (Exception) { return false; }
+        }
+
+        public static string IssuedText()
+        {
+            try
+            {
+                var info = Load();
+                if (info == null || string.IsNullOrWhiteSpace(info.IssuedOn)) return "";
+                DateTime d;
+                if (DateTime.TryParse(info.IssuedOn, out d)) return d.ToString("dd-MMM-yyyy");
+                return info.IssuedOn;
+            }
+            catch (Exception) { return ""; }
         }
 
         public static string ExpiryText()

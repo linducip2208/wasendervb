@@ -34,6 +34,8 @@
             this.materialButton2 = new MaterialSkin.Controls.MaterialButton();
             this.materialButton1 = new MaterialSkin.Controls.MaterialButton();
             this.materialLabel6 = new System.Windows.Forms.Label();
+            this.materialLabel7 = new System.Windows.Forms.Label();
+            this.materialLabel8 = new System.Windows.Forms.Label();
             this.materialLabel5 = new System.Windows.Forms.Label();
             this.materialLabel4 = new System.Windows.Forms.Label();
             this.materialLabel3 = new System.Windows.Forms.Label();
