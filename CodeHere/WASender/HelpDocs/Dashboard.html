@@ -1,723 +1,185 @@
-﻿<html lang="en">
-
+﻿<!DOCTYPE html>
+<html lang="id">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="initial-scale=0.1">
-  
-  <meta http-equiv="x-ua-compatible" content="ie=edge">
-  <title>UNTITLED</title>
-  
-  <!-- Bootstrap core CSS -->
-  <link href="css/bootstrap.min.css" rel="stylesheet">
-  <!-- Material Design Bootstrap -->
-  <link href="css/mdb.min.css" rel="stylesheet">
-
-  <link href="css/animated-counter-prograssbar.css" rel="stylesheet">
-
-  <link rel="stylesheet" href="fontawesome.min.css">
-  
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WASender</title>
+<link rel="stylesheet" href="fontawesome.min.css">
 <style>
-
-.col-md-4 {
-    -ms-flex: 0 0 25%;
-    flex: 0 0 33.333333%;
-    max-width: 33.333333%;
-	}
-  .col-md-6 {
-    -ms-flex: 0 0 50%;
-    flex: 0 0 50%;
-    max-width: 50%;
-	}
-  .col-md-4 {
-    -ms-flex: 0 0 25%;
-    flex: 0 0 33.333333%;
-    max-width: 33.333333%;
-	}
-  .col-md-3 {
-    -ms-flex: 0 0 25%;
-    flex: 0 0 25%;
-    max-width: 25%;
-    margin-bottom: 15px;
-    margin-top: 0px;
-
-	}
-  .col-md-4 {
-    margin-bottom: 15px;
-    margin-top: 15px;
-  }
-  .full-width
-  {
-    width: 100%;
-    margin: 0;
-  }
-  .card-title
-  {
-    color: rgb(83, 83, 83);
-  }
-  .card{
-    box-shadow: 2px 2px 2px 2px rgb(241, 241, 241), 1px 1px 10px 5px rgb(228, 228, 228) !important;
-    
-  }
-  .progress
-  {
-    margin: 0;
-  }
-  .Poor{
-    background-color: yellow;
-    color: #750202;
-  }
-  .Weak{
-    background-color: #ffcf00;
-    color: #000000;
-  }
-  .Good
-  {
-    background-color: #90ff7c;
-    color: #656565;
-  }
-  .Better
-  {
-    background-color: #29e408;
-    color: #ffffff;
-  }
-  .Best
-  {
-    background-color: #126d01;
-    color: #ffffff;
-  }
-  .DontKnow
-  {
-    background-color: #8d8d8d;
-    color: #ffffff;
-  }
-  .center {
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-  }
-  .text-center
-  {
-    text-align: center;
-  }
-
-  .p-3
-  {
-    padding:10px !important;
-  }
-
-.card .card-body h5
-{
-
+:root{
+  --navy:#1A2338; --navy2:#242F4D; --navy3:#2E3B5C;
+  --bg:#F2F4F7; --card:#ffffff; --border:#E2E8F0;
+  --text:#1A2338; --muted:#64748B;
+  --green:#009688; --green-dark:#00776E; --green-soft:#E0F2F1;
+  --amber:#F59E0B; --red:#DC2626; --blue:#2563EB;
+  --radius:14px;
+  --shadow:0 1px 2px rgba(16,24,40,.06),0 4px 12px rgba(16,24,40,.06);
 }
-
+*{box-sizing:border-box}
+body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:'Segoe UI',Roboto,Arial,sans-serif;font-size:14px;}
+/* ===== Sidebar ===== */
+.sidebar{position:fixed;top:0;left:0;bottom:0;width:232px;background:var(--navy);color:#CBD5E1;padding:20px 14px;overflow-y:auto;}
+.brand{display:flex;align-items:center;gap:10px;padding:2px 8px 16px 8px;}
+.brand .logo{width:38px;height:38px;border-radius:12px;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;}
+.brand .name{color:#fff;font-size:17px;font-weight:700;}
+.brand .ver{font-size:11px;color:#94A3B8;}
+.nav-cap{font-size:11px;letter-spacing:1px;color:#64748B;margin:14px 8px 6px 8px;text-transform:uppercase;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:10px;color:#CBD5E1;text-decoration:none;font-size:13.5px;cursor:pointer;border:0;background:transparent;width:100%;text-align:left;font-family:inherit;}
+.nav-item i{width:20px;text-align:center;color:#94A3B8;}
+.nav-item:hover{background:var(--navy2);color:#fff;}
+.nav-item.active{background:var(--green);color:#fff;}
+.nav-item.active i{color:#fff;}
+.side-foot{margin-top:18px;padding:12px 10px;border-top:1px solid var(--navy3);font-size:12px;color:#94A3B8;}
+.side-foot b{color:#fff;}
+/* ===== Main ===== */
+.main{margin-left:232px;padding:22px 26px 40px 26px;max-width:1460px;}
+.topbar{display:flex;align-items:center;gap:12px;margin-bottom:18px;}
+.topbar h1{font-size:22px;margin:0;font-weight:700;}
+.topbar .date{color:var(--muted);font-size:13px;}
+.search{margin-left:auto;display:flex;align-items:center;background:#fff;border:1px solid var(--border);border-radius:10px;padding:8px 12px;min-width:260px;}
+.search i{color:var(--muted);margin-right:8px;}
+.search input{border:0;outline:0;font-size:13px;width:100%;font-family:inherit;}
+.sec-title{font-size:15px;font-weight:700;margin:22px 0 4px 0;}
+.sec-sub{font-size:12.5px;color:var(--muted);margin:0 0 12px 0;}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(228px,1fr));gap:14px;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;display:flex;flex-direction:column;}
+.card .tile{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:10px;}
+.card h3{font-size:14px;margin:0 0 4px 0;font-weight:600;}
+.card p{font-size:12.5px;color:var(--muted);margin:0 0 12px 0;min-height:32px;}
+.card .rowbtn{margin-top:auto;}
+.btn-primary{display:inline-block;width:100%;text-align:center;background:var(--green);color:#fff;border:0;border-radius:9px;padding:9px 10px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;text-decoration:none;}
+.btn-primary:hover{background:var(--green-dark);}
+.btn-primary .fas{margin-right:6px;}
+.t-blue{background:#E3F0FF;color:#1D6FF2;} .t-purple{background:#EFE7FF;color:#7C3AED;}
+.t-amber{background:#FFF3E0;color:#E65100;} .t-green{background:#E0F2F1;color:#00796B;}
+.t-rose{background:#FDECEC;color:#C62828;} .t-slate{background:#EDF2F7;color:#475569;}
+.t-teal{background:#E0F7FA;color:#0097A7;} .t-indigo{background:#E8EAF6;color:#3949AB;}
+/* status strip */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:6px;}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:12px 14px;}
+.stat .lbl{font-size:11.5px;color:var(--muted);margin-bottom:2px;}
+.stat .val{font-size:19px;font-weight:700;}
+.stat .sub{font-size:11.5px;color:var(--muted);}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;}
+.center{text-align:center;}
+.mod-desc{font-size:12px;}
 </style>
-
-
-
 </head>
-  <body >
-  <br>
-  <main style="width:100%">
-    <div class="mainsection" style="position: absolute;top:0;left: 0;width: 100%;padding:10px">
-	<div class="" style="margin-bottom: 10px;">
-	  <div class="" style="padding:10px;">
-		<h5 class="" id="txt_TodayStatus">Status Sistem</h5>
-		<div class="col-md-12">
-			<div class="row" id="dashStatusStrip">
-				<div class="col-md-4"><div class="card"><div class="card-block p-3 text-center"><h5 class="card-title">Lisensi</h5><h4 id="dsLicense">-</h4><div class="mod-sub" id="dsLicenseSub">-</div></div></div></div>
-				<div class="col-md-4"><div class="card"><div class="card-block p-3 text-center"><h5 class="card-title">Terkirim Hari Ini</h5><h4 id="dsSent">-</h4><div class="mod-sub" id="dsSentSub">kuota hari ini</div></div></div></div>
-				<div class="col-md-4"><div class="card"><div class="card-block p-3 text-center"><h5 class="card-title">Antrian &amp; Kesehatan</h5><h4 id="dsQueue">-</h4><div class="mod-sub" id="dsHealth">-</div></div></div></div>
-			</div>
-			<div class="row" style="margin-top:10px;">
-				<div class="col-md-4"><div class="card"><div class="card-block p-3 text-center"><h5 class="card-title">Sesi Browser</h5><h4 id="dsSession">-</h4><div class="mod-sub">akun WhatsApp</div></div></div></div>
-				<div class="col-md-4"><div class="card"><div class="card-block p-3 text-center"><h5 class="card-title">Pembaruan</h5><h4 id="dsUpdate" style="font-size:16px;">-</h4><div class="mod-sub">versi aplikasi</div></div></div></div>
-				<div class="col-md-4"><div class="card"><div class="card-block p-3 text-center"><h5 class="card-title">Ringkasan Lengkap</h5><button type="button" data-toggle="modal" class="btn btn-primary full-width" data-id="DailySummary"><i class="fas fa-chart-bar" data-id="DailySummary"></i> <span data-id="DailySummary">BUKA</span></button><div class="mod-sub">AI, log &amp; detail akun</div></div></div></div>
-			</div>
-		</div>
-	  </div>
-	</div>
-
-	<div class="" style="margin-bottom: 10px;">
-	  <div class="" style="padding:10px;">
-		<h5 class="" id="txt_Tutorial">Tutorial &amp; Panduan</h5>
-
-			<div class="col-md-12">
-				<div class="row">
-
-					<div class="col-md-3" id="Box_Tutorial">
-					  <div class="card">
-						<div class="card-block p-3 text-center">
-						  <div class="row">
-							<div class="col-md-12">
-							  <i class="fas fa-book-open" style="font-size:48px;color:#555;"></i>
-							</div>
-						  </div>
-						  <h5 class="card-title text-center" id="txtTutorialBox">Panduan Pakai</h5>
-						  <button type="button" data-toggle="modal" class="btn btn-primary full-width" data-id="Tutorial">
-							<i class="fas fa-external-link-alt" data-id="Tutorial"></i> <span class="grabnow" data-id="Tutorial">BUKA</span>
-						  </button>
-						</div>
-					  </div>
-					</div>
-
-				</div>
-			</div>
-
-	  </div>
-	</div>
-
-	<div class="" style="margin-bottom: 10px;">
-	  <div class="" style="padding:10px;">
-		<h5 class="" id="txt_DataExtractor">Data Extractor</h5>
-		
-			<div class="col-md-12">
-				<div class="row">
-				
-					<div class="col-md-3" id="Box_GetGroupMembers">
-					  <div class="card">
-						<div class="card-block p-3">
-							<div class="row">
-							  <div class="col-md-12">
-								<img src="images/GetWhatsAppGroup_Members_BLACK.png" class="center">
-							  </div>
-							</div>
-						  
-						  <h5 class="card-title text-center" id="txtGetGroupMembers">Get Group Members </h5>
-                        <p class="mod-desc">Ambil daftar anggota dari grup WA</p>
-						  <button  type="button" data-id="GrabGroupMembers"  data-toggle="modal" class="btn btn-primary full-width"  >
-							<i class="fas fa-external-link-alt" data-id="GrabGroupMembers" ></i>
-							
-							<span data-id="GrabGroupMembers"  class="grabnow">GRAB NOW</span>
-						  </button>
-						</div>
-						
-					  </div>
-					</div>
-					
-					
-					
-					 <div class="col-md-3" id="Box_ContactListGrabber">
-					  <div class="card">
-						<div class="card-block p-3">
-						  
-							<div class="row">
-							  <div class="col-md-12">
-								<img src="images/WContactList_BLACK.png" class="center">
-							  </div>
-							</div>
-						  <h5 class="card-title text-center" id="txtContactListGrabber">Contact List Grabber</h5>
-                        <p class="mod-desc">Grab semua kontak di akun</p>
-						  <button  type="button" data-toggle="modal" class="btn btn-primary full-width"  data-id="ContactListGrabber">
-							<i class="fas fa-external-link-alt" data-id="ContactListGrabber"></i> <span class="grabnow" data-id="ContactListGrabber">GRAB NOW</span></button>
-						</div>
-					  </div>
-					</div>
-					
-					
-					<div class="col-md-3" id="Box_GrabActiveGroupMembers">
-					  <div class="card">
-						<div class="card-block p-3">
-						  
-							<div class="row">
-							  <div class="col-md-12">
-								<img src="images/ActiveGroupMember_BLACK.png" class="center">
-							  </div>
-							</div>
-						  <h5 class="card-title text-center" id="txtGrabActiveGroupMembers">Grab Active Group Members</h5>
-                        <p class="mod-desc">Filter member yang aktif chat</p>
-						  <button  type="button" data-toggle="modal" class="btn btn-primary full-width"  data-id="GrabActiveGroupMembers">
-							<i class="fas fa-external-link-alt" data-id="GrabActiveGroupMembers"></i> <span class="grabnow" data-id="GrabActiveGroupMembers">GRAB NOW</span></button>
-						</div>
-					  </div>
-					</div>
-					
-					
-					<div class="col-md-3" id="Box_GrabChatList">
-					  <div class="card">
-						<div class="card-block p-3">
-						  
-							<div class="row">
-							  <div class="col-md-12">
-								<img src="images/ChatList_BLACK.png" class="center">
-							  </div>
-							</div>
-						  <h5 class="card-title text-center" id="txtGrabChatList">Grab Chat List</h5>
-                        <p class="mod-desc">Grab daftar chat pribadi & grup</p>
-						  <button  type="button" data-toggle="modal" class="btn btn-primary full-width"  data-id="GrabChatList">
-							<i class="fas fa-external-link-alt" data-id="GrabChatList"></i> <span class="grabnow" data-id="GrabChatList">GRAB NOW</span></button>
-						</div>
-					  </div>
-					</div>
-					
-					<div class="col-md-3" id="Box_PollReport">
-					  <div class="card">
-						<div class="card-block p-3">
-						  
-							<div class="row">
-							  <div class="col-md-12">
-								<img src="images/PollReport_BLACK.png" class="center">
-							  </div>
-							</div>
-						  <h5 class="card-title text-center" id="txtPollReport">Poll Report</h5>
-                        <p class="mod-desc">Lihat hasil polling</p>
-						  <button  type="button" data-toggle="modal" class="btn btn-primary full-width"  data-id="PollReport">
-							<i class="fas fa-external-link-alt" data-id="PollReport"></i> <span class="startnow" data-id="PollReport">START NOW</span></button>
-						</div>
-					  </div>
-					</div>
-					
-					
-					
-				
-				</div>
-			</div>
-		
-		
-	  </div>
-	</div>
-	
-	<div class="" style="margin-bottom: 10px;">
-	  <div class="" style="padding:10px;">
-		<h5 class="" id="txt_Grouptools">Group tools</h5>
-		
-			<div class="col-md-12">
-				<div class="row">
-				
-					<div class="col-md-3" id="Box_GetWhatsAppGroupLinksfromweb">
-					  <div class="card">
-						<div class="card-block p-3">
-						  
-							<div class="row">
-							  <div class="col-md-12">
-								<img src="images/GetGroupLinksFromWeb_BLACK.png" class="center">
-							  </div>
-							</div>
-						  
-						  <h5 class="card-title text-center" id="txtGetWhatsAppGroupLinksfromweb">Get WhatsApp Group Links from web</h5>
-                        <p class="mod-desc">Scrape link grup dari web</p>
-						  <button  type="button"  data-toggle="modal" class="btn btn-primary full-width"  data-id="GetWhatsAppGroupLinksfromweb">
-							<i class="fas fa-external-link-alt" data-id="GetWhatsAppGroupLinksfromweb"></i> <span class="grabnow" data-id="GetWhatsAppGroupLinksfromweb">GRAB NOW</span></button>
-						</div>
-					  </div>
-					</div>
-					
-					
-					
-					<div class="col-md-3" id="Box_AutoGroupJoiner">
-					  <div class="card">
-						<div class="card-block p-3">
-						  
-							<div class="row">
-							  <div class="col-md-12">
-								<img src="images/GroupJoiner_BLACK.png" class="center">
-							  </div>
-							</div>
-						  <h5 class="card-title text-center" id="txtAutoGroupJoiner">Auto Group Joiner</h5>
-                        <p class="mod-desc">Auto-join dari daftar link</p>
-						  <button  type="button" data-toggle="modal" class="btn btn-primary full-width"  data-id="AutoGroupJoiner">
-							<i class="fas fa-external-link-alt" data-id="AutoGroupJoiner"></i> <span class="startnow" data-id="AutoGroupJoiner">START NOW</span></button>
-						</div>
-					  </div>
-					</div>
-					
-					<div class="col-md-3" id="Box_BulkAddGroupMembers">
-					  <div class="card">
-						<div class="card-block p-3">
-						  
-							<div class="row">
-							  <div class="col-md-12">
-								<img src="images/AddGroupMember_BLACK.png" class="center">
-							  </div>
-							</div>
-						  <h5 class="card-title text-center" id="txtBulkAddGroupMembers">Bulk Add Group Members</h5>
-                        <p class="mod-desc">Tambah banyak member sekaligus</p>
-						  <button  type="button" data-toggle="modal" class="btn btn-primary full-width" data-id="BulkAddGroupMembers" >
-							<i class="fas fa-external-link-alt" data-id="BulkAddGroupMembers"></i> <span class="startnow" data-id="BulkAddGroupMembers">START NOW</span></button>
-						</div>
-					  </div>
-					</div>
-					
-					<div class="col-md-3" id="Box_GroupFinder">
-					  <div class="card">
-						<div class="card-block p-3">
-						  
-							<div class="row">
-							  <div class="col-md-12">
-								<img src="images/GriupFinder_BLACK.png" class="center">
-							  </div>
-							</div>
-						  <h5 class="card-title text-center" id="txtGroupFinder">Group Finder</h5>
-                        <p class="mod-desc">Cari grup via Google</p>
-						  <button  type="button" data-toggle="modal" class="btn btn-primary full-width"  data-id="GroupFinder" >
-							<i class="fas fa-external-link-alt" data-id="GroupFinder" ></i> <span class="startnow" data-id="GroupFinder" >START NOW</span></button>
-						</div>
-					  </div>
-					</div>
-
-					<div class="col-md-3" id="Box_BulkGroupGenerator">
-					  <div class="card">
-						<div class="card-block p-3">
-						  
-							<div class="row">
-							  <div class="col-md-12">
-								<img src="images/CreateBulkWhatsAppGroup_BLACK.png" class="center">
-							  </div>
-							</div>
-						  <h5 class="card-title text-center" id="txtBulkGroupGenerator">Bulk Group Generator</h5>
-                        <p class="mod-desc">Buat banyak grup sekaligus</p>
-						  <button  type="button" data-toggle="modal" class="btn btn-primary full-width"  data-id="BulkGroupGenerator">
-							<i class="fas fa-external-link-alt" data-id="BulkGroupGenerator"></i> <span class="startnow" data-id="BulkGroupGenerator">START NOW</span></button>
-						</div>
-					  </div>
-					</div>
-					
-					<div class="col-md-3" id="Box_GroupLinkVerify">
-					  <div class="card">
-						<div class="card-block p-3">
-							<div class="row">
-							  <div class="col-md-12">
-								<img src="images/WhatsAppGroupLink_Verify_BLACK.png" class="center">
-							  </div>
-							</div>
-						  <h5 class="card-title text-center" id="txtGroupLinkVerify">Bulk Group Links Verify</h5>
-                        <p class="mod-desc">Verifikasi link grup massal</p>
-						  <button  type="button" data-toggle="modal" class="btn btn-primary full-width"  data-id="GroupLinkVerify">
-							<i class="fas fa-external-link-alt" data-id="GroupLinkVerify"></i> <span class="startnow" data-id="GroupLinkVerify">START NOW</span></button>
-						</div>
-					  </div>
-					</div>
-					<div class="col-md-3" id="Box_AISetup">
-					  <div class="card">
-						<div class="card-block p-3">
-						  <div class="row">
-							<div class="col-md-12">
-								<img src="images/WhatsAPpBot_BLACK.png" class="center">
-							  </div>
-							</div>
-						  <h5 class="card-title text-center" id="txtAiSetup">AI Bot Setup</h5>
-                        <p class="mod-desc">Atur AI auto-reply (BYOK)</p>
-						  <button  type="button" data-toggle="modal" class="btn btn-primary full-width"  data-id="AiSetup">
-							<i class="fas fa-external-link-alt" data-id="AiSetup"></i> <span class="grabnow" data-id="AiSetup">OPEN</span></button>
-						</div>
-					  </div>
-					</div>
-					<div class="col-md-3" id="Box_WAHealth">
-					  <div class="card">
-						<div class="card-block p-3">
-						  <div class="row">
-							<div class="col-md-12">
-								<img src="images/Scheduler_BLACK.png" class="center">
-							  </div>
-							</div>
-						  <h5 class="card-title text-center" id="txtWaHealth">WA Health &amp; Laporan</h5>
-                        <p class="mod-desc">Skor kesehatan & laporan</p>
-						  <button  type="button" data-toggle="modal" class="btn btn-primary full-width"  data-id="WaHealth">
-							<i class="fas fa-external-link-alt" data-id="WaHealth"></i> <span class="grabnow" data-id="WaHealth">OPEN</span></button>
-						</div>
-					  </div>
-					</div>
-					
-				
-				</div>
-			</div>
-		
-		
-	  </div>
-	</div>
-	
-	<div class="" style="margin-bottom: 10px;">
-	  <div class="" style="padding:10px;">
-		<h5 class="" id="txt_Automations_n_Filtrations">Automations & Filtrations</h5>
-		
-			<div class="col-md-12">
-				<div class="row">
-				
-					<div class="col-md-3" id="Box_WhatsAppAutoreplyBot">
-					  <div class="card">
-						<div class="card-block p-3">
-						  
-							<div class="row">
-							  <div class="col-md-12">
-								<img src="images/WhatsAPpBot_BLACK.png" class="center">
-							  </div>
-							</div>
-						  
-						  <h5 class="card-title text-center" id="txtWhatsAppAutoreplyBot">WhatsApp Autoreply Bot</h5>
-                        <p class="mod-desc">Balas otomatis by keyword</p>
-						  <button  type="button" data-toggle="modal" class="btn btn-primary full-width"  data-id="WhatsAppAutoreplyBot">
-							<i class="fas fa-external-link-alt" data-id="WhatsAppAutoreplyBot"></i> <span class="startnow" data-id="WhatsAppAutoreplyBot">START NOW</span></button>
-						</div>
-					  </div>
-					</div>
-					
-					
-					
-					<div class="col-md-3" id="Box_WhatsAppNumberFilter">
-					  <div class="card">
-						<div class="card-block p-3">
-						  
-							<div class="row">
-							  <div class="col-md-12">
-								<img src="images/NumberFilter_BLACK.png" class="center">
-							  </div>
-							</div>
-						  <h5 class="card-title text-center" id="txtWhatsAppNumberFilter">WhatsApp Number Filter</h5>
-                        <p class="mod-desc">Cek nomor aktif / tidak</p>
-						  <button  type="button" data-toggle="modal" class="btn btn-primary full-width" data-id="WhatsAppNumberFilter" >
-							<i class="fas fa-external-link-alt" data-id="WhatsAppNumberFilter"></i> <span class="startnow" data-id="WhatsAppNumberFilter">START NOW</span></button>
-						</div>
-					  </div>
-					</div>
-					
-					
-					 <div class="col-md-3" id="Box_WhatsAppWarmer">
-					  <div class="card">
-						<div class="card-block p-3">
-						  
-							<div class="row">
-							  <div class="col-md-12">
-								<img src="images/warmer2.png" class="center">
-							  </div>
-							</div>
-						  <h5 class="card-title text-center" id="txtWhatsAppWarmer">WhatsApp Warmer</h5>
-                        <p class="mod-desc">Warmup akun anti-ban</p>
-						  <button  type="button" data-toggle="modal" class="btn btn-primary full-width"  data-id="WhatsAppWarmer">
-							<i class="fas fa-external-link-alt" data-id="WhatsAppWarmer"></i> <span class="startnow" data-id="WhatsAppWarmer">START NOW</span></button>
-						</div>
-					  </div>
-					</div>
-					
-					
-					<div class="col-md-3" id="Box_WhatsAppWarmerGroup">
-					  <div class="card">
-						<div class="card-block p-3">
-						  
-							<div class="row">
-							  <div class="col-md-12">
-								<img src="images/group_warmer.png" class="center">
-							  </div>
-							</div>
-						  <h5 class="card-title text-center" id="txtWhatsAppWarmerGroup">WhatsApp Group Warmer</h5>
-                        <p class="mod-desc">Warmup di dalam grup</p>
-						  <button  type="button" data-toggle="modal" class="btn btn-primary full-width"  data-id="WhatsAppWarmerGroup">
-							<i class="fas fa-external-link-alt" data-id="WhatsAppWarmerGroup"></i> <span class="startnow" data-id="WhatsAppWarmerGroup">START NOW</span></button>
-						</div>
-					  </div>
-					</div>
-					
-					<div class="col-md-3" id="Box_Scheduler">
-					  <div class="card">
-						<div class="card-block p-3">
-							<div class="row">
-							  <div class="col-md-12">
-								<img src="images/Scheduler_BLACK.png" class="center">
-							  </div>
-							</div>
-						  <h5 class="card-title text-center" id="txtScheduler">All Schedules</h5>
-                        <p class="mod-desc">Kelola scheduled task</p>
-						  <button  type="button" data-toggle="modal" class="btn btn-primary full-width"  data-id="Scheduler">
-							<i class="fas fa-external-link-alt" data-id="Scheduler"></i> <span class="startnow" data-id="Scheduler">START NOW</span></button>
-						</div>
-					  </div>
-					</div>
-					
-				
-				</div>
-			</div>
-		
-		
-	  </div>
-	</div>
-
-	
-	<div class="" style="margin-bottom: 10px;">
-	  <div style="padding:10px;">
-		<h5 class="" id="txt_LeadGenerationtools">Lead Generation tools</h5>
-		
-			<div class="col-md-12">
-				<div class="row">
-				
-					<div class="col-md-3" id="Box_GoogleMagDataExtractor">
-					  <div class="card">
-						<div class="card-block p-3">
-						  
-							<div class="row">
-							  <div class="col-md-12">
-								<img src="images/GoogleMap_BLACK.png" class="center">
-							  </div>
-							</div>
-						  <h5 class="card-title text-center" id="txtGoogleMagDataExtractor">Google Mag Data Extractor</h5>
-                        <p class="mod-desc">Ekstrak data bisnis GMap</p>
-						  <button  type="button" data-toggle="modal" class="btn btn-primary full-width"  data-id="GoogleMagDataExtractor">
-							<i class="fas fa-external-link-alt" data-id="GoogleMagDataExtractor"></i> <span class="grabnow" data-id="GoogleMagDataExtractor">GRAB NOW</span></button>
-						</div>
-					  </div>
-					</div>
-					
-					<div class="col-md-3" id="Box_WebsiteEmailMobileExtractor">
-					  <div class="card">
-						<div class="card-block p-3">
-						  
-							<div class="row">
-							  <div class="col-md-12">
-								<img src="images/WebExtract.png" class="center">
-							  </div>
-							</div>
-						  <h5 class="card-title text-center" id="txtWebsiteEmailMobileExtractor">Website Email Mobile Extractor</h5>
-                        <p class="mod-desc">Ekstrak email/HP dari website</p>
-						  <button  type="button" data-toggle="modal" class="btn btn-primary full-width"   data-id="WebsiteEmailMobileExtractor">
-							<i class="fas fa-external-link-alt"  data-id="WebsiteEmailMobileExtractor"></i> <span class="startnow"  data-id="WebsiteEmailMobileExtractor">START NOW</span></button>
-						</div>
-					  </div>
-					</div>
-					
-					<div class="col-md-3" id="Box_SocialMediaExtractor">
-					  <div class="card">
-						<div class="card-block p-3">
-							<div class="row">
-							  <div class="col-md-12">
-								<img src="images/Social_Media_Data_Extractor.png" class="center">
-							  </div>
-							</div>
-						  <h5 class="card-title text-center" id="txtSocialMediaExtractor">Social Media Data Extractor</h5>
-                        <p class="mod-desc">Ekstrak data sosmed</p>
-						  <button  type="button" data-toggle="modal" class="btn btn-primary full-width"  data-id="SocialMediaExtractor">
-							<i class="fas fa-external-link-alt" data-id="SocialMediaExtractor"></i> <span class="startnow" data-id="SocialMediaExtractor">START NOW</span></button>
-						</div>
-					  </div>
-					</div>
-					
-					<div class="col-md-3" id="Box_GoogleContactCSVGenerator">
-					  <div class="card">
-						<div class="card-block p-3">
-						  
-							<div class="row">
-							  <div class="col-md-12">
-								<img src="images/CSV_BLACK.png" class="center">
-							  </div>
-							</div>
-						  <h5 class="card-title text-center" id="txtGoogleContactCSVGenerator">Google Contact CSV Generator</h5>
-                        <p class="mod-desc">Buat CSV kontak Google</p>
-						  <button  type="button" data-toggle="modal" class="btn btn-primary full-width"  data-id="GoogleContactCSVGenerator">
-							<i class="fas fa-external-link-alt" data-id="GoogleContactCSVGenerator"></i> <span class="startnow" data-id="GoogleContactCSVGenerator">START NOW</span></button>
-						</div>
-					  </div>
-					</div>
-					
-					
-					
-				
-				</div>
-			</div>
-		
-		
-	  </div>
-	</div>	
-	
-    
-  </div>
-  </main>
-
-  <div class="box" style="position: fixed;right: 0;top: 0;">
-    <div aria-label="Vertical button group" role="group" class="btn-group-vertical"> 
-      <button class="btn btn-primary zoom" type="button" style="margin: 0;padding: 5px;"><i class="fas fa-search-plus"></i></button> 
-      <button class="btn btn-primary zoom-out" type="button" style="padding: 5px;"><i class="fas fa-search-minus"></i></button>
-    </div>
+<body>
+<div class="sidebar">
+  <div class="brand"><div class="logo">W</div><div><div class="name">WASender</div><div class="ver">v6.1 &bull; Desktop</div></div></div>
+  <div class="nav-cap">Menu</div>
+  <a class="nav-item active" href="#top"><i class="fas fa-th-large"></i> Dashboard</a>
+  <button class="nav-item" data-id="DailySummary"><i class="fas fa-chart-line"></i> Ringkasan</button>
+  <button class="nav-item" data-id="Tutorial"><i class="fas fa-book-open"></i> Tutorial</button>
+  <div class="nav-cap">Fitur</div>
+  <a class="nav-item" href="#sec-a"><i class="fas fa-database"></i> Data Extractor</a>
+  <a class="nav-item" href="#sec-b"><i class="fas fa-users"></i> Group Tools</a>
+  <a class="nav-item" href="#sec-c"><i class="fas fa-robot"></i> Automasi</a>
+  <a class="nav-item" href="#sec-d"><i class="fas fa-bullseye"></i> Lead Generation</a>
+  <div class="side-foot">Lisensi<br><b id="navLicense">-</b><br><span id="navLicenseSub" style="color:#94A3B8">-</span></div>
+</div>
+<div class="main" id="top">
+  <div class="topbar">
+    <div><h1>Dashboard</h1><div class="date" id="todayLine">-</div></div>
+    <div class="search"><i class="fas fa-search"></i><input id="q" type="text" placeholder="Cari fitur... (mis. grup, kirim, filter)" oninput="filterCards(this.value)"></div>
   </div>
 
+  <div class="stat-grid">
+    <div class="stat"><div class="lbl">Lisensi</div><div class="val" id="dsLicense">-</div><div class="sub" id="dsLicenseSub">-</div></div>
+    <div class="stat"><div class="lbl">Terkirim Hari Ini</div><div class="val" id="dsSent">-</div><div class="sub" id="dsSentSub">kuota hari ini</div></div>
+    <div class="stat"><div class="lbl">Antrian</div><div class="val" id="dsQueue">-</div><div class="sub" id="dsHealth">kesehatan -</div></div>
+    <div class="stat"><div class="lbl">Sesi Browser</div><div class="val" id="dsSession" style="font-size:16px">-</div><div class="sub">akun WhatsApp</div></div>
+    <div class="stat"><div class="lbl">Pembaruan</div><div class="val" id="dsUpdate" style="font-size:14px">-</div><div class="sub">versi aplikasi</div></div>
+    <div class="stat"><div class="lbl">Detail &amp; Log</div><div class="val" style="font-size:14px;"><button class="btn-primary" data-id="DailySummary" style="width:auto;padding:7px 14px;"><i class="fas fa-chart-bar"></i> Buka Ringkasan</button></div><div class="sub">AI, log &amp; akun</div></div>
+  </div>
 
+  <div class="sec-title" id="sec-a">A. Data Extractors</div>
+  <p class="sec-sub">Ambil anggota, kontak, chat aktif &amp; hasil polling dari akun WhatsApp.</p>
+  <div class="grid">
+    <div class="card" id="Box_GetGroupMembers"><div class="tile t-blue"><i class="fas fa-users"></i></div><h3 class="card-title" id="txtGetGroupMembers">Get Group Member</h3><p class="mod-desc">Ambil daftar anggota dari grup WA</p><div class="rowbtn"><button class="btn-primary" data-id="GrabGroupMembers"><i class="fas fa-external-link-alt" data-id="GrabGroupMembers"></i><span class="grabnow" data-id="GrabGroupMembers">GRAB NOW</span></button></div></div>
+    <div class="card" id="Box_ContactListGrabber"><div class="tile t-teal"><i class="fas fa-address-book"></i></div><h3 class="card-title" id="txtContactListGrabber">Contact List Grabber</h3><p class="mod-desc">Grab semua kontak di akun</p><div class="rowbtn"><button class="btn-primary" data-id="ContactListGrabber"><i class="fas fa-external-link-alt" data-id="ContactListGrabber"></i> <span class="grabnow" data-id="ContactListGrabber">GRAB NOW</span></button></div></div>
+    <div class="card" id="Box_GrabActiveGroupMembers"><div class="tile t-green"><i class="fas fa-user-check"></i></div><h3 class="card-title" id="txtGrabActiveGroupMembers">Grab Active Group Members</h3><p class="mod-desc">Filter member yang aktif chat</p><div class="rowbtn"><button class="btn-primary" data-id="GrabActiveGroupMembers"><i class="fas fa-external-link-alt" data-id="GrabActiveGroupMembers"></i> <span class="grabnow" data-id="GrabActiveGroupMembers">GRAB NOW</span></button></div></div>
+    <div class="card" id="Box_GrabChatList"><div class="tile t-indigo"><i class="fas fa-comments"></i></div><h3 class="card-title" id="txtGrabChatList">Grab Chat List</h3><p class="mod-desc">Grab daftar chat pribadi &amp; grup</p><div class="rowbtn"><button class="btn-primary" data-id="GrabChatList"><i class="fas fa-external-link-alt" data-id="GrabChatList"></i> <span class="grabnow" data-id="GrabChatList">GRAB NOW</span></button></div></div>
+    <div class="card" id="Box_PollReport"><div class="tile t-amber"><i class="fas fa-chart-bar"></i></div><h3 class="card-title" id="txtPollReport">Poll Report</h3><p class="mod-desc">Lihat hasil polling</p><div class="rowbtn"><button class="btn-primary" data-id="PollReport"><i class="fas fa-external-link-alt" data-id="PollReport"></i> <span class="startnow" data-id="PollReport">START NOW</span></button></div></div>
+  </div>
 
+  <div class="sec-title" id="sec-b">B. Group Tools</div>
+  <p class="sec-sub">Kelola grup: cari link, join otomatis, tambah member, verifikasi.</p>
+  <div class="grid">
+    <div class="card" id="Box_GetWhatsAppGroupLinksfromweb"><div class="tile t-blue"><i class="fas fa-link"></i></div><h3 class="card-title" id="txtGetWhatsAppGroupLinksfromweb">Get WhatsApp Group Links</h3><p class="mod-desc">Scrape link grup dari web</p><div class="rowbtn"><button class="btn-primary" data-id="GetWhatsAppGroupLinksfromweb"><i class="fas fa-external-link-alt" data-id="GetWhatsAppGroupLinksfromweb"></i> <span class="grabnow" data-id="GetWhatsAppGroupLinksfromweb">GRAB NOW</span></button></div></div>
+    <div class="card" id="Box_AutoGroupJoiner"><div class="tile t-green"><i class="fas fa-sign-in-alt"></i></div><h3 class="card-title" id="txtAutoGroupJoiner">Auto Group Joiner</h3><p class="mod-desc">Auto-join dari daftar link</p><div class="rowbtn"><button class="btn-primary" data-id="AutoGroupJoiner"><i class="fas fa-external-link-alt" data-id="AutoGroupJoiner"></i> <span class="startnow" data-id="AutoGroupJoiner">START NOW</span></button></div></div>
+    <div class="card" id="Box_BulkAddGroupMembers"><div class="tile t-purple"><i class="fas fa-user-plus"></i></div><h3 class="card-title" id="txtBulkAddGroupMembers">Bulk Add Group Members</h3><p class="mod-desc">Tambah banyak member sekaligus</p><div class="rowbtn"><button class="btn-primary" data-id="BulkAddGroupMembers"><i class="fas fa-external-link-alt" data-id="BulkAddGroupMembers"></i> <span class="startnow" data-id="BulkAddGroupMembers">START NOW</span></button></div></div>
+    <div class="card" id="Box_GroupFinder"><div class="tile t-slate"><i class="fas fa-search"></i></div><h3 class="card-title" id="txtGroupFinder">Group Finder</h3><p class="mod-desc">Cari grup via Google</p><div class="rowbtn"><button class="btn-primary" data-id="GroupFinder"><i class="fas fa-external-link-alt" data-id="GroupFinder"></i> <span class="startnow" data-id="GroupFinder">START NOW</span></button></div></div>
+    <div class="card" id="Box_BulkGroupGenerator"><div class="tile t-teal"><i class="fas fa-layer-group"></i></div><h3 class="card-title" id="txtBulkGroupGenerator">Bulk Group Generator</h3><p class="mod-desc">Buat banyak grup sekaligus</p><div class="rowbtn"><button class="btn-primary" data-id="BulkGroupGenerator"><i class="fas fa-external-link-alt" data-id="BulkGroupGenerator"></i> <span class="startnow" data-id="BulkGroupGenerator">START NOW</span></button></div></div>
+    <div class="card" id="Box_GroupLinkVerify"><div class="tile t-amber"><i class="fas fa-check-double"></i></div><h3 class="card-title" id="txtGroupLinkVerify">Bulk Group Links Verify</h3><p class="mod-desc">Verifikasi link grup massal</p><div class="rowbtn"><button class="btn-primary" data-id="GroupLinkVerify"><i class="fas fa-external-link-alt" data-id="GroupLinkVerify"></i> <span class="startnow" data-id="GroupLinkVerify">START NOW</span></button></div></div>
+    <div class="card" id="Box_AISetup"><div class="tile t-purple"><i class="fas fa-robot"></i></div><h3 class="card-title" id="txtAiSetup">AI Bot Setup</h3><p class="mod-desc">Atur AI auto-reply (BYOK)</p><div class="rowbtn"><button class="btn-primary" data-id="AiSetup"><i class="fas fa-external-link-alt" data-id="AiSetup"></i> <span class="grabnow" data-id="AiSetup">OPEN</span></button></div></div>
+    <div class="card" id="Box_WAHealth"><div class="tile t-rose"><i class="fas fa-heartbeat"></i></div><h3 class="card-title" id="txtWaHealth">WA Health &amp; Laporan</h3><p class="mod-desc">Skor kesehatan &amp; laporan</p><div class="rowbtn"><button class="btn-primary" data-id="WaHealth"><i class="fas fa-external-link-alt" data-id="WaHealth"></i> <span class="grabnow" data-id="WaHealth">OPEN</span></button></div></div>
+  </div>
 
+  <div class="sec-title" id="sec-c">C. Automations &amp; Filtration</div>
+  <p class="sec-sub">Bot balas otomatis, filter nomor, warmup akun &amp; jadwal.</p>
+  <div class="grid">
+    <div class="card" id="Box_WhatsAppAutoreplyBot"><div class="tile t-green"><i class="fas fa-robot"></i></div><h3 class="card-title" id="txtWhatsAppAutoreplyBot">WhatsApp Autoreply Bot</h3><p class="mod-desc">Balas otomatis by keyword + AI</p><div class="rowbtn"><button class="btn-primary" data-id="WhatsAppAutoreplyBot"><i class="fas fa-external-link-alt" data-id="WhatsAppAutoreplyBot"></i> <span class="startnow" data-id="WhatsAppAutoreplyBot">START NOW</span></button></div></div>
+    <div class="card" id="Box_WhatsAppNumberFilter"><div class="tile t-blue"><i class="fas fa-filter"></i></div><h3 class="card-title" id="txtWhatsAppNumberFilter">WhatsApp Number Filter</h3><p class="mod-desc">Cek nomor aktif / tidak</p><div class="rowbtn"><button class="btn-primary" data-id="WhatsAppNumberFilter"><i class="fas fa-external-link-alt" data-id="WhatsAppNumberFilter"></i> <span class="startnow" data-id="WhatsAppNumberFilter">START NOW</span></button></div></div>
+    <div class="card" id="Box_WhatsAppWarmer"><div class="tile t-amber"><i class="fas fa-fire"></i></div><h3 class="card-title" id="txtWhatsAppWarmer">WhatsApp Warmer</h3><p class="mod-desc">Warmup akun anti-ban</p><div class="rowbtn"><button class="btn-primary" data-id="WhatsAppWarmer"><i class="fas fa-external-link-alt" data-id="WhatsAppWarmer"></i> <span class="startnow" data-id="WhatsAppWarmer">START NOW</span></button></div></div>
+    <div class="card" id="Box_WhatsAppWarmerGroup"><div class="tile t-rose"><i class="fas fa-users"></i></div><h3 class="card-title" id="txtWhatsAppWarmerGroup">WhatsApp Group Warmer</h3><p class="mod-desc">Warmup di dalam grup</p><div class="rowbtn"><button class="btn-primary" data-id="WhatsAppWarmerGroup"><i class="fas fa-external-link-alt" data-id="WhatsAppWarmerGroup"></i> <span class="startnow" data-id="WhatsAppWarmerGroup">START NOW</span></button></div></div>
+    <div class="card" id="Box_Scheduler"><div class="tile t-indigo"><i class="fas fa-calendar-alt"></i></div><h3 class="card-title" id="txtScheduler">All Schedules</h3><p class="mod-desc">Kelola scheduled task</p><div class="rowbtn"><button class="btn-primary" data-id="Scheduler"><i class="fas fa-external-link-alt" data-id="Scheduler"></i> <span class="startnow" data-id="Scheduler">START NOW</span></button></div></div>
+  </div>
 
+  <div class="sec-title" id="sec-d">D. Lead Generation</div>
+  <p class="sec-sub">Gali prospek dari Google Maps, website &amp; sosmed.</p>
+  <div class="grid">
+    <div class="card" id="Box_GoogleMagDataExtractor"><div class="tile t-green"><i class="fas fa-map-marked-alt"></i></div><h3 class="card-title" id="txtGoogleMagDataExtractor">Google Map Data Extractor</h3><p class="mod-desc">Ekstrak data bisnis GMap</p><div class="rowbtn"><button class="btn-primary" data-id="GoogleMagDataExtractor"><i class="fas fa-external-link-alt" data-id="GoogleMagDataExtractor"></i> <span class="grabnow" data-id="GoogleMagDataExtractor">GRAB NOW</span></button></div></div>
+    <div class="card" id="Box_WebsiteEmailMobileExtractor"><div class="tile t-blue"><i class="fas fa-globe"></i></div><h3 class="card-title" id="txtWebsiteEmailMobileExtractor">Website Email Mobile Extractor</h3><p class="mod-desc">Ekstrak email/HP dari website</p><div class="rowbtn"><button class="btn-primary" data-id="WebsiteEmailMobileExtractor"><i class="fas fa-external-link-alt" data-id="WebsiteEmailMobileExtractor"></i> <span class="startnow" data-id="WebsiteEmailMobileExtractor">START NOW</span></button></div></div>
+    <div class="card" id="Box_SocialMediaExtractor"><div class="tile t-purple"><i class="fas fa-hashtag"></i></div><h3 class="card-title" id="txtSocialMediaExtractor">Social Media Data Extractor</h3><p class="mod-desc">Ekstrak data sosmed</p><div class="rowbtn"><button class="btn-primary" data-id="SocialMediaExtractor"><i class="fas fa-external-link-alt" data-id="SocialMediaExtractor"></i> <span class="startnow" data-id="SocialMediaExtractor">START NOW</span></button></div></div>
+    <div class="card" id="Box_GoogleContactCSVGenerator"><div class="tile t-slate"><i class="fas fa-file-csv"></i></div><h3 class="card-title" id="txtGoogleContactCSVGenerator">Google Contact CSV Generator</h3><p class="mod-desc">Buat CSV kontak Google</p><div class="rowbtn"><button class="btn-primary" data-id="GoogleContactCSVGenerator"><i class="fas fa-external-link-alt" data-id="GoogleContactCSVGenerator"></i> <span class="startnow" data-id="GoogleContactCSVGenerator">START NOW</span></button></div></div>
+    <div class="card" id="Box_Tutorial"><div class="tile t-amber"><i class="fas fa-book-open"></i></div><h3 class="card-title" id="txtTutorial">Tutorial &amp; Panduan</h3><p class="mod-desc">Panduan pakai semua fitur</p><div class="rowbtn"><button class="btn-primary" data-id="Tutorial"><i class="fas fa-external-link-alt" data-id="Tutorial"></i> <span class="grabnow" data-id="Tutorial">BUKA</span></button></div></div>
+  </div>
 
-  
-  <script type="text/javascript" src="js/jquery.min.js"></script>
-  <script type="text/javascript" src="js/bootstrap.min.js"></script>
-  <script type="text/javascript" src="js/mdb.min.js"></script>
-  
-  <script type="text/javascript">
+  <p style="color:#94A3B8;font-size:12px;margin:26px 0 10px 0;text-align:center;">WASender v6.1 &bull; Tutorial, Ringkasan &amp; laporan ada di menu samping</p>
+</div>
 
-    $(document).ready(function(){
-      var zoom = 1;
-      
-		$('.zoom').on('click', function(){
-			zoom += 0.1;
-      $('.mainsection').css('zoom',zoom)
-		});
-		$('.zoom-out').on('click', function(){
-			zoom -= 0.1;
-      $('.mainsection').css('zoom',zoom)
-		});
-    })
-    $("body").on("contextmenu",function(){
-       return false;
-    }); 
-  </script>
-
-  <script type="text/javascript">
-
-    function changeLabel(elementid,text)
-    {
-      $('#'+ elementid).text(text)
+<script type="text/javascript" src="js/jquery.min.js"></script>
+<script type="text/javascript">
+  document.body.style.zoom = '100%';
+  try {
+    var d = new Date();
+    var hari = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'][d.getDay()];
+    var bln = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'][d.getMonth()];
+    document.getElementById('todayLine').textContent = hari + ', ' + d.getDate() + ' ' + bln + ' ' + d.getFullYear();
+  } catch(e){}
+  function filterCards(q){
+    q = (q||'').toLowerCase();
+    var cards = document.querySelectorAll('.grid .card');
+    for (var i=0;i<cards.length;i++){
+      var t = (cards[i].innerText||'').toLowerCase();
+      cards[i].style.display = (!q || t.indexOf(q) > -1) ? '' : 'none';
     }
-    function changeLabelByClass(elementid,text)
-    {
-      $('.'+ elementid).text(text)
-    }
+  }
+  document.addEventListener('click', function(e){
+    var el = e.target && e.target.closest ? e.target.closest('[data-id]') : null;
+    if (el && window.chrome && window.chrome.webview) { window.chrome.webview.postMessage(el.getAttribute('data-id')); }
+  });
+  document.addEventListener('contextmenu', function(e){ e.preventDefault(); });
+</script>
 
-    function setDashStats(json){
-      try{
-        var d = JSON.parse(json);
-        if(d.license!==undefined) document.getElementById('dsLicense').textContent = d.license;
-        if(d.licenseSub!==undefined) document.getElementById('dsLicenseSub').textContent = d.licenseSub;
-        if(d.sent!==undefined) document.getElementById('dsSent').textContent = d.sent;
-        if(d.sentSub!==undefined) document.getElementById('dsSentSub').textContent = d.sentSub;
-        if(d.queue!==undefined) document.getElementById('dsQueue').textContent = d.queue;
-        if(d.health!==undefined){document.getElementById('dsHealth').textContent = d.health;document.getElementById('dsHealth').style.color = d.healthColor||'';}
-        if(d.session!==undefined) document.getElementById('dsSession').textContent = d.session;
-        if(d.update!==undefined) document.getElementById('dsUpdate').textContent = d.update;
-      }catch(e){}
-    }
-
-    function setEnableDesable(elementid,text)
-    {
-      if(text=="True")
-      {
-        $('#'+ elementid).show()
-      }
-      if(text=="False")
-      {
-        $('#'+ elementid).hide()
-      }
-      
-    }
-
-var ctrlKeyDown = false;
-
-$(document).ready(function(){    
-    $(document).on("keydown", keydown);
-    $(document).on("keyup", keyup);
-});
-
-function keydown(e) { 
-
-    if ((e.which || e.keyCode) == 116 || ((e.which || e.keyCode) == 82 && ctrlKeyDown)) {
-        // Pressing F5 or Ctrl+R
-        e.preventDefault();
-    } else if ((e.which || e.keyCode) == 17) {
-        // Pressing  only Ctrl
-        ctrlKeyDown = true;
-    }
-};
-
-function keyup(e){
-    // Key up Ctrl
-    if ((e.which || e.keyCode) == 17) 
-        ctrlKeyDown = false;
-};
-  </script>
-
-
+<script type="text/javascript">
+  function changeLabel(elementid,text){ var el=document.getElementById(elementid); if(el) el.textContent=text; }
+  function changeLabelByClass(cls,text){ var els=document.getElementsByClassName(cls); for(var i=0;i<els.length;i++) els[i].textContent=text; }
+  function setEnableDesable(elementid,text){
+    var el=document.getElementById(elementid); if(!el) return;
+    el.style.display = (text === 'False') ? 'none' : '';
+  }
+  function setDashStats(json){
+    try{
+      var d = JSON.parse(json);
+      var map = {license:'dsLicense',licenseSub:'dsLicenseSub',sent:'dsSent',sentSub:'dsSentSub',queue:'dsQueue',health:'dsHealth',session:'dsSession',update:'dsUpdate'};
+      for (var k in map){ if(d[k]!==undefined && document.getElementById(map[k])) document.getElementById(map[k]).textContent = d[k]; }
+      if(d.healthColor && document.getElementById('dsHealth')) document.getElementById('dsHealth').style.color = d.healthColor;
+      if(d.licenseSub && document.getElementById('navLicense')) document.getElementById('navLicense').textContent = 'Lisensi: ' + d.license;
+    }catch(e){}
+  }
+</script>
 </body>
-
 </html>

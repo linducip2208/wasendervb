@@ -835,7 +835,13 @@ namespace WASender
             try
             {
                 if (!e.IsSuccess) return;
-                try { await webBrowser11.EnsureCoreWebView2Async(); } catch (Exception) { }
+                try { await webBrowser11.EnsureCoreWebView2Async(); }
+                catch (Exception ex)
+                {
+                    pictureBox1.Visible = false;
+                    MessageBox.Show("Dashboard butuh Microsoft Edge WebView2 Runtime yang belum terinstall di PC ini.\n\nSilakan install WebView2 dari situs Microsoft, lalu buka ulang aplikasi.\n\nDetail: " + ex.Message, "WebView2 tidak ditemukan", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
                 // Klik box dashboard -> kirim data-id ke C# (pengganti MouseUp IE).
                 try
                 {
@@ -1194,12 +1200,6 @@ namespace WASender
 
             await DashEval("changeLabelByClass(" + JsStr("grabnow") + "," + JsStr(Strings.GrabNow) + ")");
             await DashEval("changeLabelByClass(" + JsStr("startnow") + "," + JsStr(Strings.StartNow) + ")");
-
-
-            await DashEval("changeLabel(" + JsStr("txt_DataExtractor") + "," + JsStr(Strings.DataExtractors) + ")");
-            await DashEval("changeLabel(" + JsStr("txt_Grouptools") + "," + JsStr(Strings.Grouptools) + ")");
-            await DashEval("changeLabel(" + JsStr("txt_Automations_n_Filtrations") + "," + JsStr(Strings.AutomationsFiltrations) + ")");
-            await DashEval("changeLabel(" + JsStr("txt_LeadGenerationtools") + "," + JsStr(Strings.LeadGenerationtools) + ")");
 
         }
 
