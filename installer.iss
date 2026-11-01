@@ -57,7 +57,7 @@ Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; \
 ; DLL, HelpDocs (dashboard/tutorial), template Excel, bahasa, dan JS bridge.
 ; Dikecualikan: file debug (*.pdb, *.xml dokumentasi) + chromedriver.exe
 ; legacy (jalur Selenium sudah nonaktif, WebView2 tidak butuhnya).
-Source: "CodeHere\WASender\bin\Release\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs; Excludes: "*.pdb,*.xml,chromedriver.exe,msedgedriver.exe"
+Source: "CodeHere\WASender\bin\Release\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs; Excludes: "*.pdb,*.xml,chromedriver.exe,msedgedriver.exe,WASender.exe.WebView2,Backup,ProcessLogger,*.log,wa_monitor.db,ai_cache.db,*.tmp"
 ; Optional README — copy ke install dir kalau ada
 Source: "README.md"; DestDir: "{app}"; Flags: ignoreversion skipifsourcedoesntexist
 
