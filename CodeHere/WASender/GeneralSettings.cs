@@ -28,7 +28,6 @@ namespace WASender
     {
         WaSenderForm waSenderForm;
         GeneralSettingsModel generalSettingsModel;
-        Progressbar pgbar;
         public GeneralSettings(WaSenderForm _waSenderForm)
         {
             this.waSenderForm = _waSenderForm;
@@ -59,7 +58,6 @@ namespace WASender
             txtChromePath.Hint = Strings.ChromeEXEpath;
 
             materialButton7.Text = Strings.AboutLicence;
-            materialButton10.Text = Strings.UpdateChromeDriver;
             
             materialCheckbox2.Text = Strings.Dontlinkpreviewwhilesendingmessage;
             materialCheckbox3.Text = Strings.FilterNumbersBeforeSendingMessages;
@@ -82,14 +80,15 @@ namespace WASender
         private void getData()
         {
 
-            Dictionary<string, string> test = new Dictionary<string, string>();
-            test.Add("1", "Chrome");
-            test.Add("2", "Built In Browser");
-
-            materialComboBox1.DataSource = new BindingSource(test, null);
-            materialComboBox1.DisplayMember = "Value";
-            materialComboBox1.ValueMember = "Key";
-
+            // Browser dikunci WebView2 (lihat BrowserPolicy) — tidak ada pilihan lagi.
+            try
+            {
+                SendLimits lim = SendGovernor.LoadLimits();
+                txtDailyLimit.Text = lim.DailyPerAccount.ToString();
+                txtMinDelay.Text = lim.MinDelaySec.ToString();
+                txtMaxDelay.Text = lim.MaxDelaySec.ToString();
+            }
+            catch (Exception) { }
 
             Dictionary<string, string> test2 = new Dictionary<string, string>();
             test2.Add("1", Strings.NEWUI);
@@ -139,10 +138,6 @@ namespace WASender
                 }
 
 
-                materialComboBox1.SelectedValue = generalSettingsModel.browserType.ToString();
-
-
-
             }
 
             materialComboBox2.SelectedValue = generalSettingsModel.crowlingMethod.ToString() == "0" ? "1" : generalSettingsModel.crowlingMethod.ToString();
@@ -154,11 +149,6 @@ namespace WASender
         private void GeneralSettings_FormClosing(object sender, FormClosingEventArgs e)
         {
             
-        }
-
-        private void materialButton15_Click(object sender, EventArgs e)
-        {
-
         }
 
         private void btnSave_Click(object sender, EventArgs e)
@@ -193,8 +183,19 @@ namespace WASender
 
             generalSettingsModel.filterNumbersBeforeSendingMessage = materialCheckbox3.Checked;
             generalSettingsModel.ChromeProfilePath = txtChromePath.Text == null ? "" : txtChromePath.Text;
-            generalSettingsModel.browserType = Convert.ToInt32(materialComboBox1.SelectedValue);
+            generalSettingsModel.browserType = 2; // WebView2 dikunci (BrowserPolicy)
             generalSettingsModel.disableLinkPreview = materialCheckbox2.Checked;
+            try
+            {
+                SendLimits lim = SendGovernor.LoadLimits();
+                int d, mn, mx;
+                if (int.TryParse((txtDailyLimit.Text ?? "").Trim(), out d)) lim.DailyPerAccount = Math.Max(1, Math.Min(5000, d));
+                if (int.TryParse((txtMinDelay.Text ?? "").Trim(), out mn)) lim.MinDelaySec = Math.Max(0, Math.Min(300, mn));
+                if (int.TryParse((txtMaxDelay.Text ?? "").Trim(), out mx)) lim.MaxDelaySec = Math.Max(0, Math.Min(300, mx));
+                if (lim.MaxDelaySec < lim.MinDelaySec) lim.MaxDelaySec = lim.MinDelaySec;
+                SendGovernor.SaveLimits(lim);
+            }
+            catch (Exception) { }
             string Json = JsonConvert.SerializeObject(generalSettingsModel, Formatting.Indented);
 
             File.WriteAllText(GetGeneralSettingsFilePath, Json);
@@ -223,36 +224,10 @@ namespace WASender
        
         private void ClearCHromeSessions()
         {
-            if (Utils.Driver != null)
-            {
-                try
-                {
-
-                    Utils.Driver.Dispose();
-                    Utils.Driver.Quit();
-                    Utils.Driver = null;
-                }
-                catch (Exception ex)
-                {
-
-
-                }
-            }
-            foreach (var process in Process.GetProcessesByName("chromedriver"))
-            {
-                try
-                {
-                    process.Kill();
-                }
-                catch (Exception ex)
-                {
-
-                }
-
-            }
+            try { BrowserPolicy.KillLegacyDrivers(); } catch (Exception) { }
             if (Utils.waSenderBrowser != null)
             {
-                Utils.waSenderBrowser.Close();
+                try { Utils.waSenderBrowser.Close(); } catch (Exception) { }
                 Utils.waSenderBrowser = null;
             }
         }
@@ -380,224 +355,10 @@ namespace WASender
             about.ShowDialog();
         }
 
-      
-
-        public chromeDriverresultModel EdgeDriverUpdate()
-        {
-            chromeDriverresultModel _chromeDriverresultModel = new chromeDriverresultModel();
-            {
-                try
-                {
-                    
-                    #region edgeVersion
-                    string edgeVersion = string.Empty;
-                    const string edgeRegistryKey = @"SOFTWARE\Microsoft\Edge\BLBeacon";
-                    const string edgeRegistryValue = "version";
-
-                    using (RegistryKey key = Registry.CurrentUser.OpenSubKey(edgeRegistryKey))
-                    {
-                        if (key != null)
-                        {
-                            edgeVersion = key.GetValue(edgeRegistryValue).ToString();
-                        }
-                    }
-                    #endregion
-
-                    var chromeDrvPath = Config.GetChromeDriverFolder() + "\\msedgedriver.exe";
-                    if (!string.IsNullOrEmpty(edgeVersion))
-                    {
-                        string chromversion = edgeVersion;
-                        chromversion = chromversion.Split('.')[0];
-
-                        WebClient webClient = new WebClient();
-                        webClient.DownloadFile("https://download.pandusolusi.com/wasender/edgedriver/" + chromversion + ".exe", chromeDrvPath);
-
-                        _chromeDriverresultModel.isDone = true;
-                        _chromeDriverresultModel.message = "Done 👍👍👍👍";
-                    }
-                    else
-                    {
-                        string message = "It seems that you do not have Google Chrome installed in your Program Files in C Drive. This software requires the latest version of Google Chrome installed.";
-                        _chromeDriverresultModel.isDone = false;
-                        _chromeDriverresultModel.message = message;
-                    }
-                }
-                catch (Exception ex)
-                {
-
-                    try
-                    {
-                        #region edgeVersion
-                        string edgeVersion = string.Empty;
-                        const string edgeRegistryKey = @"SOFTWARE\Microsoft\Edge\BLBeacon";
-                        const string edgeRegistryValue = "version";
-
-                        using (RegistryKey key = Registry.CurrentUser.OpenSubKey(edgeRegistryKey))
-                        {
-                            if (key != null)
-                            {
-                                edgeVersion = key.GetValue(edgeRegistryValue).ToString();
-                            }
-                        }
-                        #endregion
-                        var isdownloadchrome = false;
-                        var chromeDrvPath = Config.GetChromeDriverFolder() + "\\msedgedriver.exe";
-                        System.IO.FileInfo fi = new System.IO.FileInfo(chromeDrvPath);
-                        string chromePath = System.Convert.ToString(Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\chrome.exe", null, null));
-                        if (!string.IsNullOrEmpty(chromePath))
-                        {
-                            ServicePointManager.Expect100Continue = true;
-                            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-                            string chromversion = FileVersionInfo.GetVersionInfo(chromePath).FileVersion;
-                            chromversion = chromversion.Split('.')[0];
-
-                            WebClient webClient = new WebClient();
-                            webClient.DownloadFile("https://github.com/bracketsApps007/NewRepo/releases/download/1.0.0/ms" + chromversion + ".exe", chromeDrvPath);
-
-                            _chromeDriverresultModel.isDone = true;
-                            _chromeDriverresultModel.message = "Done 👍👍👍👍";
-                        }
-                        else
-                        {
-                            string message = "It seems that you do not have Google Chrome installed in your Program Files in C Drive. This software requires the latest version of Google Chrome installed.";
-                            _chromeDriverresultModel.isDone = false;
-                            _chromeDriverresultModel.message = message;
-                        }
-                    }
-                    catch (Exception eex)
-                    {
-                        _chromeDriverresultModel.isDone = false;
-                        _chromeDriverresultModel.message = ex.Message;
-                    }
-
-                    
-                }
-            }
-
-            return _chromeDriverresultModel;
-        }
-
-
-        public async Task<chromeDriverresultModel> ChromeDriverUpdate()
-        {
-            chromeDriverresultModel _chromeDriverresultModel = new chromeDriverresultModel();
-            {
-                bool useSecondMethod = false;
-                try
-                {
-                    var chromeDrvPath = Config.GetChromeDriverFolder() + "\\chromedriver.exe";
-                    System.IO.FileInfo fi = new System.IO.FileInfo(chromeDrvPath);
-                    string chromePath = System.Convert.ToString(Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\chrome.exe", null/* TODO Change to default(_) if this is not a reference type */, null/* TODO Change to default(_) if this is not a reference type */));
-                    if (!string.IsNullOrEmpty(chromePath))
-                    {
-                        ServicePointManager.Expect100Continue = true;
-                        ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-                        string chromversion = FileVersionInfo.GetVersionInfo(chromePath).FileVersion;
-                        chromversion = chromversion.Split('.')[0];
-
-                        Uri u = new Uri("https://github.com/bracketsApps007/NewRepo/releases/download/1.0.0/" + chromversion + ".exe");
-                        WebClient webClient = new WebClient();
-                        await webClient.DownloadFileTaskAsync(u, chromeDrvPath);
-
-                        _chromeDriverresultModel.isDone = true;
-                        _chromeDriverresultModel.message = "Done 👍👍👍👍";
-                    }
-                    else
-                    {
-                         var chromeVersiontxt= Microsoft.VisualBasic.Interaction.InputBox("What Is Your Chrome Version ?", "Chrome Version", "");
-                         try
-                         {
-                             ServicePointManager.Expect100Continue = true;
-                             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-                             int chromversion = Convert.ToInt32(chromeVersiontxt);
-                             WebClient webClient = new WebClient();
-
-                             Uri u = new Uri("https://github.com/bracketsApps007/NewRepo/releases/download/1.0.0/" + chromversion + ".exe");
-
-                             await webClient.DownloadFileTaskAsync(u, chromeDrvPath);
-
-                             _chromeDriverresultModel.isDone = true;
-                             _chromeDriverresultModel.message = "Done 👍👍👍👍";
-                         }
-                         catch (Exception ex)
-                         {
-                             _chromeDriverresultModel.isDone = false;
-                             _chromeDriverresultModel.message = "Not Done 👎👎 ! Version  " + chromeVersiontxt.ToString() + " Not found !";
-                         }
-                    }
-
-                    
-                }
-                catch (Exception exx)
-                {
-                    useSecondMethod = true;
-
-                }
-
-                if (useSecondMethod)
-                {
-                    try
-                    {
-                        var chromeDrvPath = Config.GetChromeDriverFolder() + "\\chromedriver.exe";
-                        System.IO.FileInfo fi = new System.IO.FileInfo(chromeDrvPath);
-                        string chromePath = System.Convert.ToString(Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\chrome.exe", null, null));
-                        if (!string.IsNullOrEmpty(chromePath))
-                        {
-                            string chromversion = FileVersionInfo.GetVersionInfo(chromePath).FileVersion;
-                            chromversion = chromversion.Split('.')[0];
-
-                            WebClient webClient = new WebClient();
-                            await webClient.DownloadFileTaskAsync("https://download.pandusolusi.com/wasender/driver/" + chromversion + ".exe", chromeDrvPath);
-                            _chromeDriverresultModel.isDone = true;
-                            _chromeDriverresultModel.message = "Done 👍👍👍👍";
-                        }
-                        else
-                        {
-                            string message = "It seems that you do not have Google Chrome installed in your Program Files in C Drive. This software requires the latest version of Google Chrome installed.";
-                            _chromeDriverresultModel.isDone = false;
-                            _chromeDriverresultModel.message = message;
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        _chromeDriverresultModel.isDone = false;
-                        _chromeDriverresultModel.message = ex.Message;
-                    }
-                }
-            }
-            return _chromeDriverresultModel;
-
-        }
-
-        private async void materialButton10_Click(object sender, EventArgs e)
-        {
-
-            try
-            {
-                ClearCHromeSessions();
-                pgbar = new Progressbar();
-                pgbar.Show();
-
-                chromeDriverresultModel mode =await ChromeDriverUpdate();
-
-                pgbar.Hide();
-                MaterialSnackBar SnackBarMessage = new MaterialSnackBar(mode.message, Strings.OK, true);
-                SnackBarMessage.Show(this); 
-            }
-            catch (Exception ex)
-            {
-
-            }
-        }
 
         private void materialButton1_Click(object sender, EventArgs e)
         {
             saveSettings();
-        }
-
-        private void materialComboBox1_SelectedIndexChanged(object sender, EventArgs e)
-        {
-
         }
 
         private void materialButton9_Click(object sender, EventArgs e)
@@ -642,17 +403,5 @@ namespace WASender
             materialMaskedTextBox1.Visible = isVisible;
             materialButton8.Visible = isVisible;
         }
-
-     
-        
-       
-
-    }
-
-
-    public class chromeDriverresultModel
-    {
-        public bool isDone { get; set; }
-        public string message { get; set; }
     }
 }

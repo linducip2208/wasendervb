@@ -1799,6 +1799,28 @@ namespace WASender
                 if (dllOk) { sentAccepted = true; string _cfT = ""; try { _cfT = ProjectCommon.ReplaceKeyMarker(mesageModel.longMessage ?? "", item.parameterModelList); } catch (Exception) { } string _cfD = System.Text.RegularExpressions.Regex.Replace(item.number ?? "", "[^0-9]", ""); var _cf = await SendEngine.ConfirmDelivered(wv, _cfD, _cfT); writetrace("REWRITE DLL confirm=" + _cf.Item1 + " " + _cf.Item2); if (_cf.Item1) { isDOne = true; } }
             }
             catch (Exception ex) { writetrace("REWRITE DLL EX " + ex.Message); }
+            if (sentAccepted)
+            {
+                // Lapisan 1 diterima API WA: STOP, jangan kirim ulang di FMARK/DOM (anti-double).
+                if (!isDOne)
+                {
+                    try
+                    {
+                        await Task.Delay(4000);
+                        string _rt = ""; try { _rt = ProjectCommon.ReplaceKeyMarker(mesageModel.longMessage ?? "", item.parameterModelList); } catch (Exception) { }
+                        string _rd = System.Text.RegularExpressions.Regex.Replace(item.number ?? "", "[^0-9]", "");
+                        var _rc = await SendEngine.ConfirmDelivered(wv, _rd, _rt);
+                        writetrace("REWRITE DLL reconfirm=" + _rc.Item1 + " " + _rc.Item2);
+                        if (_rc.Item1) isDOne = true;
+                        else if (await SendEngine.OutboxIncreased(wv, before, 5)) { writetrace("REWRITE outbox naik, anggap terkirim"); isDOne = true; }
+                        else { writetrace("REWRITE sentAccepted tapi verify gagal, anggap terkirim"); isDOne = true; }
+                    }
+                    catch (Exception) { isDOne = true; }
+                }
+                writetrace("REWRITE final=" + isDOne);
+                return isDOne;
+            }
+            bool fmarkApiOk = false;
             if (!isDOne && generalSettingsModel.browserType == 2)
             {
                 try
@@ -1819,6 +1841,7 @@ namespace WASender
                             try { if (!string.IsNullOrEmpty(ff.Caption) && ff.attachWithMainMessage != true) { cap2 = ProjectCommon.ReplaceKeyMarker(ff.Caption, item.parameterModelList); } } catch (Exception) { }
                             var mr = await SendEngine.SendMediaFmark(wv, digitsOnly2, ff.filePath, cap2);
                             writetrace("REWRITE FMARK media=" + mr.Item1);
+                            if (mr.Item1) { fmarkApiOk = true; }
                             if (!mr.Item1) { fmMediaOk = false; break; }
                         }
                     }
@@ -1842,13 +1865,20 @@ namespace WASender
                         var tr = await SendEngine.SendTextFmark(wv, digitsOnly2, txt2);
                         writetrace("REWRITE FMARK text=" + tr.Item1);
                         fmTxtOk = tr.Item1;
+                        if (tr.Item1) { fmarkApiOk = true; }
                     }
                     if (fmMediaOk && fmTxtOk && await SendEngine.OutboxIncreased(wv, before, 10)) { isDOne = true; }
                     writetrace("REWRITE FMARK final=" + isDOne);
                 }
                 catch (Exception ex) { writetrace("REWRITE FMARK EX " + ex.Message); }
+                if (fmarkApiOk && !isDOne)
+                {
+                    // FMARK diterima API: STOP, jangan kirim ulang via DOM (anti-double).
+                    writetrace("REWRITE fmark diterima API, anggap terkirim");
+                    isDOne = true;
+                }
             }
-            if (!isDOne && generalSettingsModel.browserType == 2)
+            if (!isDOne && !fmarkApiOk && generalSettingsModel.browserType == 2)
             {
                 bool hasMedia = false;
                 try { hasMedia = mesageModel.files != null && mesageModel.files.Any(f => f != null && !string.IsNullOrEmpty(f.filePath) && System.IO.File.Exists(f.filePath)); } catch (Exception) { }

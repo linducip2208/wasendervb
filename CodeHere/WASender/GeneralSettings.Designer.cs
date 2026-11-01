@@ -29,7 +29,6 @@
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(GeneralSettings));
-            this.materialButton10 = new MaterialSkin.Controls.MaterialButton();
             this.materialButton7 = new MaterialSkin.Controls.MaterialButton();
             this.materialButton6 = new MaterialSkin.Controls.MaterialButton();
             this.materialCard2 = new MaterialSkin.Controls.MaterialCard();
@@ -37,7 +36,7 @@
             this.materialButton4 = new MaterialSkin.Controls.MaterialButton();
             this.materialButton3 = new MaterialSkin.Controls.MaterialButton();
             this.materialCard1 = new MaterialSkin.Controls.MaterialCard();
-            this.materialComboBox1 = new MaterialSkin.Controls.MaterialComboBox();
+            this.materialLabelBrowserInfo = new MaterialSkin.Controls.MaterialLabel();
             this.materialLabel1 = new MaterialSkin.Controls.MaterialLabel();
             this.materialButton2 = new MaterialSkin.Controls.MaterialButton();
             this.btnSave = new MaterialSkin.Controls.MaterialButton();
@@ -46,6 +45,13 @@
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.materialCard3 = new MaterialSkin.Controls.MaterialCard();
+            this.materialLabel4 = new MaterialSkin.Controls.MaterialLabel();
+            this.materialLabel5 = new MaterialSkin.Controls.MaterialLabel();
+            this.materialLabel6 = new MaterialSkin.Controls.MaterialLabel();
+            this.materialLabel7 = new MaterialSkin.Controls.MaterialLabel();
+            this.txtDailyLimit = new MaterialSkin.Controls.MaterialMaskedTextBox();
+            this.txtMinDelay = new MaterialSkin.Controls.MaterialMaskedTextBox();
+            this.txtMaxDelay = new MaterialSkin.Controls.MaterialMaskedTextBox();
             this.materialButton1 = new MaterialSkin.Controls.MaterialButton();
             this.materialCheckbox2 = new MaterialSkin.Controls.MaterialCheckbox();
             this.materialCheckbox3 = new MaterialSkin.Controls.MaterialCheckbox();
@@ -68,28 +74,6 @@
             this.tabPage3.SuspendLayout();
             this.materialCard4.SuspendLayout();
             this.SuspendLayout();
-            // 
-            // materialButton10
-            // 
-            this.materialButton10.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.materialButton10.AutoSize = false;
-            this.materialButton10.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.materialButton10.Density = MaterialSkin.Controls.MaterialButton.MaterialButtonDensity.Default;
-            this.materialButton10.Depth = 0;
-            this.materialButton10.HighEmphasis = true;
-            this.materialButton10.Icon = global::WASender.Properties.Resources.icons8_uninstalling_updates_24px1;
-            this.materialButton10.Location = new System.Drawing.Point(410, 19);
-            this.materialButton10.Margin = new System.Windows.Forms.Padding(4, 6, 4, 6);
-            this.materialButton10.MouseState = MaterialSkin.MouseState.HOVER;
-            this.materialButton10.Name = "materialButton10";
-            this.materialButton10.NoAccentTextColor = System.Drawing.Color.Empty;
-            this.materialButton10.Size = new System.Drawing.Size(351, 40);
-            this.materialButton10.TabIndex = 20;
-            this.materialButton10.Text = "Update Chrome Driver ";
-            this.materialButton10.Type = MaterialSkin.Controls.MaterialButton.MaterialButtonType.Outlined;
-            this.materialButton10.UseAccentColor = false;
-            this.materialButton10.UseVisualStyleBackColor = true;
-            this.materialButton10.Click += new System.EventHandler(this.materialButton10_Click);
             // 
             // materialButton7
             // 
@@ -128,7 +112,7 @@
             this.materialButton6.MouseState = MaterialSkin.MouseState.HOVER;
             this.materialButton6.Name = "materialButton6";
             this.materialButton6.NoAccentTextColor = System.Drawing.Color.Empty;
-            this.materialButton6.Size = new System.Drawing.Size(317, 40);
+            this.materialButton6.Size = new System.Drawing.Size(723, 40);
             this.materialButton6.TabIndex = 17;
             this.materialButton6.Text = "Check for Internal Update";
             this.materialButton6.Type = MaterialSkin.Controls.MaterialButton.MaterialButtonType.Outlined;
@@ -142,7 +126,6 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.materialCard2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
             this.materialCard2.Controls.Add(this.materialButton5);
-            this.materialCard2.Controls.Add(this.materialButton10);
             this.materialCard2.Controls.Add(this.materialButton4);
             this.materialCard2.Controls.Add(this.materialButton3);
             this.materialCard2.Controls.Add(this.materialButton6);
@@ -228,7 +211,7 @@
             this.materialCard1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.materialCard1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
-            this.materialCard1.Controls.Add(this.materialComboBox1);
+            this.materialCard1.Controls.Add(this.materialLabelBrowserInfo);
             this.materialCard1.Controls.Add(this.materialLabel1);
             this.materialCard1.Controls.Add(this.materialButton2);
             this.materialCard1.Controls.Add(this.btnSave);
@@ -243,28 +226,17 @@
             this.materialCard1.Size = new System.Drawing.Size(782, 248);
             this.materialCard1.TabIndex = 0;
             // 
-            // materialComboBox1
+            // materialLabelBrowserInfo
             // 
-            this.materialComboBox1.AutoResize = false;
-            this.materialComboBox1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
-            this.materialComboBox1.Depth = 0;
-            this.materialComboBox1.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawVariable;
-            this.materialComboBox1.DropDownHeight = 174;
-            this.materialComboBox1.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.materialComboBox1.DropDownWidth = 121;
-            this.materialComboBox1.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Pixel);
-            this.materialComboBox1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(222)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))));
-            this.materialComboBox1.FormattingEnabled = true;
-            this.materialComboBox1.IntegralHeight = false;
-            this.materialComboBox1.ItemHeight = 43;
-            this.materialComboBox1.Location = new System.Drawing.Point(104, 82);
-            this.materialComboBox1.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.materialComboBox1.MaxDropDownItems = 4;
-            this.materialComboBox1.MouseState = MaterialSkin.MouseState.OUT;
-            this.materialComboBox1.Name = "materialComboBox1";
-            this.materialComboBox1.Size = new System.Drawing.Size(607, 49);
-            this.materialComboBox1.StartIndex = 0;
-            this.materialComboBox1.TabIndex = 23;
+            this.materialLabelBrowserInfo.AutoSize = true;
+            this.materialLabelBrowserInfo.Depth = 0;
+            this.materialLabelBrowserInfo.Font = new System.Drawing.Font("Roboto", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Pixel);
+            this.materialLabelBrowserInfo.Location = new System.Drawing.Point(104, 98);
+            this.materialLabelBrowserInfo.MouseState = MaterialSkin.MouseState.HOVER;
+            this.materialLabelBrowserInfo.Name = "materialLabelBrowserInfo";
+            this.materialLabelBrowserInfo.Size = new System.Drawing.Size(380, 19);
+            this.materialLabelBrowserInfo.TabIndex = 23;
+            this.materialLabelBrowserInfo.Text = "Built-in Browser (WebView2) — selalu aktif";
             // 
             // materialLabel1
             // 
@@ -415,6 +387,13 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.materialCard3.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
+            this.materialCard3.Controls.Add(this.materialLabel4);
+            this.materialCard3.Controls.Add(this.materialLabel5);
+            this.materialCard3.Controls.Add(this.materialLabel6);
+            this.materialCard3.Controls.Add(this.materialLabel7);
+            this.materialCard3.Controls.Add(this.txtDailyLimit);
+            this.materialCard3.Controls.Add(this.txtMinDelay);
+            this.materialCard3.Controls.Add(this.txtMaxDelay);
             this.materialCard3.Controls.Add(this.materialButton1);
             this.materialCard3.Controls.Add(this.materialCheckbox2);
             this.materialCard3.Controls.Add(this.materialCheckbox3);
@@ -427,6 +406,186 @@
             this.materialCard3.Padding = new System.Windows.Forms.Padding(14);
             this.materialCard3.Size = new System.Drawing.Size(816, 526);
             this.materialCard3.TabIndex = 0;
+            // 
+            // materialLabel4
+            // 
+            this.materialLabel4.AutoSize = true;
+            this.materialLabel4.Depth = 0;
+            this.materialLabel4.Font = new System.Drawing.Font("Roboto", 14F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Pixel);
+            this.materialLabel4.Location = new System.Drawing.Point(14, 205);
+            this.materialLabel4.MouseState = MaterialSkin.MouseState.HOVER;
+            this.materialLabel4.Name = "materialLabel4";
+            this.materialLabel4.Size = new System.Drawing.Size(240, 19);
+            this.materialLabel4.TabIndex = 29;
+            this.materialLabel4.Text = "Anti-Ban — Batas && Jeda Kirim";
+            // 
+            // materialLabel5
+            // 
+            this.materialLabel5.AutoSize = true;
+            this.materialLabel5.Depth = 0;
+            this.materialLabel5.Font = new System.Drawing.Font("Roboto", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Pixel);
+            this.materialLabel5.Location = new System.Drawing.Point(14, 252);
+            this.materialLabel5.MouseState = MaterialSkin.MouseState.HOVER;
+            this.materialLabel5.Name = "materialLabel5";
+            this.materialLabel5.Size = new System.Drawing.Size(200, 19);
+            this.materialLabel5.TabIndex = 30;
+            this.materialLabel5.Text = "Maks. pesan / akun / hari";
+            // 
+            // txtDailyLimit
+            // 
+            this.txtDailyLimit.AllowPromptAsInput = true;
+            this.txtDailyLimit.AnimateReadOnly = false;
+            this.txtDailyLimit.AsciiOnly = false;
+            this.txtDailyLimit.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
+            this.txtDailyLimit.BeepOnError = false;
+            this.txtDailyLimit.CutCopyMaskFormat = System.Windows.Forms.MaskFormat.IncludeLiterals;
+            this.txtDailyLimit.Depth = 0;
+            this.txtDailyLimit.Font = new System.Drawing.Font("Microsoft Sans Serif", 16F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Pixel);
+            this.txtDailyLimit.HidePromptOnLeave = false;
+            this.txtDailyLimit.HideSelection = true;
+            this.txtDailyLimit.Hint = "500";
+            this.txtDailyLimit.InsertKeyMode = System.Windows.Forms.InsertKeyMode.Default;
+            this.txtDailyLimit.LeadingIcon = null;
+            this.txtDailyLimit.Location = new System.Drawing.Point(300, 240);
+            this.txtDailyLimit.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.txtDailyLimit.Mask = "";
+            this.txtDailyLimit.MaxLength = 32767;
+            this.txtDailyLimit.MouseState = MaterialSkin.MouseState.OUT;
+            this.txtDailyLimit.Name = "txtDailyLimit";
+            this.txtDailyLimit.PasswordChar = '\0';
+            this.txtDailyLimit.PrefixSuffixText = null;
+            this.txtDailyLimit.PromptChar = '_';
+            this.txtDailyLimit.ReadOnly = false;
+            this.txtDailyLimit.RejectInputOnFirstFailure = false;
+            this.txtDailyLimit.ResetOnPrompt = true;
+            this.txtDailyLimit.ResetOnSpace = true;
+            this.txtDailyLimit.RightToLeft = System.Windows.Forms.RightToLeft.No;
+            this.txtDailyLimit.SelectedText = "";
+            this.txtDailyLimit.SelectionLength = 0;
+            this.txtDailyLimit.SelectionStart = 0;
+            this.txtDailyLimit.ShortcutsEnabled = true;
+            this.txtDailyLimit.Size = new System.Drawing.Size(200, 48);
+            this.txtDailyLimit.SkipLiterals = true;
+            this.txtDailyLimit.TabIndex = 31;
+            this.txtDailyLimit.TabStop = false;
+            this.txtDailyLimit.Text = "500";
+            this.txtDailyLimit.TextAlign = System.Windows.Forms.HorizontalAlignment.Left;
+            this.txtDailyLimit.TextMaskFormat = System.Windows.Forms.MaskFormat.IncludeLiterals;
+            this.txtDailyLimit.TrailingIcon = null;
+            this.txtDailyLimit.UseSystemPasswordChar = false;
+            this.txtDailyLimit.ValidatingType = null;
+            // 
+            // materialLabel6
+            // 
+            this.materialLabel6.AutoSize = true;
+            this.materialLabel6.Depth = 0;
+            this.materialLabel6.Font = new System.Drawing.Font("Roboto", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Pixel);
+            this.materialLabel6.Location = new System.Drawing.Point(14, 312);
+            this.materialLabel6.MouseState = MaterialSkin.MouseState.HOVER;
+            this.materialLabel6.Name = "materialLabel6";
+            this.materialLabel6.Size = new System.Drawing.Size(230, 19);
+            this.materialLabel6.TabIndex = 32;
+            this.materialLabel6.Text = "Jeda antar pesan min (detik)";
+            // 
+            // txtMinDelay
+            // 
+            this.txtMinDelay.AllowPromptAsInput = true;
+            this.txtMinDelay.AnimateReadOnly = false;
+            this.txtMinDelay.AsciiOnly = false;
+            this.txtMinDelay.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
+            this.txtMinDelay.BeepOnError = false;
+            this.txtMinDelay.CutCopyMaskFormat = System.Windows.Forms.MaskFormat.IncludeLiterals;
+            this.txtMinDelay.Depth = 0;
+            this.txtMinDelay.Font = new System.Drawing.Font("Microsoft Sans Serif", 16F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Pixel);
+            this.txtMinDelay.HidePromptOnLeave = false;
+            this.txtMinDelay.HideSelection = true;
+            this.txtMinDelay.Hint = "3";
+            this.txtMinDelay.InsertKeyMode = System.Windows.Forms.InsertKeyMode.Default;
+            this.txtMinDelay.LeadingIcon = null;
+            this.txtMinDelay.Location = new System.Drawing.Point(300, 300);
+            this.txtMinDelay.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.txtMinDelay.Mask = "";
+            this.txtMinDelay.MaxLength = 32767;
+            this.txtMinDelay.MouseState = MaterialSkin.MouseState.OUT;
+            this.txtMinDelay.Name = "txtMinDelay";
+            this.txtMinDelay.PasswordChar = '\0';
+            this.txtMinDelay.PrefixSuffixText = null;
+            this.txtMinDelay.PromptChar = '_';
+            this.txtMinDelay.ReadOnly = false;
+            this.txtMinDelay.RejectInputOnFirstFailure = false;
+            this.txtMinDelay.ResetOnPrompt = true;
+            this.txtMinDelay.ResetOnSpace = true;
+            this.txtMinDelay.RightToLeft = System.Windows.Forms.RightToLeft.No;
+            this.txtMinDelay.SelectedText = "";
+            this.txtMinDelay.SelectionLength = 0;
+            this.txtMinDelay.SelectionStart = 0;
+            this.txtMinDelay.ShortcutsEnabled = true;
+            this.txtMinDelay.Size = new System.Drawing.Size(200, 48);
+            this.txtMinDelay.SkipLiterals = true;
+            this.txtMinDelay.TabIndex = 33;
+            this.txtMinDelay.TabStop = false;
+            this.txtMinDelay.Text = "3";
+            this.txtMinDelay.TextAlign = System.Windows.Forms.HorizontalAlignment.Left;
+            this.txtMinDelay.TextMaskFormat = System.Windows.Forms.MaskFormat.IncludeLiterals;
+            this.txtMinDelay.TrailingIcon = null;
+            this.txtMinDelay.UseSystemPasswordChar = false;
+            this.txtMinDelay.ValidatingType = null;
+            // 
+            // materialLabel7
+            // 
+            this.materialLabel7.AutoSize = true;
+            this.materialLabel7.Depth = 0;
+            this.materialLabel7.Font = new System.Drawing.Font("Roboto", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Pixel);
+            this.materialLabel7.Location = new System.Drawing.Point(14, 372);
+            this.materialLabel7.MouseState = MaterialSkin.MouseState.HOVER;
+            this.materialLabel7.Name = "materialLabel7";
+            this.materialLabel7.Size = new System.Drawing.Size(235, 19);
+            this.materialLabel7.TabIndex = 34;
+            this.materialLabel7.Text = "Jeda antar pesan maks (detik)";
+            // 
+            // txtMaxDelay
+            // 
+            this.txtMaxDelay.AllowPromptAsInput = true;
+            this.txtMaxDelay.AnimateReadOnly = false;
+            this.txtMaxDelay.AsciiOnly = false;
+            this.txtMaxDelay.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
+            this.txtMaxDelay.BeepOnError = false;
+            this.txtMaxDelay.CutCopyMaskFormat = System.Windows.Forms.MaskFormat.IncludeLiterals;
+            this.txtMaxDelay.Depth = 0;
+            this.txtMaxDelay.Font = new System.Drawing.Font("Microsoft Sans Serif", 16F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Pixel);
+            this.txtMaxDelay.HidePromptOnLeave = false;
+            this.txtMaxDelay.HideSelection = true;
+            this.txtMaxDelay.Hint = "15";
+            this.txtMaxDelay.InsertKeyMode = System.Windows.Forms.InsertKeyMode.Default;
+            this.txtMaxDelay.LeadingIcon = null;
+            this.txtMaxDelay.Location = new System.Drawing.Point(300, 360);
+            this.txtMaxDelay.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.txtMaxDelay.Mask = "";
+            this.txtMaxDelay.MaxLength = 32767;
+            this.txtMaxDelay.MouseState = MaterialSkin.MouseState.OUT;
+            this.txtMaxDelay.Name = "txtMaxDelay";
+            this.txtMaxDelay.PasswordChar = '\0';
+            this.txtMaxDelay.PrefixSuffixText = null;
+            this.txtMaxDelay.PromptChar = '_';
+            this.txtMaxDelay.ReadOnly = false;
+            this.txtMaxDelay.RejectInputOnFirstFailure = false;
+            this.txtMaxDelay.ResetOnPrompt = true;
+            this.txtMaxDelay.ResetOnSpace = true;
+            this.txtMaxDelay.RightToLeft = System.Windows.Forms.RightToLeft.No;
+            this.txtMaxDelay.SelectedText = "";
+            this.txtMaxDelay.SelectionLength = 0;
+            this.txtMaxDelay.SelectionStart = 0;
+            this.txtMaxDelay.ShortcutsEnabled = true;
+            this.txtMaxDelay.Size = new System.Drawing.Size(200, 48);
+            this.txtMaxDelay.SkipLiterals = true;
+            this.txtMaxDelay.TabIndex = 35;
+            this.txtMaxDelay.TabStop = false;
+            this.txtMaxDelay.Text = "15";
+            this.txtMaxDelay.TextAlign = System.Windows.Forms.HorizontalAlignment.Left;
+            this.txtMaxDelay.TextMaskFormat = System.Windows.Forms.MaskFormat.IncludeLiterals;
+            this.txtMaxDelay.TrailingIcon = null;
+            this.txtMaxDelay.UseSystemPasswordChar = false;
+            this.txtMaxDelay.ValidatingType = null;
             // 
             // materialButton1
             // 
@@ -740,9 +899,8 @@
         private MaterialSkin.Controls.MaterialButton materialButton3;
         private MaterialSkin.Controls.MaterialButton materialButton6;
         private MaterialSkin.Controls.MaterialButton materialButton7;
-        private MaterialSkin.Controls.MaterialButton materialButton10;
         private MaterialSkin.Controls.MaterialLabel materialLabel1;
-        private MaterialSkin.Controls.MaterialComboBox materialComboBox1;
+        private MaterialSkin.Controls.MaterialLabel materialLabelBrowserInfo;
         private MaterialSkin.Controls.MaterialTabControl materialTabControl1;
         private System.Windows.Forms.TabPage tabPage1;
         private System.Windows.Forms.TabPage tabPage2;
@@ -750,6 +908,13 @@
         private MaterialSkin.Controls.MaterialCard materialCard3;
         private MaterialSkin.Controls.MaterialCheckbox materialCheckbox2;
         private MaterialSkin.Controls.MaterialCheckbox materialCheckbox3;
+        private MaterialSkin.Controls.MaterialLabel materialLabel4;
+        private MaterialSkin.Controls.MaterialLabel materialLabel5;
+        private MaterialSkin.Controls.MaterialLabel materialLabel6;
+        private MaterialSkin.Controls.MaterialLabel materialLabel7;
+        private MaterialSkin.Controls.MaterialMaskedTextBox txtDailyLimit;
+        private MaterialSkin.Controls.MaterialMaskedTextBox txtMinDelay;
+        private MaterialSkin.Controls.MaterialMaskedTextBox txtMaxDelay;
         private MaterialSkin.Controls.MaterialButton materialButton1;
         private System.Windows.Forms.TabPage tabPage3;
         private MaterialSkin.Controls.MaterialCard materialCard4;
