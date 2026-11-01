@@ -38,17 +38,30 @@ namespace WaAutoReplyBot
 
         public void AddNewMesage(MessageModel _messageModel)
         {
+            if (_messageModel == null) return;
             if (_messageModel.IsEditMode != true)
             {
-                ListViewItem item = new ListViewItem(new[] { _messageModel.LongMessage, _messageModel.Files.Count().ToString() });
+                int fileCount = 0;
+                try { fileCount = _messageModel.Files == null ? 0 : _messageModel.Files.Count(); } catch (Exception) { }
+                ListViewItem item = new ListViewItem(new[] { _messageModel.LongMessage, fileCount.ToString() });
                 lstMessages.Items.Add(item);
                 ruleTransactionModel.messages.Add(_messageModel);
             }
             else
             {
-                var ss = lstMessages.SelectedItems[0].Index;
-                ListViewItem item = new ListViewItem(new[] { _messageModel.LongMessage, _messageModel.Files.Count().ToString() });
-                lstMessages.Items[ss] = item;
+                try
+                {
+                    if (lstMessages.SelectedItems.Count == 0) return;
+                    int ss = lstMessages.SelectedItems[0].Index;
+                    int fileCount = 0;
+                    try { fileCount = _messageModel.Files == null ? 0 : _messageModel.Files.Count(); } catch (Exception) { }
+                    ListViewItem item = new ListViewItem(new[] { _messageModel.LongMessage, fileCount.ToString() });
+                    lstMessages.Items[ss] = item;
+                    // Sinkronkan ke model (sebelumnya hanya grid yg diupdate -> delete by text bisa crash).
+                    if (ss >= 0 && ss < ruleTransactionModel.messages.Count) ruleTransactionModel.messages[ss] = _messageModel;
+                    _messageModel.IsEditMode = false;
+                }
+                catch (Exception) { }
             }
         }
 
@@ -61,17 +74,20 @@ namespace WaAutoReplyBot
         {
             if (e.KeyCode == Keys.Delete)
             {
-                var removables = new List<string>();
-                foreach (ListViewItem item in lstMessages.SelectedItems)
+                try
                 {
-                    removables.Add(item.Text);
+                    // Hapus by index menurun (aman utk pesan kembar yg bikin Single() crash).
+                    var idx = new List<int>();
+                    foreach (ListViewItem item in lstMessages.SelectedItems) idx.Add(item.Index);
+                    idx.Sort();
+                    idx.Reverse();
+                    foreach (int i in idx)
+                    {
+                        if (i >= 0 && i < ruleTransactionModel.messages.Count) ruleTransactionModel.messages.RemoveAt(i);
+                        if (i >= 0 && i < lstMessages.Items.Count) lstMessages.Items.RemoveAt(i);
+                    }
                 }
-
-                foreach (var item in removables)
-                {
-                    var itemToRemove = ruleTransactionModel.messages.Single(r => r.LongMessage == item);
-                    ruleTransactionModel.messages.Remove(itemToRemove);
-                }
+                catch (Exception) { }
             }
             Utils.removeListViewItem(e, lstMessages);
         }
@@ -127,7 +143,15 @@ namespace WaAutoReplyBot
         private void materialButton3_Click(object sender, EventArgs e)
         {
             ruleTransactionModel.userInput = txtUserInput.Text;
-            ruleTransactionModel.operatorsEnum = (OperatorsEnum)Enum.Parse(typeof(OperatorsEnum), cboCondition.Text);
+            try
+            {
+                ruleTransactionModel.operatorsEnum = (OperatorsEnum)Enum.Parse(typeof(OperatorsEnum), Convert.ToString(cboCondition.Text));
+            }
+            catch (Exception)
+            {
+                var vals = (OperatorsEnum[])Enum.GetValues(typeof(OperatorsEnum));
+                ruleTransactionModel.operatorsEnum = vals.Length > 0 ? vals[0] : ruleTransactionModel.operatorsEnum;
+            }
             ruleTransactionModel.IsSaved = true;
             ruleTransactionModel.IsFallBack = materialCheckbox1.Checked;
             if (ruleTransactionModel.IsFallBack == true)
@@ -150,10 +174,16 @@ namespace WaAutoReplyBot
 
         private void lstMessages_DoubleClick(object sender, EventArgs e)
         {
-            var ss = lstMessages.SelectedItems[0].Index;
-            this.ruleTransactionModel.messages[ss].IsEditMode = true;
-            AddMessage addMessage = new AddMessage(this.ruleTransactionModel.messages[ss], this);
-            addMessage.ShowDialog();
+            try
+            {
+                if (lstMessages.SelectedItems.Count == 0) return;
+                var ss = lstMessages.SelectedItems[0].Index;
+                if (ss < 0 || ss >= ruleTransactionModel.messages.Count) return;
+                this.ruleTransactionModel.messages[ss].IsEditMode = true;
+                AddMessage addMessage = new AddMessage(this.ruleTransactionModel.messages[ss], this);
+                addMessage.ShowDialog();
+            }
+            catch (Exception) { }
         }
 
         private void AddRule_KeyDown(object sender, KeyEventArgs e)
