@@ -91,24 +91,36 @@ namespace WASender
             catch (Exception) { }
             return out_;
         }
-        /// <summary>Scroll panel hasil (feed) ke bawah agar item lazy-load muncul. Return true bila masih bisa scroll.</summary>
+        /// <summary>Scroll bertahap otomatis (12 langkah + event scroll) agar lazy-load Google terpancing.
+        /// Sekali lompat ke bawah sering diabaikan — makanya kemarin harus scroll manual.</summary>
         public static async Task<bool> ScrollResultsAsync(WebView2 wv)
         {
             try
             {
-                string js = "(function(){try{"
-                    + "var c=document.querySelector('div[role=\"feed\"]')||document.querySelector('div.m6QErb.DxyBCb.kA9KIf.dS8AEf')||document.scrollingElement||document.documentElement;"
-                    + "if(!c)return 'NO_FEED';"
-                    + "var h0=c.scrollHeight, t0=c.scrollTop;"
-                    + "c.scrollTop=c.scrollHeight;"
-                    + "return 'SCROLLED:'+h0+':'+c.scrollTop+':'+t0;"
-                    + "}catch(e){return 'ERR';}})()";
-                string r = await EvalUnwrap(wv, js);
-                if (r == null || !r.StartsWith("SCROLLED:")) return false;
-                var p = r.Substring(9).Split(':');
-                long h0, t1, t0;
-                if (p.Length < 3 || !long.TryParse(p[0], out h0) || !long.TryParse(p[1], out t1) || !long.TryParse(p[2], out t0)) return true;
-                return t1 > t0; // masih bergerak = masih ada konten
+                long lastH = 0;
+                int still = 0;
+                for (int i = 0; i < 12; i++)
+                {
+                    string js = "(function(){try{"
+                        + "var c=document.querySelector('div[role=\"feed\"]')||document.querySelector('div.m6QErb')||document.querySelector('#search')||document.querySelector('#rso')||document.querySelector('div[role=\"main\"]')||document.scrollingElement||document.documentElement;"
+                        + "if(!c)return 'NOFEED';"
+                        + "var h=c.scrollHeight;"
+                        + "c.scrollTop=c.scrollTop+900;"
+                        + "try{c.dispatchEvent(new Event('scroll',{bubbles:true}));}catch(x){}"
+                        + "try{window.scrollBy(0,900);}catch(x){}"
+                        + "return 'H:'+h;"
+                        + "}catch(e){return 'ERR';}})()";
+                    string r = await EvalUnwrap(wv, js);
+                    long h = 0;
+                    try { h = long.Parse((r ?? "").Replace("H:", "")); } catch (Exception) { }
+                    if (h > 0) { if (h <= lastH) still++; else { still = 0; lastH = h; } }
+                    if (still >= 3) break; // tinggi tak bertambah 3x = mentok
+                    await Task.Delay(900);
+                }
+                try { await EvalUnwrap(wv, "(function(){try{var c=document.querySelector('div[role=\"feed\"]')||document.querySelector('div.m6QErb')||document.scrollingElement;if(c)c.scrollTop=c.scrollHeight;window.scrollTo(0,document.body?document.body.scrollHeight:999999);return 'OK';}catch(e){return 'ERR';}})()"); }
+                catch (Exception) { }
+                await Task.Delay(1500);
+                return true;
             }
             catch (Exception) { return true; }
         }
