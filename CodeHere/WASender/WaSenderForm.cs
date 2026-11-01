@@ -35,6 +35,7 @@ namespace WASender
     public partial class WaSenderForm : MaterialForm
     {
         MaterialSkin.MaterialSkinManager materialSkinManager;
+        public System.Collections.Generic.List<WASender.Model.AccountState> accountSlots = new System.Collections.Generic.List<WASender.Model.AccountState>();
         public WASenderSingleTransModel wASenderSingleTransModel;
         public WASenderGroupTransModel wASenderGroupTransModel;
         GeneralSettingsModel generalSettingsModel;
@@ -121,6 +122,10 @@ namespace WASender
             _browser8 = webBrowser8;
             _browser9 = webBrowser9;
             _browser10 = webBrowser10;
+
+            // Fondasi baru: 10 slot terpusat + antrian kirim (ganti duplikasi ...1..10 bertahap).
+            try { accountSlots = WASender.Model.AccountState.CreateSlots(10); } catch (Exception) { }
+            try { SendQueue.Start(); } catch (Exception) { }
 
             setBrowserDefaultHtml(webBrowser1);
             setBrowserDefaultHtml(webBrowser2);
@@ -523,6 +528,22 @@ namespace WASender
             }
 
             checkForInternalUpdate();
+            try
+            {
+                // OTA GitHub: non-blocking, gagal diam.
+                var _cur = AppUpdater.CurrentVersion();
+                Task.Run(async () =>
+                {
+                    try
+                    {
+                        string latest = await AppUpdater.CheckAsync("linducip2208/wasendervb", _cur);
+                        if (!string.IsNullOrEmpty(latest))
+                            SendEngine.Log("update tersedia: " + latest + " (saat ini " + _cur + ")");
+                    }
+                    catch (Exception) { }
+                });
+            }
+            catch (Exception) { }
 
             if (Strings.Blink_Version_Number_after_new_Version_available)
             {

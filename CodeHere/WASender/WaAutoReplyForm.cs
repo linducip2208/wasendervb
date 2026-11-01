@@ -974,6 +974,8 @@ namespace WaAutoReplyBot
 
                     if (AiResponder.IsAiMessage(NewMessage))
                     {
+                        // Handover: kalau user minta manusia/komplain, jangan auto-reply AI.
+                        try { if (AiHandover.NeedsHuman(incomingText)) { continue; } } catch (Exception) { }
                         string _extra = AiResponder.GetExtraInstruction(NewMessage);
                         string _ai = null;
                         try { string _lb0 = ""; try { _lb0 = ResolveChatLabels(number); } catch (Exception) { } _ai = await AiResponder.ReplyAsync(incomingText, _extra, number, _lb0); }
@@ -1079,6 +1081,7 @@ namespace WaAutoReplyBot
         {
             try
             {
+                try { if (AiHandover.NeedsHuman(incomingText)) return false; } catch (Exception) { }
                 if (!AiResponder.IsConfigured()) return false;
                 if (string.IsNullOrWhiteSpace(incomingText)) return false;
                 string reply = null;
