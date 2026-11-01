@@ -472,6 +472,7 @@ namespace WASender
             int scrollTopValue = 0;
             int _oldScrolltppValue = 0;
             int _sameCOunter = 0;
+            int _noNewRounds = 0; // ronde tanpa data baru: rem utama anti loading-terus
             try
             {
                 while (isEnd == false)
@@ -485,7 +486,17 @@ namespace WASender
                     }
                     await Task.Delay((scollDelay == 0 ? 4 : scollDelay) * 1000);
 
-                    try { await harvestGmapResults(); } catch (Exception) { }
+                    int added = 0;
+                    try { added = await harvestGmapResults(); } catch (Exception) { }
+                    if (added > 0) { _noNewRounds = 0; _sameCOunter = 0; }
+                    else { _noNewRounds++; }
+                    if (_noNewRounds >= 6)
+                    {
+                        // 6 putaran tanpa data baru = halaman habis / hook macet: berhenti.
+                        try { GmapDebugLog("perfotmScroller: stop, 6 ronde tanpa data baru"); } catch (Exception) { }
+                        isEnd = true;
+                        break;
+                    }
 
                     string _scrollTopValue = await webView.ExecuteScriptAsync(ScrollContainerJs("read"));
                     string cleaned = (_scrollTopValue ?? "").Trim().Trim('"');
@@ -526,16 +537,17 @@ namespace WASender
         }
 
         // Ambil hasil yg dikumpulkan wapi_gmaps.js (XHR hook) di input #fb-group-data,
-        // terus teruskan ke grid via do_add_new_data_row.
-        private async Task harvestGmapResults()
+        // terus teruskan ke grid via do_add_new_data_row. Return: jumlah data BARU.
+        private async Task<int> harvestGmapResults()
         {
+            int added = 0;
             try
             {
                 string raw = await webView.ExecuteScriptAsync(
                     "return (function(){var el=document.getElementById('fb-group-data');if(!el||!el.value)return '[]';return el.value;})();");
                 if (string.IsNullOrEmpty(raw))
                 {
-                    return;
+                    return 0;
                 }
                 // ExecuteScriptAsync mengembalikan string JSON yg di-escape
                 string json = System.Text.RegularExpressions.Regex.Unescape(raw.Trim().Trim('"'));
@@ -547,7 +559,7 @@ namespace WASender
                 var list = JsonConvert.DeserializeObject<List<Dictionary<string, object>>>(json);
                 if (list == null)
                 {
-                    return;
+                    return added;
                 }
                 if (_DataItem_GoogleMapList == null)
                 {
@@ -595,6 +607,7 @@ namespace WASender
                         }
                         _DataItem_GoogleMapList.Add(data);
                         do_add_new_data_row(data);
+                        added++;
                     }
                     catch (Exception)
                     {
@@ -604,6 +617,7 @@ namespace WASender
             catch (Exception)
             {
             }
+            return added;
         }
 
         private void UpdateAddressBar(object sender, Microsoft.Web.WebView2.Core.CoreWebView2WebMessageReceivedEventArgs e)
