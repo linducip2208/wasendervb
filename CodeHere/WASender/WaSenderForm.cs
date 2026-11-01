@@ -536,6 +536,7 @@ namespace WASender
         {
             _Config.KillChromeDriverProcess();
             init();
+            try { ComposerToolbar.AttachAll(this); } catch (Exception) { }
             setTooltips();
             // Verifikasi lisensi online HANYA saat aplikasi dibuka, dan HANYA bila server online.
             // Server online + lisensi invalid/dihapus -> file lokal dihapus -> form Activate muncul.
