@@ -267,6 +267,7 @@
             this.contextMenuStrip3 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.addCaptionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.materialButton31 = new MaterialSkin.Controls.MaterialButton();
+            this.materialButton32 = new MaterialSkin.Controls.MaterialButton();
             this.materialButton34 = new MaterialSkin.Controls.MaterialButton();
             this.chkDarkMode = new System.Windows.Forms.CheckBox();
             this.lblLicenseNet = new System.Windows.Forms.Label();
@@ -3641,6 +3642,27 @@
             this.materialButton31.UseVisualStyleBackColor = true;
             this.materialButton31.Click += new System.EventHandler(this.materialButton31_Click_1);
             // 
+            // materialButton32
+            // 
+            this.materialButton32.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.materialButton32.AutoSize = false;
+            this.materialButton32.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.materialButton32.Density = MaterialSkin.Controls.MaterialButton.MaterialButtonDensity.Default;
+            this.materialButton32.Depth = 0;
+            this.materialButton32.HighEmphasis = true;
+            this.materialButton32.Icon = global::WASender.Properties.Resources.icons8_documents_24px;
+            this.materialButton32.Location = new System.Drawing.Point(965, 17);
+            this.materialButton32.Margin = new System.Windows.Forms.Padding(5, 7, 5, 7);
+            this.materialButton32.MouseState = MaterialSkin.MouseState.HOVER;
+            this.materialButton32.Name = "materialButton32";
+            this.materialButton32.NoAccentTextColor = System.Drawing.Color.Empty;
+            this.materialButton32.Size = new System.Drawing.Size(60, 44);
+            this.materialButton32.TabIndex = 10;
+            this.materialButton32.Type = MaterialSkin.Controls.MaterialButton.MaterialButtonType.Contained;
+            this.materialButton32.UseAccentColor = false;
+            this.materialButton32.UseVisualStyleBackColor = true;
+            this.materialButton32.Click += new System.EventHandler(this.materialButton32_Click);
+            // 
             // materialButton34
             // 
             this.materialButton34.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
@@ -3788,6 +3810,7 @@
             this.Controls.Add(this.comboBox1);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.chkDarkMode);
+            this.Controls.Add(this.materialButton32);
             this.Controls.Add(this.lblLicenseNet);
             this.Controls.Add(this.lblSection);
             this.Controls.Add(this.tabMain);
@@ -4064,6 +4087,7 @@
         private MaterialSkin.Controls.MaterialButton materialButton30;
         private System.Windows.Forms.WebBrowser webBrowser10;
         private MaterialSkin.Controls.MaterialButton materialButton31;
+        private MaterialSkin.Controls.MaterialButton materialButton32;
         private MaterialSkin.Controls.MaterialButton materialButton34;
         private System.Windows.Forms.CheckBox chkDarkMode;
         private System.Windows.Forms.Label lblLicenseNet;

@@ -122,83 +122,6 @@
 
 	<div class="" style="margin-bottom: 10px;">
 	  <div class="" style="padding:10px;">
-		<h5 class="" id="txt_TodaySummary">Ringkasan Hari Ini</h5>
-
-			<div class="col-md-12">
-				<div class="row">
-
-					<div class="col-md-3" id="Box_StatSent">
-					  <div class="card">
-						<div class="card-block p-3 text-center">
-						  <h5 class="card-title" id="statSentLabel">Terkirim Hari Ini</h5>
-						  <h3 id="statSentToday">-</h3>
-						</div>
-					  </div>
-					</div>
-
-					<div class="col-md-3" id="Box_StatQuota">
-					  <div class="card">
-						<div class="card-block p-3 text-center">
-						  <h5 class="card-title" id="statQuotaLabel">Sisa Kuota / Limit</h5>
-						  <h3 id="statQuotaLeft">-</h3>
-						</div>
-					  </div>
-					</div>
-
-					<div class="col-md-3" id="Box_StatHealth">
-					  <div class="card">
-						<div class="card-block p-3 text-center">
-						  <h5 class="card-title" id="statHealthLabel">Skor Kesehatan WA</h5>
-						  <h3 id="statHealth">-</h3>
-						</div>
-					  </div>
-					</div>
-
-					<div class="col-md-3" id="Box_StatQueue">
-					  <div class="card">
-						<div class="card-block p-3 text-center">
-						  <h5 class="card-title" id="statQueueLabel">Antrian Kirim</h5>
-						  <h3 id="statQueue">-</h3>
-						</div>
-					  </div>
-					</div>
-
-				</div>
-			</div>
-
-			<div class="col-md-12" style="margin-top:10px;">
-				<div class="row">
-
-					<div class="col-md-6" id="Box_AccountList">
-					  <div class="card">
-						<div class="card-block p-3">
-						  <h5 class="card-title" id="statAccountsLabel">Akun Hari Ini</h5>
-						  <div id="accountList" style="font-size:13px;">-</div>
-						</div>
-					  </div>
-					</div>
-
-					<div class="col-md-6" id="Box_AiStats">
-					  <div class="card">
-						<div class="card-block p-3">
-						  <h5 class="card-title" id="statAiLabel">AI Hari Ini</h5>
-						  <div id="aiStats" style="font-size:13px;">-</div>
-						  <h5 class="card-title" id="statUpdateLabel" style="margin-top:10px;">Pembaruan</h5>
-						  <div id="updateBadge" style="font-size:13px;">-</div>
-						  <h5 class="card-title" id="statLogLabel" style="margin-top:10px;">Log Terakhir</h5>
-						  <div id="recentLog" style="font-size:12px;">-</div>
-						</div>
-					  </div>
-					</div>
-
-				</div>
-			</div>
-
-	  </div>
-	</div>
-	
-	<div class="" style="margin-bottom: 10px;">
-	  <div class="" style="padding:10px;">
 		<h5 class="" id="txt_DataExtractor">Data Extractor</h5>
 		
 			<div class="col-md-12">
@@ -673,30 +596,6 @@
     function changeLabelByClass(elementid,text)
     {
       $('.'+ elementid).text(text)
-    }
-
-    function setDashboardStats(sent,quota,health,queue)
-    {
-      $('#statSentToday').text(sent);
-      $('#statQuotaLeft').text(quota);
-      $('#statHealth').text(health);
-      $('#statQueue').text(queue);
-    }
-    function setAccountList(html)
-    {
-      $('#accountList').html(html);
-    }
-    function setAiStats(html)
-    {
-      $('#aiStats').html(html);
-    }
-    function setRecentLog(html)
-    {
-      $('#recentLog').html(html);
-    }
-    function setUpdateBadge(text)
-    {
-      $('#updateBadge').text(text);
     }
 
     function setEnableDesable(elementid,text)

@@ -75,6 +75,12 @@ namespace WASender
             this.Close();
         }
 
+        private void linkSupport_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            try { System.Diagnostics.Process.Start("https://wa.me/6281296052010"); }
+            catch (Exception ex) { try { MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error); } catch (Exception) { } }
+        }
+
         private void materialButton2_Click(object sender, EventArgs e)
         {
             MaterialDialog materialDialog = new MaterialDialog(this, Strings.Delete, Strings.AreyouSure, Strings.Yes, true, Strings.Cancel);

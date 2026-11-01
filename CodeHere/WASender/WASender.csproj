@@ -1072,6 +1072,8 @@
 
     <Compile Include="AccountSessionControl.cs" />
 
+    <Compile Include="DailySummaryForm.cs" />
+
     <Compile Include="GMapWebView2Extractor.cs" />
 
     <Compile Include="ScraperWebView2.cs" />

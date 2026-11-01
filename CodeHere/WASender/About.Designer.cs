@@ -36,6 +36,7 @@
             this.materialLabel6 = new System.Windows.Forms.Label();
             this.materialLabel7 = new System.Windows.Forms.Label();
             this.materialLabel8 = new System.Windows.Forms.Label();
+            this.linkSupport = new System.Windows.Forms.LinkLabel();
             this.materialLabel5 = new System.Windows.Forms.Label();
             this.materialLabel4 = new System.Windows.Forms.Label();
             this.materialLabel3 = new System.Windows.Forms.Label();
@@ -55,6 +56,7 @@
             this.materialCard1.Controls.Add(this.pictureBox1);
             this.materialCard1.Controls.Add(this.materialButton2);
             this.materialCard1.Controls.Add(this.materialButton1);
+            this.materialCard1.Controls.Add(this.linkSupport);
             this.materialCard1.Controls.Add(this.materialLabel8);
             this.materialCard1.Controls.Add(this.materialLabel7);
             this.materialCard1.Controls.Add(this.materialLabel6);
@@ -71,7 +73,7 @@
             this.materialCard1.MouseState = MaterialSkin.MouseState.HOVER;
             this.materialCard1.Name = "materialCard1";
             this.materialCard1.Padding = new System.Windows.Forms.Padding(13, 14, 13, 14);
-            this.materialCard1.Size = new System.Drawing.Size(493, 410);
+            this.materialCard1.Size = new System.Drawing.Size(493, 445);
             this.materialCard1.TabIndex = 0;
             // 
             // pictureBox1
@@ -94,7 +96,7 @@
             this.materialButton2.Depth = 0;
             this.materialButton2.HighEmphasis = true;
             this.materialButton2.Icon = global::WASender.Properties.Resources.icons8_delete_document_24px;
-            this.materialButton2.Location = new System.Drawing.Point(22, 355);
+            this.materialButton2.Location = new System.Drawing.Point(22, 390);
             this.materialButton2.Margin = new System.Windows.Forms.Padding(4, 6, 4, 6);
             this.materialButton2.MouseState = MaterialSkin.MouseState.HOVER;
             this.materialButton2.Name = "materialButton2";
@@ -116,7 +118,7 @@
             this.materialButton1.Depth = 0;
             this.materialButton1.HighEmphasis = true;
             this.materialButton1.Icon = global::WASender.Properties.Resources.icons8_thumbs_up_24px;
-            this.materialButton1.Location = new System.Drawing.Point(342, 347);
+            this.materialButton1.Location = new System.Drawing.Point(342, 382);
             this.materialButton1.Margin = new System.Windows.Forms.Padding(4, 6, 4, 6);
             this.materialButton1.MouseState = MaterialSkin.MouseState.HOVER;
             this.materialButton1.Name = "materialButton1";
@@ -129,6 +131,18 @@
             this.materialButton1.UseVisualStyleBackColor = true;
             this.materialButton1.Click += new System.EventHandler(this.materialButton1_Click);
             // 
+            // linkSupport
+            //
+            this.linkSupport.AutoSize = true;
+            this.linkSupport.Font = new System.Drawing.Font("Microsoft Sans Serif", 13F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Pixel);
+            this.linkSupport.Location = new System.Drawing.Point(19, 326);
+            this.linkSupport.Name = "linkSupport";
+            this.linkSupport.Size = new System.Drawing.Size(330, 16);
+            this.linkSupport.TabIndex = 12;
+            this.linkSupport.TabStop = true;
+            this.linkSupport.Text = "Butuh bantuan? Pandusolusi.com — WA 6281296052010";
+            this.linkSupport.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkSupport_LinkClicked);
+            //
             // materialLabel8
             // 
             this.materialLabel8.AutoSize = true;
@@ -228,7 +242,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(527, 539);
+            this.ClientSize = new System.Drawing.Size(527, 564);
             this.Controls.Add(this.materialCard1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
@@ -258,6 +272,7 @@
         private System.Windows.Forms.Label materialLabel6;
         private System.Windows.Forms.Label materialLabel7;
         private System.Windows.Forms.Label materialLabel8;
+        private System.Windows.Forms.LinkLabel linkSupport;
         private MaterialSkin.Controls.MaterialButton materialButton1;
         private MaterialSkin.Controls.MaterialButton materialButton2;
         private System.Windows.Forms.PictureBox pictureBox1;
