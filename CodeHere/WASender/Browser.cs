@@ -453,6 +453,20 @@ namespace WASender
                 + "})();";
         }
 
+        private static string ScrollStepJs()
+        {
+            // Langkah kecil + event scroll: meniru scroll manusia agar lazy-load/XHR ke-hook.
+            // Sekali lompat ke bawah sering diabaikan feed — makanya dulu harus scroll manual.
+            return "(function(){try{var feed=document.querySelector('div[role=feed]')"
+                + "||document.querySelectorAll('.m6QErb.DxyBCb.kA9KIf')[1]"
+                + "||document.querySelectorAll('.m6QErb.DxyBCb.kA9KIf')[0];"
+                + "if(!feed)return;"
+                + "feed.scrollTop=feed.scrollTop+1500;"
+                + "try{feed.dispatchEvent(new Event('scroll',{bubbles:true}));}catch(x){}"
+                + "try{window.scrollBy(0,1500);}catch(x){}"
+                + "}catch(e){}})();";
+        }
+
         private async void perfotmScroller()
         {
             int scrollTopValue = 0;
@@ -462,8 +476,16 @@ namespace WASender
             {
                 while (isEnd == false)
                 {
-                    await webView.ExecuteScriptAsync(ScrollContainerJs("scroll"));
+                    // Scroll bertahap (bukan sekali lompat) + panen tiap putaran,
+                    // agar data muncul otomatis tanpa scroll manual.
+                    for (int s = 0; s < 6 && isEnd == false; s++)
+                    {
+                        try { await webView.ExecuteScriptAsync(ScrollStepJs()); } catch (Exception) { }
+                        await Task.Delay(800);
+                    }
                     await Task.Delay((scollDelay == 0 ? 4 : scollDelay) * 1000);
+
+                    try { await harvestGmapResults(); } catch (Exception) { }
 
                     string _scrollTopValue = await webView.ExecuteScriptAsync(ScrollContainerJs("read"));
                     string cleaned = (_scrollTopValue ?? "").Trim().Trim('"');

@@ -433,12 +433,36 @@ namespace WASender
             }
         }
 
+        private string ResolveTemplateXlsx(string fileName)
+        {
+            try
+            {
+                string[] cands = new string[]
+                {
+                    Path.Combine(AppDomain.CurrentDomain.BaseDirectory, fileName),
+                    Path.Combine(Directory.GetCurrentDirectory(), fileName),
+                    fileName
+                };
+                foreach (string p in cands) { try { if (!string.IsNullOrEmpty(p) && File.Exists(p)) return p; } catch (Exception) { } }
+            }
+            catch (Exception) { }
+            return fileName;
+        }
+
         private void materialButton3_Click(object sender, EventArgs e)
         {
-            String FolderPath = Config.GetTempFolderPath();
-            String file = Path.Combine(FolderPath, "GMapData" + Guid.NewGuid().ToString() + ".xlsx");
-            string NewFileName = file.ToString();
-            File.Copy("ChatListTemplate.xlsx", NewFileName, true);
+            try
+            {
+                if (allData == null || allData.Count() == 0)
+                {
+                    MessageBox.Show("Belum ada data untuk di-export.", Strings.Info, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+                String FolderPath = Config.GetTempFolderPath();
+                try { if (!Directory.Exists(FolderPath)) Directory.CreateDirectory(FolderPath); } catch (Exception) { }
+                String file = Path.Combine(FolderPath, "GMapData" + Guid.NewGuid().ToString() + ".xlsx");
+                string NewFileName = file.ToString();
+                File.Copy(ResolveTemplateXlsx("ChatListTemplate.xlsx"), NewFileName, true);
             var newFile = new FileInfo(NewFileName);
             ExcelPackage.LicenseContext = OfficeOpenXml.LicenseContext.NonCommercial;
             using (ExcelPackage xlPackage = new ExcelPackage(newFile))
@@ -486,14 +510,27 @@ namespace WASender
                 File.Copy(NewFileName, savesampleExceldialog.FileName.EndsWith(".xlsx") ? savesampleExceldialog.FileName : savesampleExceldialog.FileName + ".xlsx", true);
                 Utils.showAlert(Strings.Filedownloadedsuccessfully, Alerts.Alert.enmType.Success);
             }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Export gagal: " + ex.Message, Strings.Error, MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void materialButton5_Click(object sender, EventArgs e)
         {
-            String FolderPath = Config.GetTempFolderPath();
-            String file = Path.Combine(FolderPath, "GMapData_Numbers" + Guid.NewGuid().ToString() + ".xlsx");
-            string NewFileName = file.ToString();
-            File.Copy("ChatListTemplate.xlsx", NewFileName, true);
+            try
+            {
+                if (allData == null || allData.Count() == 0)
+                {
+                    MessageBox.Show("Belum ada data untuk di-export.", Strings.Info, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+                String FolderPath = Config.GetTempFolderPath();
+                try { if (!Directory.Exists(FolderPath)) Directory.CreateDirectory(FolderPath); } catch (Exception) { }
+                String file = Path.Combine(FolderPath, "GMapData_Numbers" + Guid.NewGuid().ToString() + ".xlsx");
+                string NewFileName = file.ToString();
+                File.Copy(ResolveTemplateXlsx("ChatListTemplate.xlsx"), NewFileName, true);
             var newFile = new FileInfo(NewFileName);
             ExcelPackage.LicenseContext = OfficeOpenXml.LicenseContext.NonCommercial;
             using (ExcelPackage xlPackage = new ExcelPackage(newFile))
@@ -521,6 +558,11 @@ namespace WASender
             {
                 File.Copy(NewFileName, savesampleExceldialog.FileName.EndsWith(".xlsx") ? savesampleExceldialog.FileName : savesampleExceldialog.FileName + ".xlsx", true);
                 Utils.showAlert(Strings.Filedownloadedsuccessfully, Alerts.Alert.enmType.Success);
+            }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Export gagal: " + ex.Message, Strings.Error, MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
