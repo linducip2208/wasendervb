@@ -19,6 +19,9 @@ namespace WASender
 {
     public partial class Browser : MyMaterialPopOp
     {
+        /// <summary>Expose WebView2 untuk scraper baru (ganti Selenium).</summary>
+        public Microsoft.Web.WebView2.WinForms.WebView2 View { get { return webView; } }
+
         public event EventHandler browserInitDoneEvnet;
         public event EventHandler browserCloseEvent;
         public event EventHandler browserWAPI_InjectedEvent;

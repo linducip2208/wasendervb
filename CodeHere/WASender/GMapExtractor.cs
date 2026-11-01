@@ -357,6 +357,17 @@ namespace WASender
 
         private void worker_DoWork(object sender, DoWorkEventArgs e)
         {
+            // Jalur baru WebView2: kalau scraperBrowser ada, pakai JS extractor (tanpa Selenium).
+            try
+            {
+                if (scraperBrowser != null && scraperBrowser.View != null && scraperBrowser.View.CoreWebView2 != null)
+                {
+                    worker_DoWorkWebView2(sender, e);
+                    return;
+                }
+            }
+            catch (Exception) { }
+            if (driver == null) return; // tidak ada browser legacy -> keluar aman
             IJavaScriptExecutor jsFunction = (IJavaScriptExecutor)driver;
             jsFunction.ExecuteScript("function getElementByXpath(path) { return document.evaluate(path, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue; }");
 
@@ -791,6 +802,50 @@ namespace WASender
 
             }
 
+        }
+
+        private void worker_DoWorkWebView2(object sender, DoWorkEventArgs e)
+        {
+            // Ekstraksi berulang via WebView2 JS. timerRunnerChecker_Tick tetap yang render ke grid.
+            try
+            {
+                var wv = scraperBrowser != null ? scraperBrowser.View : null;
+                if (wv == null) return;
+                while (!isStop)
+                {
+                    try
+                    {
+                        var t = GMapWebView2Extractor.ExtractAsync(wv, 30);
+                        t.Wait(30000);
+                        var items = t.Result;
+                        if (items != null)
+                        {
+                            foreach (var it in items)
+                            {
+                                try
+                                {
+                                    if (string.IsNullOrWhiteSpace(it.Name)) continue;
+                                    int exist = gMapModelList.Where(x => x.Name == it.Name).Count();
+                                    if (exist > 0) continue;
+                                    GMapModel m = new GMapModel();
+                                    m.Name = it.Name;
+                                    m.address = it.Address ?? "";
+                                    m.website = it.Website ?? "";
+                                    m.rating = it.Rating ?? "";
+                                    m.mobilenumber = it.Phone ?? "";
+                                    m.Logged = false;
+                                    gMapModelList.Add(m);
+                                }
+                                catch (Exception) { }
+                            }
+                        }
+                    }
+                    catch (Exception ex) { try { logger.WriteLog("wv-ex=" + ex.Message); } catch (Exception) { } }
+                    System.Threading.Thread.Sleep(5000);
+                    if (worker != null && worker.CancellationPending) { e.Cancel = true; return; }
+                }
+            }
+            catch (Exception) { }
         }
 
         System.Windows.Forms.Timer timerRunner;

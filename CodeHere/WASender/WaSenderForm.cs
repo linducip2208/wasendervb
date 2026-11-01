@@ -184,6 +184,28 @@ namespace WASender
             _WebBrowser.DocumentText = Storage.DocumentHtmlString;
         }
 
+        /// <summary>
+        /// Tahap migrasi Designer: buat 10 AccountSessionControl dinamis dari accountSlots.
+        /// Panggil dari kode baru; tab lama dibiarkan sampai stabil di VS.
+        /// </summary>
+        private System.Collections.Generic.List<AccountSessionControl> BuildSlotControls()
+        {
+            var list = new System.Collections.Generic.List<AccountSessionControl>();
+            try
+            {
+                if (accountSlots == null || accountSlots.Count == 0)
+                    accountSlots = WASender.Model.AccountState.CreateSlots(10);
+                foreach (var s in accountSlots)
+                {
+                    var c = new AccountSessionControl(s.Slot);
+                    c.Bind(s);
+                    list.Add(c);
+                }
+            }
+            catch (Exception) { }
+            return list;
+        }
+
 
 
         private void browser1_DocumentCompleted(Object sender, WebBrowserDocumentCompletedEventArgs e)
