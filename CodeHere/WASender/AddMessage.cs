@@ -115,9 +115,23 @@ namespace WaAutoReplyBot
             Utils.removeListViewItem(e, lstViewFiles);
         }
 
-        private void materialButton2_Click(object sender, EventArgs e)
+        private void materialButton4_Click(object sender, EventArgs e)
         {
-            this.messageModel.LongMessage = txtLongMessage.Text;
+            try
+            {
+                int att = 0;
+                try { att = lstViewFiles != null ? lstViewFiles.Items.Count : 0; } catch (Exception) { }
+                MessagePreviewForm f = new MessagePreviewForm(txtLongMessage.Text ?? "", att);
+                f.ShowDialog(this);
+            }
+            catch (Exception ex)
+            {
+                try { MessageBox.Show(ex.Message, Strings.Error, MessageBoxButtons.OK, MessageBoxIcon.Error); } catch (Exception) { }
+            }
+        }
+
+        private void materialButton2_Click(object sender, EventArgs e)
+        {            this.messageModel.LongMessage = txtLongMessage.Text;
             this.messageModel.Files = new List<string>();
 
 

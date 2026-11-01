@@ -36,6 +36,7 @@
             this.webBrowser1 = new System.Windows.Forms.WebBrowser();
             this.materialButton3 = new MaterialSkin.Controls.MaterialButton();
             this.materialButton2 = new MaterialSkin.Controls.MaterialButton();
+            this.materialButton4 = new MaterialSkin.Controls.MaterialButton();
             this.materialButton1 = new MaterialSkin.Controls.MaterialButton();
             this.lstViewFiles = new MaterialSkin.Controls.MaterialListView();
             this.Files = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
@@ -58,6 +59,7 @@
             this.materialCard1.Controls.Add(this.lstViewFiles);
             this.materialCard1.Controls.Add(this.txtLongMessage);
             this.materialCard1.Controls.Add(this.lblSpintaxHint);
+            this.materialCard1.Controls.Add(this.materialButton4);
             this.materialCard1.Depth = 0;
             this.materialCard1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(222)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))));
             this.materialCard1.Location = new System.Drawing.Point(17, 90);
@@ -175,6 +177,28 @@
             this.materialButton2.UseAccentColor = false;
             this.materialButton2.UseVisualStyleBackColor = true;
             this.materialButton2.Click += new System.EventHandler(this.materialButton2_Click);
+            // 
+            // materialButton4
+            // 
+            this.materialButton4.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.materialButton4.AutoSize = false;
+            this.materialButton4.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.materialButton4.Density = MaterialSkin.Controls.MaterialButton.MaterialButtonDensity.Default;
+            this.materialButton4.Depth = 0;
+            this.materialButton4.HighEmphasis = false;
+            this.materialButton4.Icon = global::WASender.Properties.Resources.icons8_whatsapp_24px;
+            this.materialButton4.Location = new System.Drawing.Point(548, 526);
+            this.materialButton4.Margin = new System.Windows.Forms.Padding(4, 6, 4, 6);
+            this.materialButton4.MouseState = MaterialSkin.MouseState.HOVER;
+            this.materialButton4.Name = "materialButton4";
+            this.materialButton4.NoAccentTextColor = System.Drawing.Color.Empty;
+            this.materialButton4.Size = new System.Drawing.Size(168, 36);
+            this.materialButton4.TabIndex = 75;
+            this.materialButton4.Text = "Preview";
+            this.materialButton4.Type = MaterialSkin.Controls.MaterialButton.MaterialButtonType.Outlined;
+            this.materialButton4.UseAccentColor = false;
+            this.materialButton4.UseVisualStyleBackColor = true;
+            this.materialButton4.Click += new System.EventHandler(this.materialButton4_Click);
             // 
             // materialButton1
             // 
@@ -298,6 +322,7 @@
         private MaterialSkin.Controls.MaterialLabel lblSpintaxHint;
         private MaterialSkin.Controls.MaterialButton materialButton3;
         private MaterialSkin.Controls.MaterialButton materialButton2;
+        private MaterialSkin.Controls.MaterialButton materialButton4;
         private System.Windows.Forms.ColumnHeader Files;
         private System.Windows.Forms.GroupBox groupBox11;
         private System.Windows.Forms.Panel panel1;

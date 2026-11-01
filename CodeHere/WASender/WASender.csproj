@@ -1070,6 +1070,8 @@
 
     <Compile Include="LicenseServer.cs" />
 
+    <Compile Include="MessagePreviewForm.cs" />
+
     <Compile Include="AccountSessionControl.cs" />
 
     <Compile Include="DailySummaryForm.cs" />
