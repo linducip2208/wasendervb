@@ -1076,6 +1076,8 @@
 
     <Compile Include="TutorialForm.cs" />
 
+    <Compile Include="Theme.cs" />
+
     <Compile Include="GMapWebView2Extractor.cs" />
 
     <Compile Include="ScraperWebView2.cs" />

@@ -851,6 +851,7 @@ namespace WASender
                 await Task.Delay(500);
                 await setLanguagesAsync();
                 await setEnableDesableToolsAsync();
+                await RefreshDashboardStrip();
                 webBrowser11.Visible = true;
                 pictureBox1.Visible = false;
             }
@@ -869,6 +870,68 @@ namespace WASender
         private async Task DashEval(string js)
         {
             try { if (webBrowser11 != null && webBrowser11.CoreWebView2 != null) await webBrowser11.ExecuteScriptAsync(js); }
+            catch (Exception) { }
+        }
+
+        /// <summary>Strip status dashboard: lisensi, terkirim, antrian, kesehatan, sesi, update. Data real, tanpa timer.</summary>
+        private async Task RefreshDashboardStrip()
+        {
+            try
+            {
+                var d = new System.Collections.Generic.Dictionary<string, string>();
+                try
+                {
+                    var info = LicenseServer.Load();
+                    if (info == null) { d["license"] = "-"; d["licenseSub"] = "belum aktivasi"; }
+                    else
+                    {
+                        int sisa = LicenseServer.RemainingDays();
+                        if (sisa == int.MaxValue) { d["license"] = "Lifetime"; d["licenseSub"] = string.IsNullOrEmpty(info.Customer) ? "" : info.Customer; }
+                        else { d["license"] = sisa + " hari"; d["licenseSub"] = LicenseServer.ExpiryText(); }
+                    }
+                }
+                catch (Exception) { d["license"] = "-"; d["licenseSub"] = ""; }
+                try
+                {
+                    int total = 0, limit = 0;
+                    foreach (string line in SendGovernor.TodayAll())
+                    {
+                        try
+                        {
+                            string[] p = (line ?? "").Split('|');
+                            if (p.Length < 3) continue;
+                            int n, l;
+                            if (int.TryParse(p[1].Trim(), out n)) total += n;
+                            if (int.TryParse(p[2].Trim(), out l)) limit += l;
+                        }
+                        catch (Exception) { }
+                    }
+                    d["sent"] = total.ToString();
+                    int left = limit - total;
+                    if (left < 0) left = 0;
+                    d["sentSub"] = "sisa " + left + " / " + limit;
+                }
+                catch (Exception) { d["sent"] = "-"; d["sentSub"] = ""; }
+                try { d["queue"] = SendQueue.Pending.ToString(); }
+                catch (Exception) { d["queue"] = "-"; }
+                try
+                {
+                    int sc = SendGovernor.LastScore();
+                    d["health"] = sc < 0 ? "-" : sc.ToString();
+                    d["healthColor"] = sc < 0 ? "" : (sc < 40 ? "#c62828" : (sc < 70 ? "#ef6c00" : "#2e7d32"));
+                }
+                catch (Exception) { d["health"] = "-"; }
+                try
+                {
+                    bool open = Utils.waSenderBrowser != null && !Utils.waSenderBrowser.IsDisposed;
+                    d["session"] = open ? "Terbuka" : "Tutup";
+                }
+                catch (Exception) { d["session"] = "-"; }
+                try { d["update"] = AppUpdater.StatusText(); }
+                catch (Exception) { d["update"] = "-"; }
+                string json = Newtonsoft.Json.JsonConvert.SerializeObject(d);
+                await DashEval("setDashStats(" + JsStr(json) + ");");
+            }
             catch (Exception) { }
         }
 
@@ -960,6 +1023,11 @@ namespace WASender
                         {
                             TutorialForm tform = new TutorialForm();
                             tform.Show();
+                        }
+                        else if (btnId == "DailySummary")
+                        {
+                            DailySummaryForm dform = new DailySummaryForm();
+                            dform.ShowDialog(this);
                         }
                         else if (btnId == "GrabGroupMembers")
                         {

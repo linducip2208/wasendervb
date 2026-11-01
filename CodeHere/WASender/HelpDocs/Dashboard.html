@@ -119,6 +119,23 @@
   <br>
   <main style="width:100%">
     <div class="mainsection" style="position: absolute;top:0;left: 0;width: 100%;padding:10px">
+	<div class="" style="margin-bottom: 10px;">
+	  <div class="" style="padding:10px;">
+		<h5 class="" id="txt_TodayStatus">Status Sistem</h5>
+		<div class="col-md-12">
+			<div class="row" id="dashStatusStrip">
+				<div class="col-md-4"><div class="card"><div class="card-block p-3 text-center"><h5 class="card-title">Lisensi</h5><h4 id="dsLicense">-</h4><div class="mod-sub" id="dsLicenseSub">-</div></div></div></div>
+				<div class="col-md-4"><div class="card"><div class="card-block p-3 text-center"><h5 class="card-title">Terkirim Hari Ini</h5><h4 id="dsSent">-</h4><div class="mod-sub" id="dsSentSub">kuota hari ini</div></div></div></div>
+				<div class="col-md-4"><div class="card"><div class="card-block p-3 text-center"><h5 class="card-title">Antrian &amp; Kesehatan</h5><h4 id="dsQueue">-</h4><div class="mod-sub" id="dsHealth">-</div></div></div></div>
+			</div>
+			<div class="row" style="margin-top:10px;">
+				<div class="col-md-4"><div class="card"><div class="card-block p-3 text-center"><h5 class="card-title">Sesi Browser</h5><h4 id="dsSession">-</h4><div class="mod-sub">akun WhatsApp</div></div></div></div>
+				<div class="col-md-4"><div class="card"><div class="card-block p-3 text-center"><h5 class="card-title">Pembaruan</h5><h4 id="dsUpdate" style="font-size:16px;">-</h4><div class="mod-sub">versi aplikasi</div></div></div></div>
+				<div class="col-md-4"><div class="card"><div class="card-block p-3 text-center"><h5 class="card-title">Ringkasan Lengkap</h5><button type="button" data-toggle="modal" class="btn btn-primary full-width" data-id="DailySummary"><i class="fas fa-chart-bar" data-id="DailySummary"></i> <span data-id="DailySummary">BUKA</span></button><div class="mod-sub">AI, log &amp; detail akun</div></div></div></div>
+			</div>
+		</div>
+	  </div>
+	</div>
 
 	<div class="" style="margin-bottom: 10px;">
 	  <div class="" style="padding:10px;">
@@ -166,6 +183,7 @@
 							</div>
 						  
 						  <h5 class="card-title text-center" id="txtGetGroupMembers">Get Group Members </h5>
+                        <p class="mod-desc">Ambil daftar anggota dari grup WA</p>
 						  <button  type="button" data-id="GrabGroupMembers"  data-toggle="modal" class="btn btn-primary full-width"  >
 							<i class="fas fa-external-link-alt" data-id="GrabGroupMembers" ></i>
 							
@@ -188,6 +206,7 @@
 							  </div>
 							</div>
 						  <h5 class="card-title text-center" id="txtContactListGrabber">Contact List Grabber</h5>
+                        <p class="mod-desc">Grab semua kontak di akun</p>
 						  <button  type="button" data-toggle="modal" class="btn btn-primary full-width"  data-id="ContactListGrabber">
 							<i class="fas fa-external-link-alt" data-id="ContactListGrabber"></i> <span class="grabnow" data-id="ContactListGrabber">GRAB NOW</span></button>
 						</div>
@@ -205,6 +224,7 @@
 							  </div>
 							</div>
 						  <h5 class="card-title text-center" id="txtGrabActiveGroupMembers">Grab Active Group Members</h5>
+                        <p class="mod-desc">Filter member yang aktif chat</p>
 						  <button  type="button" data-toggle="modal" class="btn btn-primary full-width"  data-id="GrabActiveGroupMembers">
 							<i class="fas fa-external-link-alt" data-id="GrabActiveGroupMembers"></i> <span class="grabnow" data-id="GrabActiveGroupMembers">GRAB NOW</span></button>
 						</div>
@@ -222,6 +242,7 @@
 							  </div>
 							</div>
 						  <h5 class="card-title text-center" id="txtGrabChatList">Grab Chat List</h5>
+                        <p class="mod-desc">Grab daftar chat pribadi & grup</p>
 						  <button  type="button" data-toggle="modal" class="btn btn-primary full-width"  data-id="GrabChatList">
 							<i class="fas fa-external-link-alt" data-id="GrabChatList"></i> <span class="grabnow" data-id="GrabChatList">GRAB NOW</span></button>
 						</div>
@@ -238,6 +259,7 @@
 							  </div>
 							</div>
 						  <h5 class="card-title text-center" id="txtPollReport">Poll Report</h5>
+                        <p class="mod-desc">Lihat hasil polling</p>
 						  <button  type="button" data-toggle="modal" class="btn btn-primary full-width"  data-id="PollReport">
 							<i class="fas fa-external-link-alt" data-id="PollReport"></i> <span class="startnow" data-id="PollReport">START NOW</span></button>
 						</div>
@@ -272,6 +294,7 @@
 							</div>
 						  
 						  <h5 class="card-title text-center" id="txtGetWhatsAppGroupLinksfromweb">Get WhatsApp Group Links from web</h5>
+                        <p class="mod-desc">Scrape link grup dari web</p>
 						  <button  type="button"  data-toggle="modal" class="btn btn-primary full-width"  data-id="GetWhatsAppGroupLinksfromweb">
 							<i class="fas fa-external-link-alt" data-id="GetWhatsAppGroupLinksfromweb"></i> <span class="grabnow" data-id="GetWhatsAppGroupLinksfromweb">GRAB NOW</span></button>
 						</div>
@@ -290,6 +313,7 @@
 							  </div>
 							</div>
 						  <h5 class="card-title text-center" id="txtAutoGroupJoiner">Auto Group Joiner</h5>
+                        <p class="mod-desc">Auto-join dari daftar link</p>
 						  <button  type="button" data-toggle="modal" class="btn btn-primary full-width"  data-id="AutoGroupJoiner">
 							<i class="fas fa-external-link-alt" data-id="AutoGroupJoiner"></i> <span class="startnow" data-id="AutoGroupJoiner">START NOW</span></button>
 						</div>
@@ -306,6 +330,7 @@
 							  </div>
 							</div>
 						  <h5 class="card-title text-center" id="txtBulkAddGroupMembers">Bulk Add Group Members</h5>
+                        <p class="mod-desc">Tambah banyak member sekaligus</p>
 						  <button  type="button" data-toggle="modal" class="btn btn-primary full-width" data-id="BulkAddGroupMembers" >
 							<i class="fas fa-external-link-alt" data-id="BulkAddGroupMembers"></i> <span class="startnow" data-id="BulkAddGroupMembers">START NOW</span></button>
 						</div>
@@ -322,6 +347,7 @@
 							  </div>
 							</div>
 						  <h5 class="card-title text-center" id="txtGroupFinder">Group Finder</h5>
+                        <p class="mod-desc">Cari grup via Google</p>
 						  <button  type="button" data-toggle="modal" class="btn btn-primary full-width"  data-id="GroupFinder" >
 							<i class="fas fa-external-link-alt" data-id="GroupFinder" ></i> <span class="startnow" data-id="GroupFinder" >START NOW</span></button>
 						</div>
@@ -338,6 +364,7 @@
 							  </div>
 							</div>
 						  <h5 class="card-title text-center" id="txtBulkGroupGenerator">Bulk Group Generator</h5>
+                        <p class="mod-desc">Buat banyak grup sekaligus</p>
 						  <button  type="button" data-toggle="modal" class="btn btn-primary full-width"  data-id="BulkGroupGenerator">
 							<i class="fas fa-external-link-alt" data-id="BulkGroupGenerator"></i> <span class="startnow" data-id="BulkGroupGenerator">START NOW</span></button>
 						</div>
@@ -353,6 +380,7 @@
 							  </div>
 							</div>
 						  <h5 class="card-title text-center" id="txtGroupLinkVerify">Bulk Group Links Verify</h5>
+                        <p class="mod-desc">Verifikasi link grup massal</p>
 						  <button  type="button" data-toggle="modal" class="btn btn-primary full-width"  data-id="GroupLinkVerify">
 							<i class="fas fa-external-link-alt" data-id="GroupLinkVerify"></i> <span class="startnow" data-id="GroupLinkVerify">START NOW</span></button>
 						</div>
@@ -367,6 +395,7 @@
 							  </div>
 							</div>
 						  <h5 class="card-title text-center" id="txtAiSetup">AI Bot Setup</h5>
+                        <p class="mod-desc">Atur AI auto-reply (BYOK)</p>
 						  <button  type="button" data-toggle="modal" class="btn btn-primary full-width"  data-id="AiSetup">
 							<i class="fas fa-external-link-alt" data-id="AiSetup"></i> <span class="grabnow" data-id="AiSetup">OPEN</span></button>
 						</div>
@@ -381,6 +410,7 @@
 							  </div>
 							</div>
 						  <h5 class="card-title text-center" id="txtWaHealth">WA Health &amp; Laporan</h5>
+                        <p class="mod-desc">Skor kesehatan & laporan</p>
 						  <button  type="button" data-toggle="modal" class="btn btn-primary full-width"  data-id="WaHealth">
 							<i class="fas fa-external-link-alt" data-id="WaHealth"></i> <span class="grabnow" data-id="WaHealth">OPEN</span></button>
 						</div>
@@ -413,6 +443,7 @@
 							</div>
 						  
 						  <h5 class="card-title text-center" id="txtWhatsAppAutoreplyBot">WhatsApp Autoreply Bot</h5>
+                        <p class="mod-desc">Balas otomatis by keyword</p>
 						  <button  type="button" data-toggle="modal" class="btn btn-primary full-width"  data-id="WhatsAppAutoreplyBot">
 							<i class="fas fa-external-link-alt" data-id="WhatsAppAutoreplyBot"></i> <span class="startnow" data-id="WhatsAppAutoreplyBot">START NOW</span></button>
 						</div>
@@ -431,6 +462,7 @@
 							  </div>
 							</div>
 						  <h5 class="card-title text-center" id="txtWhatsAppNumberFilter">WhatsApp Number Filter</h5>
+                        <p class="mod-desc">Cek nomor aktif / tidak</p>
 						  <button  type="button" data-toggle="modal" class="btn btn-primary full-width" data-id="WhatsAppNumberFilter" >
 							<i class="fas fa-external-link-alt" data-id="WhatsAppNumberFilter"></i> <span class="startnow" data-id="WhatsAppNumberFilter">START NOW</span></button>
 						</div>
@@ -448,6 +480,7 @@
 							  </div>
 							</div>
 						  <h5 class="card-title text-center" id="txtWhatsAppWarmer">WhatsApp Warmer</h5>
+                        <p class="mod-desc">Warmup akun anti-ban</p>
 						  <button  type="button" data-toggle="modal" class="btn btn-primary full-width"  data-id="WhatsAppWarmer">
 							<i class="fas fa-external-link-alt" data-id="WhatsAppWarmer"></i> <span class="startnow" data-id="WhatsAppWarmer">START NOW</span></button>
 						</div>
@@ -465,6 +498,7 @@
 							  </div>
 							</div>
 						  <h5 class="card-title text-center" id="txtWhatsAppWarmerGroup">WhatsApp Group Warmer</h5>
+                        <p class="mod-desc">Warmup di dalam grup</p>
 						  <button  type="button" data-toggle="modal" class="btn btn-primary full-width"  data-id="WhatsAppWarmerGroup">
 							<i class="fas fa-external-link-alt" data-id="WhatsAppWarmerGroup"></i> <span class="startnow" data-id="WhatsAppWarmerGroup">START NOW</span></button>
 						</div>
@@ -480,6 +514,7 @@
 							  </div>
 							</div>
 						  <h5 class="card-title text-center" id="txtScheduler">All Schedules</h5>
+                        <p class="mod-desc">Kelola scheduled task</p>
 						  <button  type="button" data-toggle="modal" class="btn btn-primary full-width"  data-id="Scheduler">
 							<i class="fas fa-external-link-alt" data-id="Scheduler"></i> <span class="startnow" data-id="Scheduler">START NOW</span></button>
 						</div>
@@ -512,6 +547,7 @@
 							  </div>
 							</div>
 						  <h5 class="card-title text-center" id="txtGoogleMagDataExtractor">Google Mag Data Extractor</h5>
+                        <p class="mod-desc">Ekstrak data bisnis GMap</p>
 						  <button  type="button" data-toggle="modal" class="btn btn-primary full-width"  data-id="GoogleMagDataExtractor">
 							<i class="fas fa-external-link-alt" data-id="GoogleMagDataExtractor"></i> <span class="grabnow" data-id="GoogleMagDataExtractor">GRAB NOW</span></button>
 						</div>
@@ -528,6 +564,7 @@
 							  </div>
 							</div>
 						  <h5 class="card-title text-center" id="txtWebsiteEmailMobileExtractor">Website Email Mobile Extractor</h5>
+                        <p class="mod-desc">Ekstrak email/HP dari website</p>
 						  <button  type="button" data-toggle="modal" class="btn btn-primary full-width"   data-id="WebsiteEmailMobileExtractor">
 							<i class="fas fa-external-link-alt"  data-id="WebsiteEmailMobileExtractor"></i> <span class="startnow"  data-id="WebsiteEmailMobileExtractor">START NOW</span></button>
 						</div>
@@ -543,6 +580,7 @@
 							  </div>
 							</div>
 						  <h5 class="card-title text-center" id="txtSocialMediaExtractor">Social Media Data Extractor</h5>
+                        <p class="mod-desc">Ekstrak data sosmed</p>
 						  <button  type="button" data-toggle="modal" class="btn btn-primary full-width"  data-id="SocialMediaExtractor">
 							<i class="fas fa-external-link-alt" data-id="SocialMediaExtractor"></i> <span class="startnow" data-id="SocialMediaExtractor">START NOW</span></button>
 						</div>
@@ -559,6 +597,7 @@
 							  </div>
 							</div>
 						  <h5 class="card-title text-center" id="txtGoogleContactCSVGenerator">Google Contact CSV Generator</h5>
+                        <p class="mod-desc">Buat CSV kontak Google</p>
 						  <button  type="button" data-toggle="modal" class="btn btn-primary full-width"  data-id="GoogleContactCSVGenerator">
 							<i class="fas fa-external-link-alt" data-id="GoogleContactCSVGenerator"></i> <span class="startnow" data-id="GoogleContactCSVGenerator">START NOW</span></button>
 						</div>
@@ -624,6 +663,20 @@
     function changeLabelByClass(elementid,text)
     {
       $('.'+ elementid).text(text)
+    }
+
+    function setDashStats(json){
+      try{
+        var d = JSON.parse(json);
+        if(d.license!==undefined) document.getElementById('dsLicense').textContent = d.license;
+        if(d.licenseSub!==undefined) document.getElementById('dsLicenseSub').textContent = d.licenseSub;
+        if(d.sent!==undefined) document.getElementById('dsSent').textContent = d.sent;
+        if(d.sentSub!==undefined) document.getElementById('dsSentSub').textContent = d.sentSub;
+        if(d.queue!==undefined) document.getElementById('dsQueue').textContent = d.queue;
+        if(d.health!==undefined){document.getElementById('dsHealth').textContent = d.health;document.getElementById('dsHealth').style.color = d.healthColor||'';}
+        if(d.session!==undefined) document.getElementById('dsSession').textContent = d.session;
+        if(d.update!==undefined) document.getElementById('dsUpdate').textContent = d.update;
+      }catch(e){}
     }
 
     function setEnableDesable(elementid,text)
