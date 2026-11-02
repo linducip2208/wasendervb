@@ -34,7 +34,7 @@ namespace WASender
                 sideNav.Width = 232;
                 sideNav.Dock = DockStyle.Left;
                 sideNav.BackColor = Theme.Navy;
-                sideNav.Padding = new Padding(0, 64, 0, 10);
+                sideNav.Padding = new Padding(0, 20, 0, 10);
 
                 try { CenterTopBrand(); } catch (Exception) { }
 
@@ -47,41 +47,41 @@ namespace WASender
                 sideNav.Controls.Add(sideFlow);
 
                 AddSideCaption("UTAMA");
-                AddTabItem("Dashboard", 2, "icons8_whatsapp_24px");
-                AddTabItem("Bulk Sender", 0, "icons8_email_send_24px");
-                AddTabItem("Group Sender", 1, "GetWhatsAppGroup_Members_BLACK");
+                AddTabItem("Dashboard", 2, "🏠");
+                AddTabItem("Bulk Sender", 0, "✉");
+                AddTabItem("Group Sender", 1, "👥");
                 AddSideCaption("EKSTRAKTOR DATA");
-                AddToolItem("GMap Extractor", "GoogleMap_WHITE", () => { GmExtractorForm f = new GmExtractorForm(this); this.Hide(); f.Show(); });
-                AddToolItem("Number Filter", "NumberFilter_BLACK", () => { NumberFilter f = new NumberFilter(this); this.Hide(); f.Show(); });
-                AddToolItem("Contact Grabber", "WContactList_BLACK", () => { ContactGrabber f = new ContactGrabber(this); this.Hide(); f.Show(); });
-                AddToolItem("Web Extractor", "WebExtract", () => { WebScrapper f = new WebScrapper(this); this.Hide(); f.Show(); });
-                AddToolItem("Social Media", "icons8_globe_24px", () => { SocialMediaExtractor f = new SocialMediaExtractor(this); this.Hide(); f.Show(); });
-                AddToolItem("Google CSV", "CSV_BLACK", () => { GoogleCSVGenerator f = new GoogleCSVGenerator(this); this.Hide(); f.Show(); });
-                AddToolItem("Chat List", "ChatList_BLACK", () => { GrabChatList f = new GrabChatList(this); this.Hide(); f.Show(); });
-                AddToolItem("Grab Link Grup", "GetGroupLinksFromWeb_BLACK", () => { GrabGroupLinks f = new GrabGroupLinks(this); this.Hide(); f.Show(); });
+                AddToolItem("GMap Extractor", "🗺", () => { GmExtractorForm f = new GmExtractorForm(this); this.Hide(); f.Show(); });
+                AddToolItem("Number Filter", "🔎", () => { NumberFilter f = new NumberFilter(this); this.Hide(); f.Show(); });
+                AddToolItem("Contact Grabber", "📇", () => { ContactGrabber f = new ContactGrabber(this); this.Hide(); f.Show(); });
+                AddToolItem("Web Extractor", "🌐", () => { WebScrapper f = new WebScrapper(this); this.Hide(); f.Show(); });
+                AddToolItem("Social Media", "💬", () => { SocialMediaExtractor f = new SocialMediaExtractor(this); this.Hide(); f.Show(); });
+                AddToolItem("Google CSV", "📄", () => { GoogleCSVGenerator f = new GoogleCSVGenerator(this); this.Hide(); f.Show(); });
+                AddToolItem("Chat List", "💭", () => { GrabChatList f = new GrabChatList(this); this.Hide(); f.Show(); });
+                AddToolItem("Grab Link Grup", "🔗", () => { GrabGroupLinks f = new GrabGroupLinks(this); this.Hide(); f.Show(); });
                 AddSideCaption("GRUP");
-                AddToolItem("Grab Anggota", "ActiveGroupMember_BLACK", () => { GetGroupMember f = new GetGroupMember(this); this.Hide(); f.Show(); });
-                AddToolItem("Anggota Aktif", "icons8_checked_checkbox_24px", () => { GrabGroupActiveMembers f = new GrabGroupActiveMembers(this); this.Hide(); f.Show(); });
-                AddToolItem("Tambah Anggota", "AddGroupMember_BLACK", () => { GroupMemberAdder f = new GroupMemberAdder(this); this.Hide(); f.Show(); });
-                AddToolItem("Auto Joiner", "GroupJoiner_WHITE", () => { GroupsJoiner f = new GroupsJoiner(this); this.Hide(); f.Show(); });
-                AddToolItem("Group Finder", "GriupFinder_BLACK", () => { GroupFinder f = new GroupFinder(this); this.Hide(); f.Show(); });
-                AddToolItem("Bulk Generator", "CreateBulkWhatsAppGroup_BLACK", () => { GroupGenerator f = new GroupGenerator(this); this.Hide(); f.Show(); });
-                AddToolItem("Verifikasi Link", "icons8_linking_24px", () => { GroupLinkVerify f = new GroupLinkVerify(this); this.Hide(); f.Show(); });
+                AddToolItem("Grab Anggota", "🙂", () => { GetGroupMember f = new GetGroupMember(this); this.Hide(); f.Show(); });
+                AddToolItem("Anggota Aktif", "✅", () => { GrabGroupActiveMembers f = new GrabGroupActiveMembers(this); this.Hide(); f.Show(); });
+                AddToolItem("Tambah Anggota", "➕", () => { GroupMemberAdder f = new GroupMemberAdder(this); this.Hide(); f.Show(); });
+                AddToolItem("Auto Joiner", "🚪", () => { GroupsJoiner f = new GroupsJoiner(this); this.Hide(); f.Show(); });
+                AddToolItem("Group Finder", "🔍", () => { GroupFinder f = new GroupFinder(this); this.Hide(); f.Show(); });
+                AddToolItem("Bulk Generator", "🗂", () => { GroupGenerator f = new GroupGenerator(this); this.Hide(); f.Show(); });
+                AddToolItem("Verifikasi Link", "✔", () => { GroupLinkVerify f = new GroupLinkVerify(this); this.Hide(); f.Show(); });
                 AddSideCaption("OTOMASI");
-                AddToolItem("Auto Responder", "WhatsAPpBot_BLACK", () => { WaAutoReplyBot.WaAutoReplyForm f = new WaAutoReplyBot.WaAutoReplyForm(this); this.Hide(); f.Show(); });
-                AddToolItem("Scheduler", "icons8_schedule_24px", () => { AllSchedules f = new AllSchedules(this); this.Hide(); f.Show(); });
-                AddToolItem("WA Warmer", "warmer", () => { Warmer f = new Warmer(this); this.Hide(); f.Show(); });
-                AddToolItem("Group Warmer", "warmer1", () => { Warmer f = new Warmer(this, true); this.Hide(); f.Show(); });
-                AddToolItem("Hasil Poll", "icons8_checkmark_24px", () => { GetPollResults f = new GetPollResults(this); this.Hide(); f.Show(); });
-                AddToolItem("AI Setup", "icons8_natural_user_interface_2_24px", () => { AiSettingsForm f = new AiSettingsForm(this); this.Hide(); f.Show(); });
-                AddToolItem("WA Health", "icons8_refresh_shield_24px", () => { HealthForm f = new HealthForm(this); this.Hide(); f.Show(); });
+                AddToolItem("Auto Responder", "🤖", () => { WaAutoReplyBot.WaAutoReplyForm f = new WaAutoReplyBot.WaAutoReplyForm(this); this.Hide(); f.Show(); });
+                AddToolItem("Scheduler", "📅", () => { AllSchedules f = new AllSchedules(this); this.Hide(); f.Show(); });
+                AddToolItem("WA Warmer", "🔥", () => { Warmer f = new Warmer(this); this.Hide(); f.Show(); });
+                AddToolItem("Group Warmer", "♨", () => { Warmer f = new Warmer(this, true); this.Hide(); f.Show(); });
+                AddToolItem("Hasil Poll", "📊", () => { GetPollResults f = new GetPollResults(this); this.Hide(); f.Show(); });
+                AddToolItem("AI Setup", "✨", () => { AiSettingsForm f = new AiSettingsForm(this); this.Hide(); f.Show(); });
+                AddToolItem("WA Health", "💚", () => { HealthForm f = new HealthForm(this); this.Hide(); f.Show(); });
                 AddSideCaption("APLIKASI");
-                AddActionItem("Sesi WhatsApp", "icons8_connected_24px", (s, e) => { try { materialButton35_Click(s, e); } catch (Exception) { } });
-                AddActionItem("Kelola Akun", "icons8_verified_account_24px", (s, e) => { try { materialButton34_Click(s, e); } catch (Exception) { } });
-                AddActionItem("Ringkasan Harian", "icons8_documents_24px", (s, e) => { try { materialButton32_Click(s, e); } catch (Exception) { } });
-                AddActionItem("Riwayat Kirim", "success", (s, e) => { try { CampaignHistoryForm f = new CampaignHistoryForm(); f.ShowDialog(this); } catch (Exception) { } });
-                AddActionItem("Tutorial", "icons8_help_24px", (s, e) => { try { TutorialForm t = new TutorialForm(); t.Show(); } catch (Exception) { } });
-                AddActionItem("Pengaturan", "icons8_settings_24px", (s, e) => { try { materialButton31_Click_1(s, e); } catch (Exception) { } });
+                AddActionItem("Sesi WhatsApp", "🔌", (s, e) => { try { materialButton35_Click(s, e); } catch (Exception) { } });
+                AddActionItem("Kelola Akun", "👤", (s, e) => { try { materialButton34_Click(s, e); } catch (Exception) { } });
+                AddActionItem("Ringkasan Harian", "📑", (s, e) => { try { materialButton32_Click(s, e); } catch (Exception) { } });
+                AddActionItem("Riwayat Kirim", "🕘", (s, e) => { try { CampaignHistoryForm f = new CampaignHistoryForm(); f.ShowDialog(this); } catch (Exception) { } });
+                AddActionItem("Tutorial", "❓", (s, e) => { try { TutorialForm t = new TutorialForm(); t.Show(); } catch (Exception) { } });
+                AddActionItem("Pengaturan", "⚙", (s, e) => { try { materialButton31_Click_1(s, e); } catch (Exception) { } });
 
                 this.Controls.Add(sideNav);
 
@@ -189,30 +189,14 @@ namespace WASender
             bar.Tag = "bar";
             row.Controls.Add(bar);
 
-            var img = new PictureBox();
-            img.Width = 26; img.Height = 26;
-            img.Left = 12; img.Top = 11;
-            img.SizeMode = PictureBoxSizeMode.Zoom;
-            img.BackColor = Color.Transparent;
-            Bitmap iconBmp = null;
-            try { iconBmp = WhiteIcon(Properties.Resources.ResourceManager.GetObject(iconName)); } catch (Exception) { }
-            if (iconBmp != null)
-            {
-                img.Image = iconBmp;
-                row.Controls.Add(img);
-            }
-            else
-            {
-                var fb = new Label();
-                fb.Text = string.IsNullOrEmpty(text) ? "•" : text.Substring(0, 1).ToUpper();
-                fb.Font = new Font("Segoe UI", 13f, FontStyle.Bold);
-                fb.ForeColor = Color.White;
-                fb.BackColor = Theme.Navy;
-                fb.Left = 12; fb.Top = 6; fb.Width = 28; fb.Height = 32;
-                fb.TextAlign = ContentAlignment.MiddleCenter;
-                fb.Click += (s, e) => { try { b.PerformClick(); } catch (Exception) { } };
-                row.Controls.Add(fb);
-            }
+            var em = new Label();
+            em.Text = string.IsNullOrEmpty(iconName) ? "•" : iconName;
+            em.Font = new Font("Segoe UI Emoji", 15f, FontStyle.Regular);
+            em.ForeColor = Color.White;
+            em.BackColor = Theme.Navy;
+            em.Left = 10; em.Top = 8; em.Width = 30; em.Height = 32;
+            em.TextAlign = ContentAlignment.MiddleCenter;
+            row.Controls.Add(em);
 
             b = new Button();
             b.Text = text;
@@ -230,7 +214,7 @@ namespace WASender
             row.Controls.Add(b);
 
             row.Click += (s, e) => { try { b.PerformClick(); } catch (Exception) { } };
-            img.Click += (s, e) => { try { b.PerformClick(); } catch (Exception) { } };
+            em.Click += (s, e) => { try { b.PerformClick(); } catch (Exception) { } };
             sideFlow.Controls.Add(row);
             return b;
         }
