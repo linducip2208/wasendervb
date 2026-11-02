@@ -27,6 +27,15 @@ namespace WASender
 
         public static string ReplaceKeyMarker(string text, List<ParameterModel> parameterModelList = null)
         {
+            // Normalisasi varian penulisan marker agar tidak gagal diam-diam:
+            // {{RANDOM}}, {{ KEY :a|b }}, {{sys.date}} (spasi/kapital bebas).
+            try
+            {
+                text = System.Text.RegularExpressions.Regex.Replace(text ?? "", @"\{\{\s*RANDOM\s*\}\}", "{{ RANDOM }}");
+                text = System.Text.RegularExpressions.Regex.Replace(text, @"\{\{\s*KEY\s*:\s*(.*?)\s*\}\}", m => "{{ KEY :" + m.Groups[1].Value + "}}");
+                text = System.Text.RegularExpressions.Regex.Replace(text, @"\{\{\s*sys\.date\s*\}\}", "{{sys.date}}", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            }
+            catch (Exception) { }
             var messages = text.Split('\n');
             string NewMessage = "";
             int _counter = 1;
@@ -60,10 +69,13 @@ namespace WASender
                     {
                         foreach (var param in parameterModelList)
                         {
-                            if (MsgLine.ToLower().Contains("{{" + param.ParameterName.ToLower() + "}}"))
+                            try
                             {
-                                MsgLine = MsgLine.Replace("{{" + param.ParameterName + "}}", param.ParameterValue);
+                                if (string.IsNullOrEmpty(param.ParameterName)) continue;
+                                string pat = "\\{\\{" + System.Text.RegularExpressions.Regex.Escape(param.ParameterName.Trim()) + "\\}\\}";
+                                MsgLine = System.Text.RegularExpressions.Regex.Replace(MsgLine, pat, param.ParameterValue ?? "", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
                             }
+                            catch (Exception) { }
                         }
                     }
 
