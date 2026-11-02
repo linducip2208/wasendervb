@@ -1,5 +1,6 @@
 ﻿using MaterialSkin.Controls;
 using Microsoft.Win32;
+using Microsoft.Web.WebView2.WinForms;
 using OfficeOpenXml;
 using System;
 using System.Collections.Generic;
@@ -51,6 +52,13 @@ namespace WASender
         }
 
         readonly Dictionary<Control, TooltipInfo> m_ttipMessages;
+
+        private WebView2 wvSerp;
+        private string serpHtml = "";
+        private System.Threading.ManualResetEventSlim serpDone = new System.Threading.ManualResetEventSlim(false);
+        private int emptySerpPages = 0;
+        private string serpSiteFilter = "";
+        private const string SerpUA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
 
         BalloonToolTip m_ttip;
         public SocialMediaExtractor(WaSenderForm _waSenderForm)
@@ -106,15 +114,8 @@ namespace WASender
                     pageIndex = pageIndex + 10;
                     if (list.Count() == 0 && isCaptchaDitected == false)
                     {
-
-                        List<HtmlElement> checkForNextButton = null;
-                        webBrowser1.Invoke((MethodInvoker)delegate
-                        {
-                            checkForNextButton = WebScraper.GetHTMLElementsCollectionBySimilarClass(webBrowser1, "a", "nBDE1b G5eFlf");
-                        });
-
-
-                        if (checkForNextButton != null && checkForNextButton.Count == 0)
+                        emptySerpPages++;
+                        if (emptySerpPages >= 2)
                         {
                             worker.CancelAsync();
                             isStopped = false;
@@ -122,6 +123,7 @@ namespace WASender
                     }
                     else
                     {
+                        emptySerpPages = 0;
                         dataGridView1.Invoke((MethodInvoker)delegate
                         {
                             foreach (DataResultModel item in list)
@@ -194,7 +196,7 @@ namespace WASender
         }
 
 
-        private void materialButton1_Click(object sender, EventArgs e)
+        private async void materialButton1_Click(object sender, EventArgs e)
         {
             if (worker.IsBusy)
             {
@@ -205,6 +207,18 @@ namespace WASender
             if ((textBox1.Text == "") || (textBox2.Text == ""))
             {
                 MessageBox.Show(Strings.ProvideInputs + Environment.NewLine + "*" + Strings.KeyWords + Environment.NewLine + "*" + Strings.MobileNumber, Strings.Error, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            emptySerpPages = 0;
+            try { serpSiteFilter = ((materialComboBox1.SelectedValue as string) ?? "").Replace("https://", "").Replace("http://", "").Trim('/').Trim().ToLowerInvariant(); } catch (System.Exception) { serpSiteFilter = ""; }
+            try
+            {
+                if (!await EnsureSerpBrowserAsync()) return;
+            }
+            catch (Exception ex)
+            {
+                try { MessageBox.Show(ex.Message, Strings.Error, MessageBoxButtons.OK, MessageBoxIcon.Error); } catch (Exception) { }
                 return;
             }
 
@@ -321,45 +335,122 @@ namespace WASender
         void NavigateBrowser()
         {
             IsLoading = true;
+            serpHtml = "";
             try
             {
-
-
-                List<HtmlElement> checkForNextButton =new List<HtmlElement>();
-
-
+                string url = finalURL + pageIndex.ToString();
+                try { serpDone.Reset(); } catch (System.Exception) { }
                 try
                 {
-                    webBrowser1.Invoke((MethodInvoker)delegate
+                    if (wvSerp != null && !wvSerp.IsDisposed)
                     {
-                        checkForNextButton = WebScraper.GetHTMLElementsCollectionBySimilarClass(webBrowser1, "a", "nBDE1b G5eFlf");
-                    });
+                        if (wvSerp.InvokeRequired)
+                        {
+                            wvSerp.Invoke(new Action(() =>
+                            {
+                                try { wvSerp.CoreWebView2.Navigate(url); }
+                                catch (System.Exception) { try { serpDone.Set(); } catch (System.Exception) { } }
+                            }));
+                        }
+                        else
+                        {
+                            try { wvSerp.CoreWebView2.Navigate(url); }
+                            catch (System.Exception) { try { serpDone.Set(); } catch (System.Exception) { } }
+                        }
+                    }
+                    else { try { serpDone.Set(); } catch (System.Exception) { } }
                 }
-                catch (Exception ex)
+                catch (System.Exception) { try { serpDone.Set(); } catch (System.Exception) { } }
+                for (int w = 0; w < 60; w++)
                 {
-
+                    if (!isStopped) break;
+                    try { if (serpDone.Wait(500)) break; } catch (System.Exception) { break; }
                 }
-
-                if (checkForNextButton.Count > 0)
-                {
-
-                    //webBrowser1.Invoke((MethodInvoker)delegate
-                    //{
-                    //    checkForNextButton[checkForNextButton.Count - 1].InvokeMember("Click");
-                    //});
-                }
-                else
-                {
-                    
-
-                }
-
-                webBrowser1.Navigate(finalURL + pageIndex.ToString());
             }
-            catch (Exception ex)
+            catch (System.Exception) { }
+            IsLoading = false;
+        }
+
+        private async System.Threading.Tasks.Task<bool> EnsureSerpBrowserAsync()
+        {
+            try
             {
-
+                if (wvSerp == null || wvSerp.IsDisposed)
+                {
+                    wvSerp = new WebView2();
+                    try
+                    {
+                        var parent = webBrowser1.Parent;
+                        int idx = 0;
+                        try { idx = parent.Controls.GetChildIndex(webBrowser1); } catch (System.Exception) { }
+                        wvSerp.Bounds = webBrowser1.Bounds;
+                        try { wvSerp.Anchor = webBrowser1.Anchor; } catch (System.Exception) { }
+                        try { wvSerp.Dock = webBrowser1.Dock; } catch (System.Exception) { }
+                        parent.Controls.Add(wvSerp);
+                        try { parent.Controls.SetChildIndex(wvSerp, idx); } catch (System.Exception) { }
+                        webBrowser1.Visible = false;
+                    }
+                    catch (System.Exception) { }
+                    wvSerp.NavigationCompleted += async (s, e) =>
+                    {
+                        try
+                        {
+                            try { await DismissGoogleConsentAsync(); } catch (System.Exception) { }
+                            try { await System.Threading.Tasks.Task.Delay(3500); } catch (System.Exception) { }
+                            string raw = "";
+                            try { raw = await wvSerp.ExecuteScriptAsync("document.documentElement.outerHTML"); } catch (System.Exception) { }
+                            try { serpHtml = UnquoteJson(raw); } catch (System.Exception) { serpHtml = ""; }
+                        }
+                        catch (System.Exception) { try { serpHtml = ""; } catch (System.Exception) { } }
+                        try { serpDone.Set(); } catch (System.Exception) { }
+                    };
+                    await wvSerp.EnsureCoreWebView2Async();
+                }
+                return true;
             }
+            catch (System.Exception ex)
+            {
+                try { MessageBox.Show("WebView2 gagal diinisialisasi: " + ex.Message + "\n\nInstall Microsoft Edge WebView2 Runtime.", Strings.Error, MessageBoxButtons.OK, MessageBoxIcon.Warning); } catch (System.Exception) { }
+                return false;
+            }
+        }
+
+        private async System.Threading.Tasks.Task DismissGoogleConsentAsync()
+        {
+            try
+            {
+                if (wvSerp == null || wvSerp.IsDisposed) return;
+                string js = "(function(){try{var u=location.href;var bodyTxt=(document.body&&document.body.innerText)||'';"
+                    + "if(u.indexOf('consent.google.')<0&&bodyTxt.indexOf('Before you continue')<0&&bodyTxt.indexOf('Sebelum melanjutkan')<0)return 'NOCONSENT';"
+                    + "var btns=document.querySelectorAll('button,input[type=submit],input[type=button],div[role=button]');"
+                    + "var rx=/reject all|tolak semua/i;"
+                    + "for(var i=0;i<btns.length;i++){var tx=(btns[i].innerText||btns[i].value||'');if(rx.test(tx)){btns[i].click();return 'CLICKED';}}"
+                    + "var f=document.querySelector('form');if(f){var b=f.querySelector('button,input[type=submit]');if(b){b.click();return 'CLICKED_FORM';}}"
+                    + "return 'NO_MATCH';}catch(e){return 'ERR';}})();";
+                string r = "";
+                try { r = await wvSerp.ExecuteScriptAsync(js); } catch (System.Exception) { return; }
+                if ((r ?? "").IndexOf("CLICKED", System.StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    try { await System.Threading.Tasks.Task.Delay(3000); } catch (System.Exception) { }
+                }
+            }
+            catch (System.Exception) { }
+        }
+
+        private static string UnquoteJson(string raw)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(raw)) return "";
+                string s = raw.Trim();
+                if (s.Length >= 2 && s[0] == '"' && s[s.Length - 1] == '"')
+                {
+                    try { return Newtonsoft.Json.JsonConvert.DeserializeObject<string>(s) ?? ""; }
+                    catch (System.Exception) { }
+                }
+                return s;
+            }
+            catch (System.Exception) { return ""; }
         }
 
         private void MainForm_Load(object sender, EventArgs e)
@@ -443,16 +534,15 @@ namespace WASender
         bool CaptchaAlertMessageShown = false;
         private List<DataResultModel> Start()
         {
-            HtmlElement htmlElement = null;
             List<DataResultModel> list = new List<DataResultModel>();
-
             try
             {
-                webBrowser1.Invoke((MethodInvoker)delegate
+                string html = serpHtml ?? "";
+                if (string.IsNullOrEmpty(html)) return list;
+                if (html.IndexOf("recaptcha", System.StringComparison.OrdinalIgnoreCase) >= 0
+                    || html.IndexOf("/sorry/", System.StringComparison.OrdinalIgnoreCase) >= 0
+                    || html.IndexOf("unusual traffic", System.StringComparison.OrdinalIgnoreCase) >= 0)
                 {
-                    var isCaptha = IsCaptha();
-                    if (isCaptha == true)
-                    {
                         if (isCaptchaDitected == false)
                         {
                             if (CaptchaAlertMessageShown == false)
@@ -474,63 +564,59 @@ namespace WASender
 
                         }
                         isCaptchaDitected = true;
-                    }
-                    else
+                    return list;
+                }
+                isCaptchaDitected = false;
+
+                HtmlAgilityPack.HtmlDocument hapDoc = new HtmlAgilityPack.HtmlDocument();
+                hapDoc.LoadHtml(html);
+                var anchors = hapDoc.DocumentNode.SelectNodes("//a[@href]");
+                if (anchors == null) return list;
+                string siteFilter = serpSiteFilter ?? "";
+                System.Collections.Generic.HashSet<string> seenLinks = new System.Collections.Generic.HashSet<string>(System.StringComparer.OrdinalIgnoreCase);
+                foreach (HtmlAgilityPack.HtmlNode anc in anchors)
+                {
+                    try
                     {
-                        isCaptchaDitected = false;
-
-                        List<HtmlElement> __items = WebScraper.GetHTMLElementsCollectionBySimilarClass(webBrowser1, "div", "Gx5Zad xpd EtOod pkphOe");
-
-                        foreach (HtmlElement item in __items)
+                        if (!isStopped) break;
+                        string href = "";
+                        try { href = (anc.GetAttributeValue("href", "") ?? "").Trim(); } catch (System.Exception) { continue; }
+                        if (string.IsNullOrEmpty(href)) continue;
+                        if (href.StartsWith("#") || href.StartsWith("javascript:", System.StringComparison.OrdinalIgnoreCase)) continue;
+                        string url = href;
+                        if (url.StartsWith("/url?", System.StringComparison.OrdinalIgnoreCase))
                         {
-                            DataResultModel Listitem = new DataResultModel();
-                            List<HtmlElement> hTMLElementsCollectionBySimilarClass = WebScraper.GetHTMLElementsCollectionBySimilarClass(item, "h3", "zBAuLc");
-
-
-                            if (hTMLElementsCollectionBySimilarClass.Count() == 0)
-                            {
-                                hTMLElementsCollectionBySimilarClass = WebScraper.GetHTMLElementsCollectionBySimilarClass(item, "h3", "LC20lb");
-                            }
-
-                            if (hTMLElementsCollectionBySimilarClass.Count > 0)
-                            {
-                                try
-                                {
-                                    Listitem.title = hTMLElementsCollectionBySimilarClass[0].InnerText.Split(':')[0].Split('|')[0].Replace(" ...", ".");
-                                    Listitem.link = hTMLElementsCollectionBySimilarClass[0].Parent.GetAttribute("href").Replace("https", "http").Replace("http://www.google.com/url?esrc=s&q=&rct=j&sa=U&url=", "").Split('&')[0];
-                                }
-                                catch
-                                {
-                                }
-                            }
-                            if (Listitem.link == null || Listitem.link == "")
-                            {
-                                List<HtmlElement> hTMLElementsCollectionBySimilarClass2 = WebScraper.GetHTMLElementsCollectionBySimilarClass(item, "div", "kCrYT");
-                                if (hTMLElementsCollectionBySimilarClass2.Count > 0 && hTMLElementsCollectionBySimilarClass2[0].Children != null && hTMLElementsCollectionBySimilarClass2[0].Children.Count > 0 && hTMLElementsCollectionBySimilarClass2[0].Children[0] != null)
-                                {
-                                    try { Listitem.link = hTMLElementsCollectionBySimilarClass2[0].Children[0].GetAttribute("href").Replace("https", "http").Replace("http://www.google.com/url?esrc=s&q=&rct=j&sa=U&url=", ""); }
-                                    catch (Exception) { }
-                                }
-                            }
-                            List<HtmlElement> hTMLElementsCollectionBySimilarClass3 = WebScraper.GetHTMLElementsCollectionBySimilarClass(item, "div", "s3v9rd");
-
-                            if (hTMLElementsCollectionBySimilarClass3.Count == 0)
-                            {
-                                hTMLElementsCollectionBySimilarClass3 = WebScraper.GetHTMLElementsCollectionBySimilarClass(item, "div", "ilUpNd");
-                            }
-
-                            for (int i = 0; i < hTMLElementsCollectionBySimilarClass3.Count; i++)
-                            {
-                                Listitem.address = hTMLElementsCollectionBySimilarClass3[i].InnerText.Replace(";", "-").Replace(",", "-").Replace("-", "")
-                                        .Replace("(", "")
-                                        .Replace(")", "")
-                                        .Replace(" ...", ".")
-                                        .Replace("Tel: ", "Tel: +")
-                                        .Replace("Tel.: ", "Tel.: +")
-                                        .Replace("call ", "call +")
-                                        .Replace("++", "+");
-                            }
-
+                            var mq = System.Text.RegularExpressions.Regex.Match(url, @"[?&]q=([^&]+)");
+                            if (!mq.Success) continue;
+                            try { url = System.Uri.UnescapeDataString(mq.Groups[1].Value); } catch (System.Exception) { continue; }
+                        }
+                        else if (url.StartsWith("/")) continue;
+                        else if (!url.StartsWith("http", System.StringComparison.OrdinalIgnoreCase)) continue;
+                        string host = "";
+                        try { host = new System.Uri(url).Host.ToLowerInvariant(); } catch (System.Exception) { continue; }
+                        if (host.Contains("google.")) continue;
+                        if (!string.IsNullOrEmpty(siteFilter) && !host.Contains(siteFilter)) continue;
+                        if (!seenLinks.Add(url)) continue;
+                        DataResultModel Listitem = new DataResultModel();
+                        string rTitle = "";
+                        try { rTitle = System.Net.WebUtility.HtmlDecode(anc.InnerText ?? ""); } catch (System.Exception) { }
+                        try { rTitle = System.Text.RegularExpressions.Regex.Replace(rTitle ?? "", @"\s+", " ").Trim(); } catch (System.Exception) { }
+                        if (rTitle.Length > 200) rTitle = rTitle.Substring(0, 200);
+                        if (string.IsNullOrEmpty(rTitle)) rTitle = host;
+                        Listitem.title = rTitle;
+                        string rAddr = "";
+                        try
+                        {
+                            var par = anc.ParentNode;
+                            if (par != null) rAddr = System.Net.WebUtility.HtmlDecode(par.InnerText ?? "");
+                            rAddr = System.Text.RegularExpressions.Regex.Replace(rAddr ?? "", @"\s+", " ").Trim();
+                            if (rAddr.Length > 400) rAddr = rAddr.Substring(0, 400);
+                        }
+                        catch (System.Exception) { }
+                        Listitem.address = (rAddr ?? "").Replace(";", "-").Replace(",", "-").Replace("-", "")
+                            .Replace("(", "").Replace(")", "").Replace(" ...", ".")
+                            .Replace("Tel: ", "Tel: +").Replace("Tel.: ", "Tel.: +").Replace("call ", "call +").Replace("++", "+");
+                        Listitem.link = url;
                             Match match = new Regex("(?:\\+)[0-9\\s.\\/-]{10,17}").Match(Listitem.title + Listitem.address);
 
                             if (match.Success && match.Value.Count(char.IsDigit) > 7)
@@ -552,11 +638,11 @@ namespace WASender
                             {
                                 list.Add(Listitem);
                             }
-                        }
                     }
-                });
+                    catch (System.Exception) { }
+                }
             }
-            catch (Exception ex)
+            catch (System.Exception ex)
             {
 
             }
