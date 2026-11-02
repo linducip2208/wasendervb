@@ -51,36 +51,36 @@ namespace WASender
                 AddTabItem("Bulk Sender", 0, "✉");
                 AddTabItem("Group Sender", 1, "👥");
                 AddSideCaption("EKSTRAKTOR DATA");
-                AddToolItem("GMap Extractor", "🗺", () => { GmExtractorForm f = new GmExtractorForm(this); this.Hide(); f.Show(); });
-                AddToolItem("Number Filter", "🔎", () => { NumberFilter f = new NumberFilter(this); this.Hide(); f.Show(); });
-                AddToolItem("Contact Grabber", "📇", () => { ContactGrabber f = new ContactGrabber(this); this.Hide(); f.Show(); });
-                AddToolItem("Web Extractor", "🌐", () => { WebScrapper f = new WebScrapper(this); this.Hide(); f.Show(); });
-                AddToolItem("Social Media", "💬", () => { SocialMediaExtractor f = new SocialMediaExtractor(this); this.Hide(); f.Show(); });
-                AddToolItem("Google CSV", "📄", () => { GoogleCSVGenerator f = new GoogleCSVGenerator(this); this.Hide(); f.Show(); });
-                AddToolItem("Chat List", "💭", () => { GrabChatList f = new GrabChatList(this); this.Hide(); f.Show(); });
-                AddToolItem("Grab Link Grup", "🔗", () => { GrabGroupLinks f = new GrabGroupLinks(this); this.Hide(); f.Show(); });
+                AddToolItem("GMap Extractor", "🗺", () => { GmExtractorForm f = new GmExtractorForm(this); return f; });
+                AddToolItem("Number Filter", "🔎", () => { NumberFilter f = new NumberFilter(this); return f; });
+                AddToolItem("Contact Grabber", "📇", () => { ContactGrabber f = new ContactGrabber(this); return f; });
+                AddToolItem("Web Extractor", "🌐", () => { WebScrapper f = new WebScrapper(this); return f; });
+                AddToolItem("Social Media", "💬", () => { SocialMediaExtractor f = new SocialMediaExtractor(this); return f; });
+                AddToolItem("Google CSV", "📄", () => { GoogleCSVGenerator f = new GoogleCSVGenerator(this); return f; });
+                AddToolItem("Chat List", "💭", () => { GrabChatList f = new GrabChatList(this); return f; });
+                AddToolItem("Grab Link Grup", "🔗", () => { GrabGroupLinks f = new GrabGroupLinks(this); return f; });
                 AddSideCaption("GRUP");
-                AddToolItem("Grab Anggota", "🙂", () => { GetGroupMember f = new GetGroupMember(this); this.Hide(); f.Show(); });
-                AddToolItem("Anggota Aktif", "✅", () => { GrabGroupActiveMembers f = new GrabGroupActiveMembers(this); this.Hide(); f.Show(); });
-                AddToolItem("Tambah Anggota", "➕", () => { GroupMemberAdder f = new GroupMemberAdder(this); this.Hide(); f.Show(); });
-                AddToolItem("Auto Joiner", "🚪", () => { GroupsJoiner f = new GroupsJoiner(this); this.Hide(); f.Show(); });
-                AddToolItem("Group Finder", "🔍", () => { GroupFinder f = new GroupFinder(this); this.Hide(); f.Show(); });
-                AddToolItem("Bulk Generator", "🗂", () => { GroupGenerator f = new GroupGenerator(this); this.Hide(); f.Show(); });
-                AddToolItem("Verifikasi Link", "✔", () => { GroupLinkVerify f = new GroupLinkVerify(this); this.Hide(); f.Show(); });
+                AddToolItem("Grab Anggota", "🙂", () => { GetGroupMember f = new GetGroupMember(this); return f; });
+                AddToolItem("Anggota Aktif", "✅", () => { GrabGroupActiveMembers f = new GrabGroupActiveMembers(this); return f; });
+                AddToolItem("Tambah Anggota", "➕", () => { GroupMemberAdder f = new GroupMemberAdder(this); return f; });
+                AddToolItem("Auto Joiner", "🚪", () => { GroupsJoiner f = new GroupsJoiner(this); return f; });
+                AddToolItem("Group Finder", "🔍", () => { GroupFinder f = new GroupFinder(this); return f; });
+                AddToolItem("Bulk Generator", "🗂", () => { GroupGenerator f = new GroupGenerator(this); return f; });
+                AddToolItem("Verifikasi Link", "✔", () => { GroupLinkVerify f = new GroupLinkVerify(this); return f; });
                 AddSideCaption("OTOMASI");
-                AddToolItem("Auto Responder", "🤖", () => { WaAutoReplyBot.WaAutoReplyForm f = new WaAutoReplyBot.WaAutoReplyForm(this); this.Hide(); f.Show(); });
-                AddToolItem("Scheduler", "📅", () => { AllSchedules f = new AllSchedules(this); this.Hide(); f.Show(); });
-                AddToolItem("WA Warmer", "🔥", () => { Warmer f = new Warmer(this); this.Hide(); f.Show(); });
-                AddToolItem("Group Warmer", "♨", () => { Warmer f = new Warmer(this, true); this.Hide(); f.Show(); });
-                AddToolItem("Hasil Poll", "📊", () => { GetPollResults f = new GetPollResults(this); this.Hide(); f.Show(); });
-                AddToolItem("AI Setup", "✨", () => { AiSettingsForm f = new AiSettingsForm(this); this.Hide(); f.Show(); });
-                AddToolItem("WA Health", "💚", () => { HealthForm f = new HealthForm(this); this.Hide(); f.Show(); });
+                AddToolItem("Auto Responder", "🤖", () => { WaAutoReplyBot.WaAutoReplyForm f = new WaAutoReplyBot.WaAutoReplyForm(this); return f; });
+                AddToolItem("Scheduler", "📅", () => { AllSchedules f = new AllSchedules(this); return f; });
+                AddToolItem("WA Warmer", "🔥", () => { Warmer f = new Warmer(this); return f; });
+                AddToolItem("Group Warmer", "♨", () => { Warmer f = new Warmer(this, true); return f; });
+                AddToolItem("Hasil Poll", "📊", () => { GetPollResults f = new GetPollResults(this); return f; });
+                AddToolItem("AI Setup", "✨", () => { AiSettingsForm f = new AiSettingsForm(this); return f; });
+                AddToolItem("WA Health", "💚", () => { HealthForm f = new HealthForm(this); return f; });
                 AddSideCaption("APLIKASI");
                 AddActionItem("Sesi WhatsApp", "🔌", (s, e) => { try { materialButton35_Click(s, e); } catch (Exception) { } });
                 AddActionItem("Kelola Akun", "👤", (s, e) => { try { materialButton34_Click(s, e); } catch (Exception) { } });
                 AddActionItem("Ringkasan Harian", "📑", (s, e) => { try { materialButton32_Click(s, e); } catch (Exception) { } });
                 AddActionItem("Riwayat Kirim", "🕘", (s, e) => { try { CampaignHistoryForm f = new CampaignHistoryForm(); f.ShowDialog(this); } catch (Exception) { } });
-                AddActionItem("Tutorial", "❓", (s, e) => { try { TutorialForm t = new TutorialForm(); t.Show(); } catch (Exception) { } });
+                AddToolItem("Tutorial", "❓", () => { TutorialForm f = new TutorialForm(); return f; });
                 AddActionItem("Pengaturan", "⚙", (s, e) => { try { materialButton31_Click_1(s, e); } catch (Exception) { } });
 
                 this.Controls.Add(sideNav);
@@ -142,7 +142,10 @@ namespace WASender
             catch (Exception) { }
         }
 
-        private void AddToolItem(string text, string iconName, Action open)
+        private System.Collections.Generic.Dictionary<string, Form> openTools = new System.Collections.Generic.Dictionary<string, Form>();
+
+        /// <summary>Klik menu tool: kalau jendelanya sudah terbuka, fokuskan; bila belum, buka baru. Anti jendela ganda.</summary>
+        private void AddToolItem(string text, string iconName, Func<Form> open)
         {
             try
             {
@@ -151,9 +154,38 @@ namespace WASender
                 {
                     try
                     {
+                        try
+                        {
+                            Form exist;
+                            if (openTools.TryGetValue(text, out exist) && exist != null && !exist.IsDisposed)
+                            {
+                                try
+                                {
+                                    if (exist.WindowState == FormWindowState.Minimized) exist.WindowState = FormWindowState.Normal;
+                                    exist.BringToFront();
+                                    exist.Activate();
+                                }
+                                catch (Exception) { }
+                                RefreshSidebarState();
+                                return;
+                            }
+                        }
+                        catch (Exception) { }
                         MarkToolActive(b);
-                        try { open(); }
+                        Form f = null;
+                        try { f = open(); }
                         catch (Exception ex) { try { MessageBox.Show(ex.Message, Strings.Error, MessageBoxButtons.OK, MessageBoxIcon.Error); } catch (Exception) { } }
+                        if (f != null)
+                        {
+                            try
+                            {
+                                openTools[text] = f;
+                                f.FormClosed += (ss, ee) => { try { openTools.Remove(text); } catch (Exception) { } };
+                                this.Hide();
+                                f.Show();
+                            }
+                            catch (Exception) { }
+                        }
                     }
                     catch (Exception) { }
                     RefreshSidebarState();

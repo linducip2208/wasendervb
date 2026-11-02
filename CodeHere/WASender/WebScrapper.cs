@@ -174,7 +174,7 @@ namespace WASender
                 {
                     if (!(item.MainLink.StartsWith("https://") || item.MainLink.StartsWith("http://")))
                     {
-                        return;
+                        item.MainLink = "https://" + item.MainLink.TrimStart('/');
                     }
                     try
                     {
@@ -368,7 +368,7 @@ namespace WASender
                 {
                     if (!(item.MainLink.StartsWith("https://") || item.MainLink.StartsWith("http://")))
                     {
-                        return;
+                        item.MainLink = "https://" + item.MainLink.TrimStart('/');
                     }
                     try
                     {
@@ -387,7 +387,7 @@ namespace WASender
                         web.UserAgent = ChromeUA;
                         web.PreRequest = delegate(HttpWebRequest webReq)
                         {
-                            webReq.Timeout = 4000; // number of milliseconds
+                            webReq.Timeout = 15000; // number of milliseconds
                             return true;
                         };
 
