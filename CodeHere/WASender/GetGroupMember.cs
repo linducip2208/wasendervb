@@ -384,8 +384,21 @@ namespace WASender
                     try
                     {
                         wAPI_GroupModel = await getGroups();
-                        ChooseGroup ghooseGroup = new ChooseGroup(this, wAPI_GroupModel, true);
                         pgbar.Hide();
+                        if (wAPI_GroupModel == null || wAPI_GroupModel.Count == 0)
+                        {
+                            string diag = "-";
+                            try
+                            {
+                                WebView2 wv = Utils.GetActiveWebView(browser);
+                                diag = await WPPHelper.ProbeGroupsApi(wv);
+                            }
+                            catch (Exception ex2) { try { diag = ex2.Message; } catch (Exception) { } }
+                            MessageBox.Show("Tidak ada grup yang terbaca dari WhatsApp.\n\nDiagnosa WPP: " + diag + "\n\nBila getAllGroups hilang berarti WA Web sudah update & modul wa-js perlu pembaruan. Pastikan juga Anda anggota/peserta di minimal 1 grup dan chat sudah termuat di sesi.",
+                                Strings.Error, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                            return;
+                        }
+                        ChooseGroup ghooseGroup = new ChooseGroup(this, wAPI_GroupModel, true);
                         ghooseGroup.Show();
                     }
                     catch (Exception ex)

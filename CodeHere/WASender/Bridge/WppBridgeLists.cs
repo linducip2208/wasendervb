@@ -1,4 +1,4 @@
-using Microsoft.Web.WebView2.WinForms;
+﻿using Microsoft.Web.WebView2.WinForms;
 
 
 using Newtonsoft.Json;
@@ -729,7 +729,26 @@ namespace WASender
         }
 
 
-        public static async Task<List<WASender.Models.WAPI_GroupModel>> getMyGroupsShort(WebView2 wv)
+                /// <summary>Probe diagnostik: apakah WPP.group.getAllGroups tersedia di WA Web saat ini.</summary>
+        public static async Task<string> ProbeGroupsApi(WebView2 wv)
+        {
+            try
+            {
+                if (wv == null) return "webview null";
+                if (!await EnsureWpp(wv)) return "WPP tidak tersuntik";
+                string js = "window.__gp='PENDING';"
+                    + "(function(){try{var g=(window.WPP&&window.WPP.group)||null;"
+                    + "var o={hasWPP:!!window.WPP,hasGroup:!!g,getAllGroups:typeof((g||{}).getAllGroups)};"
+                    + "window.__gp='OK:'+JSON.stringify(o);}catch(e){window.__gp='FAIL:'+e.message;}})();'DISPATCHED';";
+                await Eval(wv, js);
+                string res = await Mailbox(wv, "__gp", 8);
+                if (res.StartsWith("OK:")) return res.Substring(3);
+                return res;
+            }
+            catch (Exception ex) { return "error: " + ex.Message; }
+        }
+
+public static async Task<List<WASender.Models.WAPI_GroupModel>> getMyGroupsShort(WebView2 wv)
 
 
         {
