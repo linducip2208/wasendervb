@@ -104,6 +104,7 @@ namespace WASender
                 AddActionItem("Sesi WhatsApp", "icons8_connected_24px", (s, e) => { try { materialButton35_Click(s, e); } catch (Exception) { } });
                 AddActionItem("Kelola Akun", "icons8_verified_account_24px", (s, e) => { try { materialButton34_Click(s, e); } catch (Exception) { } });
                 AddActionItem("Ringkasan Harian", "icons8_documents_24px", (s, e) => { try { materialButton32_Click(s, e); } catch (Exception) { } });
+                AddActionItem("Riwayat Kirim", "success", (s, e) => { try { CampaignHistoryForm f = new CampaignHistoryForm(); f.ShowDialog(this); } catch (Exception) { } });
                 AddActionItem("Tutorial", "icons8_help_24px", (s, e) => { try { TutorialForm t = new TutorialForm(); t.Show(); } catch (Exception) { } });
                 AddActionItem("Pengaturan", "icons8_settings_24px", (s, e) => { try { materialButton31_Click_1(s, e); } catch (Exception) { } });
 
