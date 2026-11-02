@@ -1865,6 +1865,74 @@ namespace WASender
 
         }
 
+    /// <summary>Ringkasan pra-kirim: hitung estimasi + cek limit + konfirmasi user. Fail-open.</summary>
+    private bool ConfirmCampaign(string kind, int contacts, System.Collections.Generic.List<string> texts, SingleSettingModel st)
+    {
+        try
+        {
+            int templates = 0;
+            try { foreach (string t in texts ?? new System.Collections.Generic.List<string>()) if (!string.IsNullOrWhiteSpace(t)) templates++; }
+            catch (Exception) { }
+            int lim = 500;
+            try { lim = SendGovernor.LoadLimits().DailyPerAccount; } catch (Exception) { }
+            int used = 0;
+            try
+            {
+                foreach (string line in SendGovernor.TodayAll())
+                {
+                    try
+                    {
+                        string[] p = (line ?? "").Split('|');
+                        if (p.Length < 3) continue;
+                        int n;
+                        if (int.TryParse(p[1].Trim(), out n)) used += n;
+                    }
+                    catch (Exception) { }
+                }
+            }
+            catch (Exception) { }
+            double avg = 8;
+            try { avg = (st.delayAfterEveryMessageFrom + st.delayAfterEveryMessageTo) / 2.0 + 3; } catch (Exception) { }
+            long sends = (long)System.Math.Max(0, contacts) * System.Math.Max(0, templates);
+            double secs = sends * avg;
+            try
+            {
+                if (st != null && st.delayAfterMessages > 0)
+                {
+                    long pauses = sends / System.Math.Max(1, st.delayAfterMessages);
+                    secs += pauses * ((st.delayAfterMessagesFrom + st.delayAfterMessagesTo) / 2.0);
+                }
+            }
+            catch (Exception) { }
+            string est;
+            try
+            {
+                if (secs < 60) est = "~" + (int)System.Math.Ceiling(secs) + " detik";
+                else if (secs < 3600) est = "~" + (int)System.Math.Ceiling(secs / 60.0) + " menit";
+                else est = "~" + (int)(secs / 3600) + " jam " + (int)((secs % 3600) / 60) + " mnt";
+            }
+            catch (Exception) { est = "-"; }
+            string delayTxt = st.delayAfterEveryMessageFrom + "-" + st.delayAfterEveryMessageTo + " dtk/pesan";
+            try { delayTxt += ", jeda " + st.delayAfterMessagesFrom + "-" + st.delayAfterMessagesTo + " dtk tiap " + st.delayAfterMessages + " pesan"; }
+            catch (Exception) { }
+            string limitTxt = lim + "/hari (terpakai " + used + ")";
+            var warns = new System.Collections.Generic.List<string>();
+            try { if (used + sends > lim) warns.Add("Melebihi limit harian (" + (used + sends) + " > " + lim + "). Sebagian antre besok / naikkan limit di General Settings."); } catch (Exception) { }
+            try
+            {
+                bool anySpin = false;
+                foreach (string t in texts ?? new System.Collections.Generic.List<string>()) { if (!string.IsNullOrEmpty(t) && t.Contains("{") && t.Contains("|")) { anySpin = true; break; } }
+                if (templates > 0 && !anySpin) warns.Add("Template tanpa spintax {a|b} — risiko terdeteksi spam lebih tinggi.");
+            }
+            catch (Exception) { }
+            using (var f = new CampaignSummaryForm(kind, contacts, templates, delayTxt, limitTxt, est, warns))
+            {
+                return f.ShowDialog(this) == DialogResult.OK;
+            }
+        }
+        catch (Exception) { return true; }
+    }
+
         private void btnStart_Click(object sender, EventArgs e)
         {
             ValidateControls();
@@ -1946,6 +2014,14 @@ namespace WASender
             {
                 if (isValidateOnly == false)
                 {
+                    try
+                    {
+                        var _gtexts = new System.Collections.Generic.List<string>();
+                        try { foreach (var m in wASenderGroupTransModel.messages) _gtexts.Add(m == null ? "" : m.longMessage); }
+                        catch (Exception) { }
+                        if (!ConfirmCampaign("Grup", wASenderGroupTransModel.groupList.Count, _gtexts, wASenderGroupTransModel.settings)) return;
+                    }
+                    catch (Exception) { }
                     GroupLauncher form = new GroupLauncher(wASenderGroupTransModel, this, this.schedulesModel);
                     form.ShowDialog();
                 }
@@ -2065,6 +2141,14 @@ namespace WASender
             {
                 if (onlySave == false)
                 {
+                    try
+                    {
+                        var _texts = new System.Collections.Generic.List<string>();
+                        try { foreach (var m in wASenderSingleTransModel.messages) _texts.Add(m == null ? "" : m.longMessage); }
+                        catch (Exception) { }
+                        if (!ConfirmCampaign("Single", wASenderSingleTransModel.contactList.Count, _texts, wASenderSingleTransModel.settings)) return;
+                    }
+                    catch (Exception) { }
                     SingleLauncher launcher = new SingleLauncher(wASenderSingleTransModel, this, this.schedulesModel);
                     launcher.ShowDialog();
                 }
