@@ -42,6 +42,8 @@ namespace WASender
         {
             get
             {
+                try { if (_waSenderBrowser != null && _waSenderBrowser.IsDisposed) _waSenderBrowser = null; }
+                catch (Exception) { try { _waSenderBrowser = null; } catch (Exception) { } }
                 return _waSenderBrowser;
             }
             set { _waSenderBrowser = value; }

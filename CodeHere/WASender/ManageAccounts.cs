@@ -154,7 +154,9 @@ namespace WASender
 
                 DataRow dr = (DataRow)dataGridView1.CurrentRow.Tag;
                 string Id = dr["sesionID"].ToString();
-                new WaSenderBrowser(Id).ShowDialog();
+                WaSenderBrowser nb = new WaSenderBrowser(Id);
+                Utils.waSenderBrowser = nb;
+                nb.ShowDialog();
             }
         }
 

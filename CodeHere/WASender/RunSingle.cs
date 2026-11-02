@@ -573,7 +573,7 @@ namespace WASender
                                 }
                                 else if (generalSettingsModel.browserType == 2)
                                 {
-                                    WPPHelper.SendVideoAsync(wv, item.number, fullBase64, NewMessage, "", holder);
+                                    WPPHelper.SendVideoAsync(wv, item.number, fullBase64, NewMessage, file.fileName, holder);
                                 }
 
                                 AutoSend = false;
@@ -937,7 +937,7 @@ namespace WASender
                                     }
                                     else if (generalSettingsModel.browserType == 2)
                                     {
-                                        bool isDOne = await WPPHelper.SendVideosync(wv, item.number, fullBase64, NewMessage, "", holder);
+                                        bool isDOne = await WPPHelper.SendVideosync(wv, item.number, fullBase64, NewMessage, file.fileName, holder);
                                     }
 
                                     AutoSend = false;
@@ -951,7 +951,7 @@ namespace WASender
                                     }
                                     else if (generalSettingsModel.browserType == 2)
                                     {
-                                        bool isDOne = await WPPHelper.SendVideosync(wv, item.number, fullBase64, file.Caption);
+                                        bool isDOne = await WPPHelper.SendVideosync(wv, item.number, fullBase64, file.Caption, file.fileName);
                                     }
 
                                 }
