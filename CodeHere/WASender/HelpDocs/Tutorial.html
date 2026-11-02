@@ -29,6 +29,7 @@ li{margin-bottom:6px;}
 <li><a href="#spintax">Spintax — variasi pesan otomatis</a></li>
 <li><a href="#jeda">Time interval / jeda antar pesan</a></li>
 <li><a href="#variabel">Menyebut nomor &amp; nama (banyak kontak)</a></li>
+<li><a href="#gmap">Google Map Extractor (unlimited)</a></li>
 <li><a href="#lisensi">Lisensi &amp; aktivasi</a></li>
 </ol>
 </div>
@@ -54,6 +55,7 @@ li{margin-bottom:6px;}
 <li>Wajib dibungkus kurung kurawal <code>{ }</code> dan dipisahkan pipe <code>|</code>.</li>
 <li>Bisa <b>nested</b> (bersarang): <code>{Hi|Halo} {Bapak|Ibu} {{nama}}</code>.</li>
 <li>Berlaku di pesan teks <b>dan</b> caption gambar/file, untuk pengiriman single, grup, broadcast, dan auto-reply.</li>
+<li>Di form tulis pesan ada <b>keterangan format</b> di bawah kolom tulis, tombol <b>Preview</b> untuk melihat hasil + hitung karakter/segmen, dan <b>toolbar B / I / emoji / Variabel</b> di tiap tab pesan.</li>
 <li>Format lama <code>{{ KEY :a|b }}</code>, <code>{{ RANDOM }}</code>, dan <code>{{sys.date}}</code> tetap didukung.</li>
 </ul>
 <div class="warn">Tanpa <code>{ }</code> teks dikirim apa adanya — itu sebabnya spintax yang ditulis polos "tidak jalan".</div>
@@ -86,7 +88,18 @@ li{margin-bottom:6px;}
 </ul>
 </div>
 
-<h4 id="lisensi">5. Lisensi &amp; aktivasi</h4>
+<h4 id="gmap">5. Google Map Extractor (unlimited)</h4>
+<div class="card">
+<ul>
+<li>Ketik kata kunci (mis. <i>"Restoran Jakarta"</i>) lalu <b>Start Grabbing</b> — scroll + panen berjalan otomatis sampai halaman habis, tanpa batas 20.</li>
+<li><b>Cari:</b> filter grid saat mengetik. <b>Maks:</b> batasi jumlah (0 = tanpa batas, berhenti otomatis). <b>Rating ≥:</b> saring rating minimum.</li>
+<li>Klik baris untuk detail di bawah grid; <b>klik 2x untuk buka lokasi di Google Maps</b> (tanpa API key).</li>
+<li>Ring hijau = progres; berhenti sendiri saat 12 putaran tanpa data baru atau tombol Stop ditekan.</li>
+<li>Export Excel / Export Numbers Only / Import ke pengirim ada di baris tombol bawah.</li>
+</ul>
+</div>
+
+<h4 id="lisensi">6. Lisensi &amp; aktivasi</h4>
 <div class="card">
 <ul>
 <li>Kode lisensi format <code>XXXX-XXXX-XXXX-XXXX</code> didapat dari admin/panel.</li>
