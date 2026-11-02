@@ -628,6 +628,49 @@ namespace WASender
 
 
         public static async Task<List<WASender.Models.WAPI_GroupModel>> getMyGroups(WebView2 wv)
+        {
+            var list = new List<WASender.Models.WAPI_GroupModel>();
+            try { list = await ReadGroups(wv); } catch (Exception) { }
+            if (list.Count == 0)
+            {
+                try { await SyncScrollGroups(wv); } catch (Exception) { }
+                try { list = await ReadGroups(wv); } catch (Exception) { }
+            }
+            return list;
+        }
+
+        /// <summary>Paksa sinkronisasi daftar chat (scroll panel #side) agar getAllGroups terisi tanpa buka chat manual.</summary>
+        private static async Task SyncScrollGroups(WebView2 wv)
+        {
+            try
+            {
+                if (!await EnsureWpp(wv)) return;
+                int lastN = -1, stable = 0;
+                for (int i = 0; i < 10; i++)
+                {
+                    string js = "window.__gs='PENDING';"
+                        + "(function(){try{"
+                        + "var row=document.querySelector('#side [data-testid=\"cell-frame-container\"]');"
+                        + "var el=row,pane=null;while(el){el=el.parentElement;if(el&&el.scrollHeight>el.clientHeight+50){pane=el;break;}}"
+                        + "if(!pane){var s=document.querySelector('#side');if(s)pane=s;}"
+                        + "var n=(window.WPP&&window.WPP.group&&window.WPP.group.getAllGroups)?window.WPP.group.getAllGroups().length:0;"
+                        + "if(pane){var st=(window.__gsStep||0)+Math.max(400,(pane.scrollHeight/8));if(st>=pane.scrollHeight){st=0;}window.__gsStep=st;pane.scrollTop=st;}"
+                        + "window.__gs='OK:'+n;}catch(e){window.__gs='FAIL';}})();'DISPATCHED';";
+                    try { await Eval(wv, js); } catch (Exception) { break; }
+                    string res = "";
+                    try { res = await Mailbox(wv, "__gs", 4); } catch (Exception) { break; }
+                    int n = 0;
+                    try { if (res.StartsWith("OK:")) int.TryParse(res.Substring(3), out n); } catch (Exception) { }
+                    if (n > 0 && n == lastN) { stable++; if (stable >= 2) break; }
+                    else stable = 0;
+                    lastN = n;
+                    await System.Threading.Tasks.Task.Delay(1200);
+                }
+            }
+            catch (Exception) { }
+        }
+
+        private static async Task<List<WASender.Models.WAPI_GroupModel>> ReadGroups(WebView2 wv)
 
 
         {
