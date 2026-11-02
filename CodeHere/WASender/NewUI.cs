@@ -56,6 +56,54 @@ namespace WASender
                 dataGridView1.SelectionChanged += (s, ev) => { try { ShowSelectedDetail(); } catch (Exception) { } };
                 dataGridView1.DoubleClick += (s, ev) => { try { OpenSelectedOnMap(); } catch (Exception) { } };
                 lblDetail.Text = "Klik baris untuk detail - Klik 2x untuk buka di Google Maps (tanpa API key)";
+                PolishWorkspace();
+            }
+            catch (Exception) { }
+        }
+
+        /// <summary>Workspace 3-area T3 (UI-ONLY): strip judul + header langkah per kartu. Tanpa ubah logic.</summary>
+        private void PolishWorkspace()
+        {
+            try
+            {
+                var strip = new Panel();
+                strip.Dock = DockStyle.Top;
+                strip.Height = 34;
+                strip.BackColor = Theme.Navy;
+                var t = new Label();
+                t.Text = "Google Maps Extractor  —  cari, panen, filter, export";
+                t.ForeColor = System.Drawing.Color.White;
+                t.Font = new Font("Segoe UI", 10f, FontStyle.Bold);
+                t.Dock = DockStyle.Fill;
+                t.TextAlign = ContentAlignment.MiddleLeft;
+                t.Padding = new Padding(16, 0, 0, 0);
+                strip.Controls.Add(t);
+                this.Controls.Add(strip);
+                strip.BringToFront();
+
+                AddCardHeader(materialCard2, "LANGKAH 1 — Buka browser & inisialisasi");
+                AddCardHeader(materialCard3, "LANGKAH 2 — Parameter, proses & progres");
+                AddCardHeader(materialCard1, "HASIL — klik baris = detail, klik 2x = buka peta");
+            }
+            catch (Exception) { }
+        }
+
+        private void AddCardHeader(Control card, string text)
+        {
+            try
+            {
+                if (card == null) return;
+                foreach (Control c in card.Controls)
+                    if (c is Label && c.Tag as string == "wshead") return;
+                var h = new Label();
+                h.Tag = "wshead";
+                h.Text = text;
+                h.Font = new Font("Segoe UI", 8.5f, FontStyle.Bold);
+                h.ForeColor = Theme.PrimaryDark;
+                h.Dock = DockStyle.Top;
+                h.Height = 22;
+                h.TextAlign = ContentAlignment.MiddleLeft;
+                card.Controls.Add(h);
             }
             catch (Exception) { }
         }

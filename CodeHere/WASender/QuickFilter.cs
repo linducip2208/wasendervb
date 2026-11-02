@@ -33,6 +33,7 @@ namespace WASender
         public QuickFilter(WASenderSingleTransModel _WASenderSingleTransModel, RunSingle _runSingle)
         {
             InitializeComponent();
+            try { GridTheme.Apply(dataGridView1); } catch (System.Exception) { }
             this.Icon = Strings.AppIcon;
             wASenderSingleTransModel = _WASenderSingleTransModel;
             wASenderSingleTransModelOriginal = _WASenderSingleTransModel;

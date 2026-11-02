@@ -39,6 +39,7 @@ namespace WASender
         public GroupFinder(WaSenderForm _waSenderForm)
         {
             InitializeComponent();
+            try { GridTheme.Apply(dataGridView1); } catch (System.Exception) { }
             this.Icon = Strings.AppIcon;
             this.waSenderForm = _waSenderForm;
             group_no = 0;

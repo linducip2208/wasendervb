@@ -14,26 +14,35 @@ router.register('feature', async (root, params = {}) => {
   const formHtml = renderFeatureForm(key, accounts);
 
   root.innerHTML = `
+    <div class="breadcrumb">Tools &nbsp;/&nbsp; <strong>${escapeHtml(meta.label)}</strong></div>
     <div class="page-header">
       <div>
-        <button class="btn btn-secondary btn-sm" id="back-btn">← Back</button>
+        <div class="page-title">${escapeHtml(meta.label)}</div>
+        <div class="page-subtitle">${meta.description ? escapeHtml(meta.description) : escapeHtml(meta.category)} ${meta.requires_account ? '· <span class="badge badge-warn">requires account</span>' : '· <span class="badge badge-muted">no account needed</span>'}</div>
+      </div>
+      <div><button class="btn btn-secondary btn-sm" id="back-btn">← Back</button></div>
+    </div>
+    <div class="ws-grid">
+      <div class="ws-stack">
+        <div class="card">
+          <div class="card-title-row"><span class="step-num">1</span><span class="card-title" style="margin:0">Parameter</span></div>
+          <form id="feat-form" onsubmit="return false">
+            ${formHtml}
+          </form>
+        </div>
+        <div class="card">
+          <div class="card-title-row"><span class="step-num">2</span><span class="card-title" style="margin:0">Jalankan</span></div>
+          <button class="btn btn-primary btn-block" id="feat-run">▶ Run</button>
+          <div class="field-hint small muted" style="margin-top:8px">Proses berjalan di backend; jangan tutup halaman saat running.</div>
+        </div>
+      </div>
+      <div class="ws-stack">
+        <div class="card">
+          <div class="card-title-row"><span class="step-num">3</span><span class="card-title" style="margin:0">Hasil</span></div>
+          <div id="feat-result"><div class="empty-state"><div class="big">📋</div><div>Belum ada hasil. Isi parameter lalu klik Run.</div></div></div>
+        </div>
       </div>
     </div>
-    <div class="card">
-      <div class="card-title">${escapeHtml(meta.label)}</div>
-      <div class="muted small" style="margin-bottom:12px">
-        Category: ${escapeHtml(meta.category)} ·
-        ${meta.requires_account ? '<span class="badge badge-warn">requires account</span>' : '<span class="badge badge-muted">no account needed</span>'}
-        ${meta.description ? ` · ${escapeHtml(meta.description)}` : ''}
-      </div>
-      <form id="feat-form" onsubmit="return false">
-        ${formHtml}
-      </form>
-      <div class="row-end" style="margin-top:14px">
-        <button class="btn btn-primary" id="feat-run">▶ Run</button>
-      </div>
-    </div>
-    <div id="feat-result"></div>
   `;
 
   document.getElementById('back-btn').onclick = () => router.go('dashboard');
@@ -46,7 +55,7 @@ router.register('feature', async (root, params = {}) => {
     }
 
     const resultEl = document.getElementById('feat-result');
-    resultEl.innerHTML = '<div class="card"><div class="muted">⏳ Running... please wait</div></div>';
+    resultEl.innerHTML = '<div class="skeleton" style="height:18px"></div><div class="skeleton"></div><div class="skeleton" style="width:60%"></div><div class="muted small" style="margin-top:8px"><span class="spinner"></span> Running... please wait</div>';
     document.getElementById('feat-run').disabled = true;
 
     try {
@@ -502,15 +511,38 @@ function renderResult(el, r) {
   try { pretty = JSON.stringify(data, null, 2); }
   catch (e) { pretty = String(data); }
 
+  const dataTable = renderDataTable(Array.isArray(data) ? data : (data && Array.isArray(data.items) ? data.items : null));
+
   el.innerHTML = `
-    <div class="card">
-      <div class="card-title">Result</div>
-      ${summary ? `<div style="margin-bottom:10px">${summary}</div>` : ''}
-      <details>
-        <summary class="muted small" style="cursor:pointer">Raw output</summary>
-        <pre style="background:#f3f4f6;padding:10px;border-radius:4px;max-height:400px;overflow:auto;font-size:12px;margin-top:8px">${escapeHtml(pretty)}</pre>
-      </details>
+    <div class="card-title">Result</div>
+    ${summary ? `<div style="margin-bottom:10px">${summary}</div>` : ''}
+    ${dataTable}
+    <details>
+      <summary class="muted small" style="cursor:pointer">Raw output</summary>
+      <pre style="background:#f3f4f6;padding:10px;border-radius:4px;max-height:400px;overflow:auto;font-size:12px;margin-top:8px">${escapeHtml(pretty)}</pre>
+    </details>
+  `;
+}
+
+// Tabel data generik dari array-of-objects aktual (tanpa data dummy).
+// Dipakai semua fitur yang mengembalikan list (gmaps, ekstraktor, member, ...).
+function renderDataTable(data) {
+  if (!Array.isArray(data) || !data.length) return '';
+  const first = data.find(r => r && typeof r === 'object' && !Array.isArray(r));
+  if (!first) return `<div class="muted">${escapeHtml(data.length)} items returned (scalar list — lihat Raw output).</div>`;
+  const cols = Object.keys(first).slice(0, 8);
+  const rows = data.slice(0, 200).map(r => {
+    if (!r || typeof r !== 'object' || Array.isArray(r)) return '';
+    return `<tr>${cols.map(c => `<td>${escapeHtml(r[c] ?? '—')}</td>`).join('')}</tr>`;
+  }).join('');
+  return `
+    <div class="table-wrap" style="margin-bottom:10px">
+      <table class="table">
+        <thead><tr>${cols.map(c => `<th>${escapeHtml(c)}</th>`).join('')}</tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
     </div>
+    <div class="pager"><span>${escapeHtml(data.length)} baris${data.length > 200 ? ' (200 pertama ditampilkan)' : ''}</span></div>
   `;
 }
 

@@ -27,6 +27,7 @@ namespace WASender
         public Warmer(WaSenderForm _waSenderForm,bool _isGroupWarmer = false)
         {
             InitializeComponent();
+            try { GridTheme.Apply(dataGridView1); } catch (System.Exception) { }
             intLanguages();
             warmerModel = new WarmerModel();
             this.Icon = Strings.AppIcon;

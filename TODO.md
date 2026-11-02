@@ -11,17 +11,20 @@ Aturan main: tidak ada tombol/menu palsu, tidak ada data dummy, tiap langkah ter
 
 ## Fase 1 — Design System
 - [x] `Theme.cs` (token warna/typography) — sudah ada, dipakai parsial
-- [x] `GridTheme.cs` (16 tabel) — sudah dipakai
-- [ ] Terapkan Theme ke semua form utama (warna hardcode -> token)
-- [ ] Standar header form (judul + deskripsi + aksi utama)
+- [x] `GridTheme.cs` — dipakai SEMUA 28 form ber-grid (bulk 1-baris per constructor, murni kosmetik)
+- [x] Python `main.css`: tokens `--navy/--accent/--radius/--shadow` + sidebar navy + workspace + states
+- [ ] Header standar semua form (ditunda: butuh edit Designer ×62, risiko tanpa uji klik)
 
 ## Fase 2 — Shell Aplikasi (WaSenderForm.cs + .Designer.cs)
+- [x] Sidebar navy permanen + versi + active-state + breadcrumb (`WaSenderForm.Sidebar.cs`, 0 edit Designer)
+- [x] Anchor fix `tabMain` + `MinimumSize` (resize/DPI)
 - [x] Dashboard WebView2 + hero + stat live + search + kartu berdeskripsi
 - [x] Indikator online license.pandusolusi.com (pojok kanan atas)
-- [ ] Rapikan top bar (kepadatan tombol) — BUTUH UJI VISUAL, tunda sampai ada screenshot user
-- [ ] Navigasi antar modul konsisten (satukan pola open-form)
+- [ ] Rapikan top bar (kepadatan tombol) — BUTUH UJI VISUAL, tunggu screenshot user
+- [x] Navigasi antar modul konsisten (sidebar memanggil handler existing)
 
 ## Fase 3 — Google Maps Extractor (jalur AKTIF: NewUI + Browser.cs)
+- [x] Workspace 3-area berjudul (strip header + LANGKAH 1/2/3, UI-only)
 - [x] Unlimited + auto-scroll + auto-panen + stop anti-macet
 - [x] Filter cari, batas maks + auto-stop, filter rating, elapsed, ring progres, bar detail, klik 2x = buka peta
 - [x] Export diperkuat (template resolver, try/catch, guard kosong)
@@ -30,9 +33,9 @@ Aturan main: tidak ada tombol/menu palsu, tidak ada data dummy, tiap langkah ter
 - [ ] Panel info/select-all di grid (opsional)
 
 ## Fase 4 — GMapExtractor.cs lama + Python track
-- [ ] Tentukan status: arsipkan kalau memang mati (jangan hapus sebelum verifikasi)
-- [ ] Audit `src/wasender` (Python): dokumentasikan peran, JANGAN rewrite membabi buta
-- [ ] `feature.js` + `main.css`: sentuh hanya bila Python track adalah produk aktif
+- [x] Status diputuskan: `GMapExtractor.cs`/Designer MATI (bukti di inventory) — diarsipkan via dokumen, tidak dihapus, tidak di-redesign (mockup tanpa fungsi = dilarang)
+- [x] `src/wasender` (Python): peran = eksperimen terpisah, tidak di-ship — didokumentasikan, TIDAK di-rewrite
+- [x] `feature.js` + `main.css` + `index.html`: workspace 3-langkah + skeleton + tabel hasil data aktual + sidebar navy (kontrak bridge utuh)
 
 ## Fase 5 — Bulk Sender Workspace
 - [x] Preview mockup WA + hitung segmen (dialog, dari AddMessage)

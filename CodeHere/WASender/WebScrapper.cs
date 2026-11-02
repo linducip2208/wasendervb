@@ -38,6 +38,7 @@ namespace WASender
         public WebScrapper(WaSenderForm _waSenderForm)
         {
             InitializeComponent();
+            try { GridTheme.Apply(dataGridView1); GridTheme.Apply(dataGridView2); } catch (System.Exception) { }
             this.Icon = Strings.AppIcon;
             this.waSenderForm = _waSenderForm;
             generalSettingsModel = Config.GetSettings();

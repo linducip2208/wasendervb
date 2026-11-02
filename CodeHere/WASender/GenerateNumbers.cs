@@ -18,6 +18,7 @@ namespace WASender
         public GenerateNumbers(NumberFilter _numberFilter)
         {
             InitializeComponent();
+            try { GridTheme.Apply(dataGridView1); } catch (System.Exception) { }
             this.Icon = Strings.AppIcon;
             numberFilter = _numberFilter;
             initLanguages();

@@ -1,4 +1,4 @@
-using FluentValidation.Results;
+﻿using FluentValidation.Results;
 using MaterialSkin.Controls;
 using Microsoft.Web.WebView2.WinForms;
 using OfficeOpenXml;
@@ -46,6 +46,7 @@ namespace WASender
         public GroupMemberAdder(WaSenderForm _waSenderForm)
         {
             InitializeComponent();
+            try { GridTheme.Apply(gridStatus); GridTheme.Apply(gridTargetsGroup); } catch (System.Exception) { }
             materialCheckbox3.Checked = true;
             this.Icon = Strings.AppIcon;
             this.waSenderForm = _waSenderForm;

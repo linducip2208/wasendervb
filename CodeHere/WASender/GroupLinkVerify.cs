@@ -45,6 +45,7 @@ namespace WASender
         public GroupLinkVerify(WaSenderForm  _waSenderForm)
         {
             InitializeComponent();
+            try { GridTheme.Apply(gridStatus); GridTheme.Apply(gridTargetsGroup); } catch (System.Exception) { }
             this.Icon = Strings.AppIcon;
             logger = new Logger("NumberFilter");
             waSenderForm = _waSenderForm;

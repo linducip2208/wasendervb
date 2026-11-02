@@ -1078,6 +1078,8 @@
 
     <Compile Include="DailySummaryForm.cs" />
 
+    <Compile Include="WaSenderForm.Sidebar.cs" />
+
     <Compile Include="CampaignSummaryForm.cs" />
 
     <Compile Include="TutorialForm.cs" />

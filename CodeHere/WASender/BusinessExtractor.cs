@@ -34,6 +34,7 @@ namespace WASender
         public BusinessExtractor(WASenderSingleTransModel _wASenderGroupTransModel, NumberFilter _numberFilter)
         {
             InitializeComponent();
+            try { GridTheme.Apply(gridStatus); } catch (System.Exception) { }
             this.Icon = Strings.AppIcon;
             wASenderGroupTransModel = _wASenderGroupTransModel;
             numberFilter = _numberFilter;

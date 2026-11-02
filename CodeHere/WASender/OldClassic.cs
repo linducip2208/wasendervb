@@ -43,6 +43,7 @@ namespace WASender
         public OldClassic(GmExtractorForm _gmExtractorForm)
         {
             InitializeComponent();
+            try { GridTheme.Apply(dataGridView1); } catch (System.Exception) { }
             gmExtractorForm = _gmExtractorForm;
         }
 

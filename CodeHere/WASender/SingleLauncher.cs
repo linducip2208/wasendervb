@@ -26,6 +26,7 @@ namespace WASender
         public SingleLauncher(WASenderSingleTransModel _wASenderSingleTransModel, WaSenderForm _waSenderForm, SchedulesModel _schedulesModel = null)
         {
             InitializeComponent();
+            try { GridTheme.Apply(dataGridView1); } catch (System.Exception) { }
             wASenderSingleTransModel = _wASenderSingleTransModel;
             waSenderForm = _waSenderForm;
             this.Icon = Strings.AppIcon;

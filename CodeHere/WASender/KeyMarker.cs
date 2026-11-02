@@ -22,6 +22,7 @@ namespace WASender
         {
             this.waSenderForm = _waSenderForm;
             InitializeComponent();
+            try { GridTheme.Apply(gridMarker); } catch (System.Exception) { }
             this.Icon = Strings.AppIcon;
             init();
         }

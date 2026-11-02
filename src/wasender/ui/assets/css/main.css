@@ -461,3 +461,90 @@ textarea { font-family: 'Consolas', 'Courier New', monospace; resize: vertical; 
   animation: spin 0.7s linear infinite;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* ================= ENTERPRISE DESIGN SYSTEM (append-only, overrides above) ================= */
+:root {
+  --navy: #1a2338;
+  --navy-light: #24304d;
+  --navy-text: #c7cddc;
+  --navy-muted: #8b94a7;
+  --accent: #00a884;
+  --radius: 10px;
+  --shadow: 0 1px 3px rgba(16, 24, 40, 0.08);
+  --shadow-lg: 0 8px 24px rgba(16, 24, 40, 0.12);
+}
+
+/* Sidebar navy permanen */
+.layout { grid-template-columns: 212px 1fr; }
+.sidebar {
+  background: var(--navy);
+  border-right: none;
+  align-items: stretch;
+  padding: 16px 10px;
+  gap: 2px;
+  overflow-y: auto;
+}
+.sidebar-brand { display: flex; align-items: center; gap: 10px; padding: 2px 10px 14px; }
+.sidebar-logo {
+  width: 38px; height: 38px; border-radius: 10px; flex-shrink: 0;
+  background: linear-gradient(135deg, var(--green-light), var(--accent));
+  color: #fff; font-weight: 800; font-size: 15px;
+  display: flex; align-items: center; justify-content: center;
+}
+.sidebar-name { color: #fff; font-weight: 700; font-size: 15px; }
+.sidebar-sub { color: var(--navy-muted); font-size: 11px; }
+.sidebar-caption {
+  color: var(--navy-muted); font-size: 10px; font-weight: 700;
+  letter-spacing: 1.2px; padding: 12px 12px 6px;
+}
+.nav-item {
+  width: 100%; height: 42px; border-radius: 8px;
+  color: var(--navy-text); justify-content: flex-start;
+  gap: 12px; padding: 0 12px; font-size: 13.5px; font-weight: 500;
+  border-left: 3px solid transparent;
+}
+.nav-item svg { flex-shrink: 0; }
+.nav-item:hover { background: var(--navy-light); color: #fff; }
+.nav-item.active { background: var(--navy-light); color: #fff; border-left-color: var(--accent); }
+.nav-label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Sidebar collapsed (hamburger) -> icon rail */
+.layout.sidebar-collapsed { grid-template-columns: 62px 1fr; }
+.layout.sidebar-collapsed .sidebar { align-items: center; padding: 16px 8px; }
+.layout.sidebar-collapsed .sidebar-brand,
+.layout.sidebar-collapsed .sidebar-caption,
+.layout.sidebar-collapsed .nav-label { display: none; }
+.layout.sidebar-collapsed .nav-item { width: 44px; justify-content: center; padding: 0; border-left-color: transparent; }
+.layout.sidebar-collapsed .nav-item.active { border-left-color: transparent; background: rgba(0, 168, 132, 0.25); }
+
+/* Workspace 3 area */
+.breadcrumb { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+.breadcrumb strong { color: var(--text); }
+.ws-grid { display: grid; grid-template-columns: 340px 1fr; gap: 16px; align-items: start; }
+.ws-stack { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+@media (max-width: 1100px) { .ws-grid { grid-template-columns: 1fr; } }
+.card { border-radius: var(--radius); box-shadow: var(--shadow); }
+.card-title-row { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+.step-num {
+  width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;
+  background: var(--navy); color: #fff; font-size: 12px; font-weight: 700;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.step-num.done { background: var(--success); }
+
+/* Status & state */
+.empty-state { text-align: center; padding: 32px 16px; color: var(--muted); }
+.empty-state .big { font-size: 34px; margin-bottom: 8px; }
+.skeleton {
+  border-radius: 6px; background: linear-gradient(90deg, #eef0f2 25%, #e2e5e9 50%, #eef0f2 75%);
+  background-size: 200% 100%; animation: shimmer 1.2s infinite; min-height: 14px; margin: 6px 0;
+}
+@keyframes shimmer { to { background-position: -200% 0; } }
+
+/* Tabel data */
+.table-wrap { border: 1px solid var(--border); border-radius: var(--radius); overflow: auto; max-height: 480px; background: #fff; }
+.table thead th { position: sticky; top: 0; background: var(--navy); color: #fff; z-index: 1; white-space: nowrap; }
+.table tbody tr:nth-child(even) { background: #f8fafc; }
+.table tbody tr:hover { background: #eef6f4; }
+.pager { display: flex; align-items: center; gap: 8px; padding: 10px 4px 0; font-size: 12px; color: var(--muted); }
+.pager .flex-1 { flex: 1; }

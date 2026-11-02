@@ -36,6 +36,7 @@ namespace WASender
         public RunWarmer(WarmerModel _warmerModel)
         {
             InitializeComponent();
+            try { GridTheme.Apply(dataGridView1); } catch (System.Exception) { }
             this.warmerModel = _warmerModel;
             _testClass = Utils.testClass;
             _testClass.OnUpdateStatus += _testClass_OnUpdateStatus;

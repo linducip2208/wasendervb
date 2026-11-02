@@ -46,6 +46,7 @@ namespace WASender
         public GroupsJoiner(WaSenderForm _waSenderForm, List<string> links = null)
         {
             InitializeComponent();
+            try { GridTheme.Apply(gridStatus); GridTheme.Apply(gridTargetsGroup); } catch (System.Exception) { }
             this.Icon = Strings.AppIcon;
             logger = new Logger("GroupJoiner");
             generalSettingsModel = Config.GetSettings();

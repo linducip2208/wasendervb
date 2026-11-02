@@ -56,6 +56,7 @@ namespace WASender
         public SocialMediaExtractor(WaSenderForm _waSenderForm)
         {
             InitializeComponent();
+            try { GridTheme.Apply(dataGridView1); } catch (System.Exception) { }
             this.Icon = Strings.AppIcon;
             waSenderForm = _waSenderForm;
             m_ttipMessages = new Dictionary<Control, TooltipInfo>()

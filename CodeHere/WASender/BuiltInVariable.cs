@@ -19,6 +19,7 @@ namespace WASender
         public BuiltInVariable(WaSenderForm _waSenderForm,bool _freezeName = false)
         {
             InitializeComponent();
+            try { GridTheme.Apply(gridMarker); } catch (System.Exception) { }
             this.waSenderForm = _waSenderForm;
             this.Icon = Strings.AppIcon;
             freezeName = _freezeName;

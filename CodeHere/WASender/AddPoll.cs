@@ -23,6 +23,7 @@ namespace WASender
             pollModel = model;
             addMessage = _addMessage;
             InitializeComponent();
+            try { GridTheme.Apply(dataGridView1); } catch (System.Exception) { }
         }
         
         public AddPoll(PollModel model, WaSenderForm _waSenderForm)

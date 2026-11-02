@@ -26,6 +26,7 @@ namespace WASender
         {
             this.waSenderForm = _waSenderForm;
             InitializeComponent();
+            try { GridTheme.Apply(dataGridView1); } catch (System.Exception) { }
             this.Icon = Strings.AppIcon;
             generalSettingsModel = Config.GetSettings();
         }
