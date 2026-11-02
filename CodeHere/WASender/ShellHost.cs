@@ -47,8 +47,22 @@ namespace WASender
             }
             catch (Exception ex)
             {
+                try { LogStep("FATAL ctor: " + ex.ToString()); } catch (Exception) { }
                 try { Fallback(ex); } catch (Exception) { }
+                try { MessageBox.Show("Shell gagal dibuka, kembali ke tampilan lama.\n\nDetail: " + ex.Message, "WASender", MessageBoxButtons.OK, MessageBoxIcon.Warning); } catch (Exception) { }
             }
+        }
+
+        private static void LogStep(string s)
+        {
+            try
+            {
+                string dir = System.IO.Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.CommonApplicationData), "WaSender");
+                if (!System.IO.Directory.Exists(dir)) System.IO.Directory.CreateDirectory(dir);
+                System.IO.File.AppendAllText(System.IO.Path.Combine(dir, "crash.log"),
+                    System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + " [ShellHost] " + s + System.Environment.NewLine);
+            }
+            catch (Exception) { }
         }
 
         private void BuildChrome()
@@ -189,10 +203,13 @@ namespace WASender
 
         private void BootMain(string[] args)
         {
+            LogStep("BootMain mulai");
             main = new WaSenderForm(args);
+            LogStep("WaSenderForm dibuat");
             main.ShowInTaskbar = false;
             main.Opacity = 0;
             main.Show();
+            LogStep("main.Show OK (Form1_Load lewat)");
             try { main.Hide(); } catch (Exception) { }
             try
             {
@@ -210,6 +227,7 @@ namespace WASender
             }
             catch (Exception) { }
             if (tc == null || tc.TabPages.Count < 3) throw new Exception("tabMain tidak ditemukan");
+            LogStep("tabMain ketemu, pages=" + tc.TabPages.Count);
 
             pageBulk = tc.TabPages[0];
             pageGroup = tc.TabPages[1];
@@ -228,7 +246,9 @@ namespace WASender
             }
 
             BuildMenu();
+            LogStep("menu OK");
             ShowPage("P_DASH");
+            LogStep("BootMain selesai OK");
         }
 
         private void ShowPage(string key)
@@ -261,10 +281,10 @@ namespace WASender
                     try { main.Opacity = 1; } catch (Exception) { }
                     try { main.ShowInTaskbar = true; } catch (Exception) { }
                     try { main.Show(); } catch (Exception) { }
+                    try { if (main.Visible) this.Hide(); } catch (Exception) { }
                 }
             }
             catch (Exception) { }
-            try { this.Hide(); } catch (Exception) { }
         }
 
         private void AddSideCaption(string text)
