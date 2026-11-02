@@ -1080,6 +1080,8 @@
 
     <Compile Include="WaSenderForm.Sidebar.cs" />
 
+    <Compile Include="TelegramBotForm.cs" />
+
     <Compile Include="CampaignHistoryForm.cs" />
 
     <Compile Include="CampaignSummaryForm.cs" />
