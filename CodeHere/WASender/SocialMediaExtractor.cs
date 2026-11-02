@@ -313,10 +313,8 @@ namespace WASender
             startProgressBar();
             isStopped = true;
             pageIndex = 0;
-            Thread.Sleep(1000);
-            IsLoading = true;
-            NavigateBrowser();
             dataGridView1.Rows.Clear();
+            IsLoading = false;
             worker.RunWorkerAsync();
             ChangeCampStatus(CampaignStatusEnum.Running);
         }
@@ -395,7 +393,9 @@ namespace WASender
                     {
                         try
                         {
-                            try { await DismissGoogleConsentAsync(); } catch (System.Exception) { }
+                            bool consentClicked = false;
+                            try { consentClicked = await DismissGoogleConsentAsync(); } catch (System.Exception) { }
+                            if (consentClicked) return;
                             try { await System.Threading.Tasks.Task.Delay(3500); } catch (System.Exception) { }
                             string raw = "";
                             try { raw = await wvSerp.ExecuteScriptAsync("document.documentElement.outerHTML"); } catch (System.Exception) { }
@@ -415,11 +415,11 @@ namespace WASender
             }
         }
 
-        private async System.Threading.Tasks.Task DismissGoogleConsentAsync()
+        private async System.Threading.Tasks.Task<bool> DismissGoogleConsentAsync()
         {
             try
             {
-                if (wvSerp == null || wvSerp.IsDisposed) return;
+                if (wvSerp == null || wvSerp.IsDisposed) return false;
                 string js = "(function(){try{var u=location.href;var bodyTxt=(document.body&&document.body.innerText)||'';"
                     + "if(u.indexOf('consent.google.')<0&&bodyTxt.indexOf('Before you continue')<0&&bodyTxt.indexOf('Sebelum melanjutkan')<0)return 'NOCONSENT';"
                     + "var btns=document.querySelectorAll('button,input[type=submit],input[type=button],div[role=button]');"
@@ -428,13 +428,15 @@ namespace WASender
                     + "var f=document.querySelector('form');if(f){var b=f.querySelector('button,input[type=submit]');if(b){b.click();return 'CLICKED_FORM';}}"
                     + "return 'NO_MATCH';}catch(e){return 'ERR';}})();";
                 string r = "";
-                try { r = await wvSerp.ExecuteScriptAsync(js); } catch (System.Exception) { return; }
+                try { r = await wvSerp.ExecuteScriptAsync(js); } catch (System.Exception) { return false; }
                 if ((r ?? "").IndexOf("CLICKED", System.StringComparison.OrdinalIgnoreCase) >= 0)
                 {
                     try { await System.Threading.Tasks.Task.Delay(3000); } catch (System.Exception) { }
+                    return true;
                 }
+                return false;
             }
-            catch (System.Exception) { }
+            catch (System.Exception) { return false; }
         }
 
         private static string UnquoteJson(string raw)
