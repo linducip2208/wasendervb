@@ -384,6 +384,11 @@ namespace WASender
                     try
                     {
                         wAPI_GroupModel = await getGroups();
+                        if (wAPI_GroupModel == null || wAPI_GroupModel.Count == 0)
+                        {
+                            await Task.Delay(3000);
+                            wAPI_GroupModel = await getGroups();
+                        }
                         pgbar.Hide();
                         if (wAPI_GroupModel == null || wAPI_GroupModel.Count == 0)
                         {
