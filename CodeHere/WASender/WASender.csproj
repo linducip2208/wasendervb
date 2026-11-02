@@ -1080,8 +1080,6 @@
 
     <Compile Include="WaSenderForm.Sidebar.cs" />
 
-    <Compile Include="ShellHost.cs" />
-
     <Compile Include="CampaignHistoryForm.cs" />
 
     <Compile Include="CampaignSummaryForm.cs" />

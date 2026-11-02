@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
@@ -204,7 +204,7 @@ namespace WASender
             row.Width = sideNav.Width - 14;
             row.Height = 42;
             row.Margin = new Padding(7, 1, 7, 1);
-            row.BackColor = Color.Transparent;
+            row.BackColor = Theme.Navy;
             Button b = null;
 
             var bar = new Panel();
@@ -232,7 +232,7 @@ namespace WASender
                 fb.Text = string.IsNullOrEmpty(text) ? "•" : text.Substring(0, 1).ToUpper();
                 fb.Font = new Font("Segoe UI", 13f, FontStyle.Bold);
                 fb.ForeColor = Color.White;
-                fb.BackColor = Color.Transparent;
+                fb.BackColor = Theme.Navy;
                 fb.Left = 14; fb.Top = 6; fb.Width = 24; fb.Height = 28;
                 fb.TextAlign = ContentAlignment.MiddleCenter;
                 fb.Click += (s, e) => { try { b.PerformClick(); } catch (Exception) { } };
@@ -244,7 +244,7 @@ namespace WASender
             b.FlatStyle = FlatStyle.Flat;
             b.FlatAppearance.BorderSize = 0;
             b.FlatAppearance.MouseOverBackColor = Theme.NavyLight;
-            b.BackColor = Color.Transparent;
+            b.BackColor = Theme.Navy;
             b.ForeColor = Color.FromArgb(0xC7, 0xCD, 0xDC);
             b.Font = new Font("Segoe UI", 10f, FontStyle.Regular);
             b.TextAlign = ContentAlignment.MiddleLeft;
@@ -287,7 +287,7 @@ namespace WASender
             {
                 foreach (Control c in sideFlow.Controls)
                 {
-                    try { if (c is Panel && (c.Tag as string) == "navrow") c.BackColor = Color.Transparent; } catch (Exception) { }
+                    try { if (c is Panel && (c.Tag as string) == "navrow") c.BackColor = Theme.Navy; } catch (Exception) { }
                 }
                 try { if (b != null && b.Parent != null) b.Parent.BackColor = Theme.NavyLight; } catch (Exception) { }
             }
@@ -310,7 +310,7 @@ namespace WASender
                         string nm = tag.Substring("navrow-tab:".Length);
                         int want = nm == "Dashboard" ? 2 : (nm == "Bulk Sender" ? 0 : (nm == "Group Sender" ? 1 : -1));
                         bool active = (want >= 0 && want == idx);
-                        c.BackColor = active ? Theme.NavyLight : Color.Transparent;
+                        c.BackColor = active ? Theme.NavyLight : Theme.Navy;
                         foreach (Control k in c.Controls)
                         {
                             try
