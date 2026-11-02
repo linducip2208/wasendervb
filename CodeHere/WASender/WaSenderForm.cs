@@ -1053,6 +1053,7 @@ namespace WASender
             try { btnId = e.TryGetWebMessageAsString(); } catch (Exception) { }
             if (!string.IsNullOrEmpty(btnId) && btnId != "")
             {
+                        try { if (ToolWindows.FocusIfOpen(btnId)) return; } catch (Exception) { }
                         if (btnId == "BulkSender")
                         {
                             try { tabMain.SelectedIndex = 0; } catch (Exception) { }

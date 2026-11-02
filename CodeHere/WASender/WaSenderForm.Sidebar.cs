@@ -51,36 +51,36 @@ namespace WASender
                 AddTabItem("Bulk Sender", 0, "✉");
                 AddTabItem("Group Sender", 1, "👥");
                 AddSideCaption("EKSTRAKTOR DATA");
-                AddToolItem("GMap Extractor", "🗺", () => { GmExtractorForm f = new GmExtractorForm(this); return f; });
-                AddToolItem("Number Filter", "🔎", () => { NumberFilter f = new NumberFilter(this); return f; });
-                AddToolItem("Contact Grabber", "📇", () => { ContactGrabber f = new ContactGrabber(this); return f; });
-                AddToolItem("Web Extractor", "🌐", () => { WebScrapper f = new WebScrapper(this); return f; });
-                AddToolItem("Social Media", "💬", () => { SocialMediaExtractor f = new SocialMediaExtractor(this); return f; });
-                AddToolItem("Google CSV", "📄", () => { GoogleCSVGenerator f = new GoogleCSVGenerator(this); return f; });
-                AddToolItem("Chat List", "💭", () => { GrabChatList f = new GrabChatList(this); return f; });
-                AddToolItem("Grab Link Grup", "🔗", () => { GrabGroupLinks f = new GrabGroupLinks(this); return f; });
+                AddToolItem("GMap Extractor", "🗺", typeof(GmExtractorForm), () => new GmExtractorForm(this));
+                AddToolItem("Number Filter", "🔎", typeof(NumberFilter), () => new NumberFilter(this));
+                AddToolItem("Contact Grabber", "📇", typeof(ContactGrabber), () => new ContactGrabber(this));
+                AddToolItem("Web Extractor", "🌐", typeof(WebScrapper), () => new WebScrapper(this));
+                AddToolItem("Social Media", "💬", typeof(SocialMediaExtractor), () => new SocialMediaExtractor(this));
+                AddToolItem("Google CSV", "📄", typeof(GoogleCSVGenerator), () => new GoogleCSVGenerator(this));
+                AddToolItem("Chat List", "💭", typeof(GrabChatList), () => new GrabChatList(this));
+                AddToolItem("Grab Link Grup", "🔗", typeof(GrabGroupLinks), () => new GrabGroupLinks(this));
                 AddSideCaption("GRUP");
-                AddToolItem("Grab Anggota", "🙂", () => { GetGroupMember f = new GetGroupMember(this); return f; });
-                AddToolItem("Anggota Aktif", "✅", () => { GrabGroupActiveMembers f = new GrabGroupActiveMembers(this); return f; });
-                AddToolItem("Tambah Anggota", "➕", () => { GroupMemberAdder f = new GroupMemberAdder(this); return f; });
-                AddToolItem("Auto Joiner", "🚪", () => { GroupsJoiner f = new GroupsJoiner(this); return f; });
-                AddToolItem("Group Finder", "🔍", () => { GroupFinder f = new GroupFinder(this); return f; });
-                AddToolItem("Bulk Generator", "🗂", () => { GroupGenerator f = new GroupGenerator(this); return f; });
-                AddToolItem("Verifikasi Link", "✔", () => { GroupLinkVerify f = new GroupLinkVerify(this); return f; });
+                AddToolItem("Grab Anggota", "🙂", typeof(GetGroupMember), () => new GetGroupMember(this));
+                AddToolItem("Anggota Aktif", "✅", typeof(GrabGroupActiveMembers), () => new GrabGroupActiveMembers(this));
+                AddToolItem("Tambah Anggota", "➕", typeof(GroupMemberAdder), () => new GroupMemberAdder(this));
+                AddToolItem("Auto Joiner", "🚪", typeof(GroupsJoiner), () => new GroupsJoiner(this));
+                AddToolItem("Group Finder", "🔍", typeof(GroupFinder), () => new GroupFinder(this));
+                AddToolItem("Bulk Generator", "🗂", typeof(GroupGenerator), () => new GroupGenerator(this));
+                AddToolItem("Verifikasi Link", "✔", typeof(GroupLinkVerify), () => new GroupLinkVerify(this));
                 AddSideCaption("OTOMASI");
-                AddToolItem("Auto Responder", "🤖", () => { WaAutoReplyBot.WaAutoReplyForm f = new WaAutoReplyBot.WaAutoReplyForm(this); return f; });
-                AddToolItem("Scheduler", "📅", () => { AllSchedules f = new AllSchedules(this); return f; });
-                AddToolItem("WA Warmer", "🔥", () => { Warmer f = new Warmer(this); return f; });
-                AddToolItem("Group Warmer", "♨", () => { Warmer f = new Warmer(this, true); return f; });
-                AddToolItem("Hasil Poll", "📊", () => { GetPollResults f = new GetPollResults(this); return f; });
-                AddToolItem("AI Setup", "✨", () => { AiSettingsForm f = new AiSettingsForm(this); return f; });
-                AddToolItem("WA Health", "💚", () => { HealthForm f = new HealthForm(this); return f; });
+                AddToolItem("Auto Responder", "🤖", typeof(WaAutoReplyBot.WaAutoReplyForm), () => new WaAutoReplyBot.WaAutoReplyForm(this));
+                AddToolItem("Scheduler", "📅", typeof(AllSchedules), () => new AllSchedules(this));
+                AddToolItem("WA Warmer", "🔥", typeof(Warmer), () => new Warmer(this));
+                AddToolItem("Group Warmer", "♨", typeof(Warmer), () => new Warmer(this, true));
+                AddToolItem("Hasil Poll", "📊", typeof(GetPollResults), () => new GetPollResults(this));
+                AddToolItem("AI Setup", "✨", typeof(AiSettingsForm), () => new AiSettingsForm(this));
+                AddToolItem("WA Health", "💚", typeof(HealthForm), () => new HealthForm(this));
                 AddSideCaption("APLIKASI");
                 AddActionItem("Sesi WhatsApp", "🔌", (s, e) => { try { materialButton35_Click(s, e); } catch (Exception) { } });
                 AddActionItem("Kelola Akun", "👤", (s, e) => { try { materialButton34_Click(s, e); } catch (Exception) { } });
                 AddActionItem("Ringkasan Harian", "📑", (s, e) => { try { materialButton32_Click(s, e); } catch (Exception) { } });
                 AddActionItem("Riwayat Kirim", "🕘", (s, e) => { try { CampaignHistoryForm f = new CampaignHistoryForm(); f.ShowDialog(this); } catch (Exception) { } });
-                AddToolItem("Tutorial", "❓", () => { TutorialForm f = new TutorialForm(); return f; });
+                AddToolItem("Tutorial", "❓", typeof(TutorialForm), () => new TutorialForm());
                 AddActionItem("Pengaturan", "⚙", (s, e) => { try { materialButton31_Click_1(s, e); } catch (Exception) { } });
 
                 this.Controls.Add(sideNav);
@@ -142,10 +142,8 @@ namespace WASender
             catch (Exception) { }
         }
 
-        private System.Collections.Generic.Dictionary<string, Form> openTools = new System.Collections.Generic.Dictionary<string, Form>();
-
-        /// <summary>Klik menu tool: kalau jendelanya sudah terbuka, fokuskan; bila belum, buka baru. Anti jendela ganda.</summary>
-        private void AddToolItem(string text, string iconName, Func<Form> open)
+        /// <summary>Klik menu tool: kalau jendelanya sudah terbuka (dari sidebar ATAU dashboard), fokuskan; bila belum, buka baru. Anti jendela ganda.</summary>
+        private void AddToolItem(string text, string iconName, System.Type formType, Func<Form> open)
         {
             try
             {
@@ -154,23 +152,7 @@ namespace WASender
                 {
                     try
                     {
-                        try
-                        {
-                            Form exist;
-                            if (openTools.TryGetValue(text, out exist) && exist != null && !exist.IsDisposed)
-                            {
-                                try
-                                {
-                                    if (exist.WindowState == FormWindowState.Minimized) exist.WindowState = FormWindowState.Normal;
-                                    exist.BringToFront();
-                                    exist.Activate();
-                                }
-                                catch (Exception) { }
-                                RefreshSidebarState();
-                                return;
-                            }
-                        }
-                        catch (Exception) { }
+                        try { if (ToolWindows.FocusIfOpen(formType)) { RefreshSidebarState(); return; } } catch (Exception) { }
                         MarkToolActive(b);
                         Form f = null;
                         try { f = open(); }
@@ -179,8 +161,6 @@ namespace WASender
                         {
                             try
                             {
-                                openTools[text] = f;
-                                f.FormClosed += (ss, ee) => { try { openTools.Remove(text); } catch (Exception) { } };
                                 this.Hide();
                                 f.Show();
                             }
@@ -410,6 +390,81 @@ namespace WASender
                 catch (Exception) { }
             }
             catch (Exception) { }
+        }
+    }
+
+    /// <summary>
+    /// Registri anti-jendela-ganda lintas jalur (sidebar + dashboard + kode lain):
+    /// satu Type form = satu jendela. Dipakai sidebar &amp; dashboardMessageReceived.
+    /// Catatan: WA Warmer &amp; Group Warmer berbagi Type Warmer (mode beda) -&gt;
+    /// klik salah satunya memfokuskan yg sudah terbuka.
+    /// </summary>
+    public static class ToolWindows
+    {
+        public static readonly System.Collections.Generic.Dictionary<string, System.Type> DashboardTools =
+            new System.Collections.Generic.Dictionary<string, System.Type>
+            {
+                { "Tutorial", typeof(TutorialForm) },
+                { "DailySummary", typeof(DailySummaryForm) },
+                { "GrabGroupMembers", typeof(GetGroupMember) },
+                { "GetWhatsAppGroupLinksfromweb", typeof(GrabGroupLinks) },
+                { "WhatsAppAutoreplyBot", typeof(WaAutoReplyBot.WaAutoReplyForm) },
+                { "ContactListGrabber", typeof(ContactGrabber) },
+                { "GoogleMagDataExtractor", typeof(GmExtractorForm) },
+                { "AutoGroupJoiner", typeof(GroupsJoiner) },
+                { "WhatsAppNumberFilter", typeof(NumberFilter) },
+                { "GrabActiveGroupMembers", typeof(GrabGroupActiveMembers) },
+                { "GrabChatList", typeof(GrabChatList) },
+                { "BulkAddGroupMembers", typeof(GroupMemberAdder) },
+                { "GroupFinder", typeof(GroupFinder) },
+                { "BulkGroupGenerator", typeof(GroupGenerator) },
+                { "GoogleContactCSVGenerator", typeof(GoogleCSVGenerator) },
+                { "WebsiteEmailMobileExtractor", typeof(WebScrapper) },
+                { "WhatsAppWarmer", typeof(Warmer) },
+                { "WhatsAppWarmerGroup", typeof(Warmer) },
+                { "PollReport", typeof(GetPollResults) },
+                { "SocialMediaExtractor", typeof(SocialMediaExtractor) },
+                { "Scheduler", typeof(AllSchedules) },
+                { "AiSetup", typeof(AiSettingsForm) },
+                { "WaHealth", typeof(HealthForm) },
+                { "GroupLinkVerify", typeof(GroupLinkVerify) },
+            };
+
+        public static bool FocusIfOpen(System.Type t)
+        {
+            try
+            {
+                if (t == null) return false;
+                foreach (System.Windows.Forms.Form f in System.Windows.Forms.Application.OpenForms)
+                {
+                    try
+                    {
+                        if (f != null && !f.IsDisposed && f.GetType() == t)
+                        {
+                            if (f.WindowState == System.Windows.Forms.FormWindowState.Minimized)
+                                f.WindowState = System.Windows.Forms.FormWindowState.Normal;
+                            f.BringToFront();
+                            f.Activate();
+                            return true;
+                        }
+                    }
+                    catch (System.Exception) { }
+                }
+            }
+            catch (System.Exception) { }
+            return false;
+        }
+
+        public static bool FocusIfOpen(string dashboardId)
+        {
+            try
+            {
+                System.Type t;
+                if (!string.IsNullOrEmpty(dashboardId) && DashboardTools.TryGetValue(dashboardId, out t))
+                    return FocusIfOpen(t);
+            }
+            catch (System.Exception) { }
+            return false;
         }
     }
 }

@@ -192,10 +192,22 @@ namespace WASender
             {
                 for (int i = 0; i < 20; i++)
                 {
-                    string r = await Eval(wv, "(function(){try{var c=document.querySelectorAll('#side [data-testid=\"cell-frame-container\"]').length;var o=document.querySelectorAll('#side [role=\"option\"]').length;return 'C:'+c+'/O:'+o;}catch(e){return 'ERR';}})();");
+                    string r = null;
+                    try { r = await Eval(wv, "(function(){try{var c=document.querySelectorAll('#side [data-testid=\"cell-frame-container\"]').length;var o=document.querySelectorAll('#side [role=\"option\"]').length;return 'C:'+c+'/O:'+o;}catch(e){return 'ERR';}})();"); } catch (Exception) { }
+                    try
+                    {
+                        string s = (Unwrap(r) ?? "").Trim().Trim('"');
+                        int bar = s.IndexOf('/');
+                        if (s.StartsWith("C:") && bar > 2)
+                        {
+                            int c = 0, o = 0;
+                            int.TryParse(s.Substring(2, bar - 2), out c);
+                            int.TryParse(s.Substring(bar + 3), out o);
+                            if (c + o > 0) return;
+                        }
+                    }
+                    catch (Exception) { }
                     await Task.Delay(1500);
-                    if (r == null) continue;
-                    return;
                 }
             }
             catch (Exception) { }
