@@ -34,41 +34,9 @@ namespace WASender
                 sideNav.Width = 232;
                 sideNav.Dock = DockStyle.Left;
                 sideNav.BackColor = Theme.Navy;
-                sideNav.Padding = new Padding(0, 10, 0, 10);
+                sideNav.Padding = new Padding(0, 64, 0, 10);
 
-                var brand = new Panel();
-                brand.Dock = DockStyle.Top;
-                brand.Height = 62;
-                brand.BackColor = Color.Transparent;
-                var pic = new PictureBox();
-                pic.Width = 32; pic.Height = 32;
-                pic.Left = 16; pic.Top = 12;
-                pic.SizeMode = PictureBoxSizeMode.Zoom;
-                try { pic.Image = DimAlpha(Icon.ToBitmap(), 0.85f); } catch (Exception) { }
-                brand.Controls.Add(pic);
-                var nm = new Label();
-                nm.Text = "WASender";
-                nm.Font = new Font("Segoe UI", 13f, FontStyle.Bold);
-                nm.ForeColor = Color.White;
-                nm.Left = 58; nm.Top = 8; nm.Width = 155; nm.Height = 24;
-                nm.BackColor = Color.Transparent;
-                brand.Controls.Add(nm);
-                string vstr = "6.1";
-                try { vstr = Strings.SoftwareVersion; } catch (Exception) { }
-                var vs = new Label();
-                vs.Text = "v" + vstr + "  Enterprise";
-                vs.Font = new Font("Segoe UI", 8.5f, FontStyle.Regular);
-                vs.ForeColor = Color.FromArgb(0x8B, 0x94, 0xA7);
-                vs.Left = 58; vs.Top = 32; vs.Width = 155; vs.Height = 18;
-                vs.BackColor = Color.Transparent;
-                brand.Controls.Add(vs);
-                sideNav.Controls.Add(brand);
-
-                var spacer = new Panel();
-                spacer.Dock = DockStyle.Top;
-                spacer.Height = 12;
-                spacer.BackColor = Color.Transparent;
-                sideNav.Controls.Add(spacer);
+                try { CenterTopBrand(); } catch (Exception) { }
 
                 sideFlow = new FlowLayoutPanel();
                 sideFlow.Dock = DockStyle.Fill;
@@ -267,7 +235,11 @@ namespace WASender
             return b;
         }
 
-        /// <summary>Hitam/berwarna -&gt; putih solid dgn alpha asli. Pixel-loop: anti-gagal utk semua format PNG.</summary>
+        /// <summary>
+        /// Ikon jadi putih soft. Deteksi background: sudut opaque-terang = ikon gelap di atas
+        /// putih -&gt; putih dijadikan transparan &amp; gelap jadi putih. Selain itu (ikon di atas
+        /// transparan) -&gt; langsung diputihkan dgn alpha asli. Anti kotak putih identik.
+        /// </summary>
         private static Bitmap WhiteIcon(object o)
         {
             try
@@ -277,19 +249,76 @@ namespace WASender
                 Bitmap dst = new Bitmap(src.Width, src.Height, PixelFormat.Format32bppArgb);
                 using (Graphics g = Graphics.FromImage(dst))
                     g.DrawImage(src, 0, 0, src.Width, src.Height);
+
+                bool bgLight = false;
+                try
+                {
+                    Color[] corners = {
+                        dst.GetPixel(0, 0), dst.GetPixel(dst.Width - 1, 0),
+                        dst.GetPixel(0, dst.Height - 1), dst.GetPixel(dst.Width - 1, dst.Height - 1) };
+                    int n = 0;
+                    foreach (Color c in corners)
+                        if (c.A > 200 && c.R > 200 && c.G > 200 && c.B > 200) n++;
+                    bgLight = n >= 3;
+                }
+                catch (Exception) { }
+
                 for (int y = 0; y < dst.Height; y++)
                     for (int x = 0; x < dst.Width; x++)
                     {
                         Color p = dst.GetPixel(x, y);
-                        if (p.A > 0)
+                        if (p.A == 0) continue;
+                        if (bgLight)
                         {
-                            int a = (int)(p.A * 0.65);
+                            int ink = 255 - (p.R + p.G + p.B) / 3;
+                            if (ink <= 12) dst.SetPixel(x, y, Color.FromArgb(0, 0, 0, 0));
+                            else
+                            {
+                                int a = Math.Min(p.A, (int)(ink * 0.85));
+                                dst.SetPixel(x, y, Color.FromArgb(a, 255, 255, 255));
+                            }
+                        }
+                        else
+                        {
+                            int a = (int)(p.A * 0.8);
                             dst.SetPixel(x, y, Color.FromArgb(a, 255, 255, 255));
                         }
                     }
                 return dst;
             }
             catch (Exception) { return null; }
+        }
+
+        private Label topBrand;
+
+        /// <summary>Brand di tengah atas (title bar) + recenter saat resize.</summary>
+        private void CenterTopBrand()
+        {
+            try
+            {
+                if (topBrand == null)
+                {
+                    topBrand = new Label();
+                    string vstr = "6.1";
+                    try { vstr = Strings.SoftwareVersion; } catch (Exception) { }
+                    topBrand.Text = "WASender  •  Enterprise  v" + vstr;
+                    topBrand.Font = new Font("Segoe UI", 13f, FontStyle.Bold);
+                    topBrand.ForeColor = Color.White;
+                    topBrand.BackColor = Color.Transparent;
+                    topBrand.AutoSize = true;
+                    topBrand.Height = 26;
+                    this.Controls.Add(topBrand);
+                    topBrand.BringToFront();
+                    try { this.Resize += (s, e) => { try { CenterTopBrand(); } catch (Exception) { } }; } catch (Exception) { }
+                }
+                try
+                {
+                    topBrand.Top = 20;
+                    topBrand.Left = Math.Max(0, (this.ClientSize.Width - topBrand.PreferredWidth) / 2);
+                }
+                catch (Exception) { }
+            }
+            catch (Exception) { }
         }
 
         /// <summary>Redupkan gambar (skala alpha), warna asli dipertahankan. Untuk logo brand.</summary>
