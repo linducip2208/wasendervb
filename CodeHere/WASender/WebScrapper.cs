@@ -26,6 +26,8 @@ namespace WASender
         public static List<ResultHolder> resultHolderList { get; set; }
         List<string> importLists;
         bool isRunning = false;
+        int fetchFails = 0;
+        const string ChromeUA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
 
 
         public static bool checSublinks = true;
@@ -153,7 +155,7 @@ namespace WASender
 
         void BackgroundWorkerRunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            label1.Text = "Completed";
+            label1.Text = "Completed" + (fetchFails > 0 ? " - " + fetchFails + " halaman gagal diakses (kemungkinan diblokir situs)" : "");
         }
 
         void BackgroundWorkerProgressChanged(object sender, ProgressChangedEventArgs e)
@@ -184,6 +186,7 @@ namespace WASender
                         }
                         ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
                         HtmlWeb hw = new HtmlWeb();
+                        hw.UserAgent = ChromeUA;
                         HtmlAgilityPack.HtmlDocument doc = await hw.LoadFromWebAsync(item.MainLink);
 
                         item.subLinks.Add(item.MainLink);
@@ -246,6 +249,7 @@ namespace WASender
                                     try
                                     {
                                         HtmlWeb detailPage = new HtmlWeb();
+                                        detailPage.UserAgent = ChromeUA;
                                         HtmlAgilityPack.HtmlDocument DetailDoc = await detailPage.LoadFromWebAsync(subLink);
 
                                         //label1.Invoke((MethodInvoker)delegate
@@ -346,7 +350,7 @@ namespace WASender
                     }
                     catch (Exception ex)
                     {
-
+                        System.Threading.Interlocked.Increment(ref fetchFails);
                     }
                 }
 
@@ -380,6 +384,7 @@ namespace WASender
                         //HtmlAgilityPack.HtmlDocument doc = hw.Load(item.MainLink);
 
                         var web = new HtmlWeb();
+                        web.UserAgent = ChromeUA;
                         web.PreRequest = delegate(HttpWebRequest webReq)
                         {
                             webReq.Timeout = 4000; // number of milliseconds
@@ -448,6 +453,7 @@ namespace WASender
                                     try
                                     {
                                         HtmlWeb detailPage = new HtmlWeb();
+                                        detailPage.UserAgent = ChromeUA;
                                         HtmlAgilityPack.HtmlDocument DetailDoc = detailPage.Load(subLink);
 
                                         label1.Invoke((MethodInvoker)delegate
@@ -547,7 +553,7 @@ namespace WASender
                     }
                     catch (Exception ex)
                     {
-
+                        System.Threading.Interlocked.Increment(ref fetchFails);
                     }
                 }
 
@@ -625,6 +631,7 @@ namespace WASender
                 backgroundWorker.WorkerSupportsCancellation = true;
                 backgroundWorker.RunWorkerCompleted += BackgroundWorkerRunWorkerCompleted;
                 isRunning = true;
+                fetchFails = 0;
                 backgroundWorker.RunWorkerAsync();
                 label1.Text = Strings.Running;
                 //ScrapDataAsync();

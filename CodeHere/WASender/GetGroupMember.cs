@@ -221,6 +221,12 @@ namespace WASender
                     CheckForActivation()));
             });
             //materialButton2.Visible = false;
+            try
+            {
+                if (initStatusEnum != InitStatusEnum.Initialised && generalSettingsModel != null && generalSettingsModel.browserType == 2)
+                    initWABrowser();
+            }
+            catch (Exception) { }
         }
 
         private void CheckForActivation()
