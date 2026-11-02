@@ -68,7 +68,7 @@ namespace WASender
             try { Config.OnlineActiveCheck = () => LicenseServer.IsActiveLocal(); } catch (Exception) { }
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new WaSenderForm(args));
+            Application.Run(new ShellHost(args));
 
             //Application.Run(new GroupLinkVerify());
 
