@@ -69,7 +69,6 @@ namespace WASender
                 AddToolItem("Verifikasi Link", "✔", typeof(GroupLinkVerify), () => new GroupLinkVerify(this));
                 AddSideCaption("OTOMASI");
                 AddToolItem("Auto Responder", "🤖", typeof(WaAutoReplyBot.WaAutoReplyForm), () => new WaAutoReplyBot.WaAutoReplyForm(this));
-                AddToolItem("Telegram Bot", "✈", typeof(TelegramBotForm), () => new TelegramBotForm(this));
                 AddToolItem("Scheduler", "📅", typeof(AllSchedules), () => new AllSchedules(this));
                 AddToolItem("WA Warmer", "🔥", typeof(Warmer), () => new Warmer(this));
                 AddToolItem("Group Warmer", "♨", typeof(Warmer), () => new Warmer(this, true));
@@ -410,7 +409,6 @@ namespace WASender
                 { "GrabGroupMembers", typeof(GetGroupMember) },
                 { "GetWhatsAppGroupLinksfromweb", typeof(GrabGroupLinks) },
                 { "WhatsAppAutoreplyBot", typeof(WaAutoReplyBot.WaAutoReplyForm) },
-                { "TelegramBot", typeof(TelegramBotForm) },
                 { "ContactListGrabber", typeof(ContactGrabber) },
                 { "GoogleMagDataExtractor", typeof(GmExtractorForm) },
                 { "AutoGroupJoiner", typeof(GroupsJoiner) },

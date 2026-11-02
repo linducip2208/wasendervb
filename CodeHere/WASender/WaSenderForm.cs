@@ -1086,12 +1086,6 @@ namespace WASender
                             this.Hide();
                             form.Show();
                         }
-                        else if (btnId == "TelegramBot")
-                        {
-                            TelegramBotForm form = new TelegramBotForm(this);
-                            this.Hide();
-                            form.Show();
-                        }
                         else if (btnId == "ContactListGrabber")
                         {
                             ContactGrabber form = new ContactGrabber(this);
