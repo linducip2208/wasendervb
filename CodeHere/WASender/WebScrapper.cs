@@ -200,6 +200,7 @@ namespace WASender
                                 foreach (HtmlNode link in AllNodes)
                                 {
                                     HtmlAttribute att = link.Attributes["href"];
+                                    if (att == null || att.Value == null) continue;
                                     string v = att.Value;
                                     if (att.Value.Contains(item.MainLink.Replace("https://", "").Replace("http://", "")))
                                     {
@@ -404,6 +405,7 @@ namespace WASender
                                 foreach (HtmlNode link in AllNodes)
                                 {
                                     HtmlAttribute att = link.Attributes["href"];
+                                    if (att == null || att.Value == null) continue;
                                     string v = att.Value;
                                     if (att.Value.Contains(item.MainLink.Replace("https://", "").Replace("http://", "")))
                                     {
