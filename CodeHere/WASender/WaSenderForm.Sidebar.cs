@@ -1,19 +1,19 @@
 using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Drawing.Imaging;
 using System.Windows.Forms;
 
 namespace WASender
 {
     /// <summary>
-    /// Shell enterprise v2 (UI-ONLY): sidebar navy permanen + ikon, gantikan drawer-rail.
-    /// Semua aksi hanya memanggil tab/handler/form yang SUDAH ADA. Nol edit Designer.
+    /// Shell enterprise v3 (UI-ONLY): sidebar navy permanen, SEMUA 22+ fitur asli,
+    /// ikon putih + section. Semua aksi hanya memanggil tab/handler/form yang SUDAH ADA.
     /// </summary>
     public partial class WaSenderForm
     {
         private Panel sideNav;
         private FlowLayoutPanel sideFlow;
-        private Button[] sideTabBtns;
 
         private void BuildEnterpriseSidebar()
         {
@@ -21,10 +21,16 @@ namespace WASender
             {
                 if (sideNav != null) return;
                 try { this.DrawerShowIconsWhenHidden = false; } catch (Exception) { }
+                try
+                {
+                    foreach (Control pg in tabMain.TabPages)
+                    { try { pg.BackColor = Color.FromArgb(0xF2, 0xF4, 0xF7); } catch (Exception) { } }
+                }
+                catch (Exception) { }
 
                 sideNav = new Panel();
                 sideNav.Name = "sideNavEnterprise";
-                sideNav.Width = 228;
+                sideNav.Width = 232;
                 sideNav.Dock = DockStyle.Left;
                 sideNav.BackColor = Theme.Navy;
                 sideNav.Padding = new Padding(0, 10, 0, 10);
@@ -33,7 +39,6 @@ namespace WASender
                 brand.Dock = DockStyle.Top;
                 brand.Height = 62;
                 brand.BackColor = Color.Transparent;
-                brand.Padding = new Padding(14, 6, 10, 6);
                 var pic = new PictureBox();
                 pic.Width = 40; pic.Height = 40;
                 pic.Left = 14; pic.Top = 8;
@@ -44,7 +49,7 @@ namespace WASender
                 nm.Text = "WASender";
                 nm.Font = new Font("Segoe UI", 14f, FontStyle.Bold);
                 nm.ForeColor = Color.White;
-                nm.Left = 62; nm.Top = 6; nm.Width = 150; nm.Height = 26;
+                nm.Left = 62; nm.Top = 6; nm.Width = 155; nm.Height = 26;
                 nm.BackColor = Color.Transparent;
                 brand.Controls.Add(nm);
                 string vstr = "6.1";
@@ -53,7 +58,7 @@ namespace WASender
                 vs.Text = "v" + vstr + "  Enterprise";
                 vs.Font = new Font("Segoe UI", 8.5f, FontStyle.Regular);
                 vs.ForeColor = Color.FromArgb(0x8B, 0x94, 0xA7);
-                vs.Left = 62; vs.Top = 32; vs.Width = 150; vs.Height = 18;
+                vs.Left = 62; vs.Top = 32; vs.Width = 155; vs.Height = 18;
                 vs.BackColor = Color.Transparent;
                 brand.Controls.Add(vs);
                 sideNav.Controls.Add(brand);
@@ -66,41 +71,41 @@ namespace WASender
                 sideFlow.BackColor = Color.Transparent;
                 sideNav.Controls.Add(sideFlow);
 
-                AddSideCaption("KIRIM PESAN");
-                var bDash = AddSideButton("Dashboard", "icons8_whatsapp_24px", true);
-                var bSingle = AddSideButton("Bulk Sender", "icons8_email_send_24px", true);
-                var bGroup = AddSideButton("Group Sender", "GetWhatsAppGroup_Members_BLACK", true);
+                AddSideCaption("UTAMA");
+                AddTabItem("Dashboard", 2, "icons8_whatsapp_24px");
+                AddTabItem("Bulk Sender", 0, "icons8_email_send_24px");
+                AddTabItem("Group Sender", 1, "GetWhatsAppGroup_Members_BLACK");
                 AddSideCaption("EKSTRAKTOR DATA");
-                var bGmap = AddSideButton("GMap Extractor", "GoogleMap_WHITE", false);
-                var bFilter = AddSideButton("Number Filter", "NumberFilter_BLACK", false);
-                var bGrab = AddSideButton("Contact Grabber", "icons8_contact_24px", false);
-                AddSideCaption("GRUP & OTOMASI");
-                var bMembers = AddSideButton("Grab Anggota Grup", "ActiveGroupMember_BLACK", false);
-                var bJoiner = AddSideButton("Auto Group Joiner", "GroupJoiner_WHITE", false);
-                var bReply = AddSideButton("Auto Responder", "WhatsAPpBot_BLACK", false);
-                var bSched = AddSideButton("Scheduler", "icons8_schedule_24px", false);
+                AddToolItem("GMap Extractor", "GoogleMap_WHITE", () => { GmExtractorForm f = new GmExtractorForm(this); this.Hide(); f.Show(); });
+                AddToolItem("Number Filter", "NumberFilter_BLACK", () => { NumberFilter f = new NumberFilter(this); this.Hide(); f.Show(); });
+                AddToolItem("Contact Grabber", "WContactList_BLACK", () => { ContactGrabber f = new ContactGrabber(this); this.Hide(); f.Show(); });
+                AddToolItem("Web Extractor", "WebExtract", () => { WebScrapper f = new WebScrapper(this); this.Hide(); f.Show(); });
+                AddToolItem("Social Media", "icons8_globe_24px", () => { SocialMediaExtractor f = new SocialMediaExtractor(this); this.Hide(); f.Show(); });
+                AddToolItem("Google CSV", "CSV_BLACK", () => { GoogleCSVGenerator f = new GoogleCSVGenerator(this); this.Hide(); f.Show(); });
+                AddToolItem("Chat List", "ChatList_BLACK", () => { GrabChatList f = new GrabChatList(this); this.Hide(); f.Show(); });
+                AddToolItem("Grab Link Grup", "GetGroupLinksFromWeb_BLACK", () => { GrabGroupLinks f = new GrabGroupLinks(this); this.Hide(); f.Show(); });
+                AddSideCaption("GRUP");
+                AddToolItem("Grab Anggota", "ActiveGroupMember_BLACK", () => { GetGroupMember f = new GetGroupMember(this); this.Hide(); f.Show(); });
+                AddToolItem("Anggota Aktif", "icons8_checked_checkbox_24px", () => { GrabGroupActiveMembers f = new GrabGroupActiveMembers(this); this.Hide(); f.Show(); });
+                AddToolItem("Tambah Anggota", "AddGroupMember_BLACK", () => { GroupMemberAdder f = new GroupMemberAdder(this); this.Hide(); f.Show(); });
+                AddToolItem("Auto Joiner", "GroupJoiner_WHITE", () => { GroupsJoiner f = new GroupsJoiner(this); this.Hide(); f.Show(); });
+                AddToolItem("Group Finder", "GriupFinder_BLACK", () => { GroupFinder f = new GroupFinder(this); this.Hide(); f.Show(); });
+                AddToolItem("Bulk Generator", "CreateBulkWhatsAppGroup_BLACK", () => { GroupGenerator f = new GroupGenerator(this); this.Hide(); f.Show(); });
+                AddToolItem("Verifikasi Link", "icons8_linking_24px", () => { GroupLinkVerify f = new GroupLinkVerify(this); this.Hide(); f.Show(); });
+                AddSideCaption("OTOMASI");
+                AddToolItem("Auto Responder", "WhatsAPpBot_BLACK", () => { WaAutoReplyBot.WaAutoReplyForm f = new WaAutoReplyBot.WaAutoReplyForm(this); this.Hide(); f.Show(); });
+                AddToolItem("Scheduler", "icons8_schedule_24px", () => { AllSchedules f = new AllSchedules(this); this.Hide(); f.Show(); });
+                AddToolItem("WA Warmer", "warmer", () => { Warmer f = new Warmer(this); this.Hide(); f.Show(); });
+                AddToolItem("Group Warmer", "warmer1", () => { Warmer f = new Warmer(this, true); this.Hide(); f.Show(); });
+                AddToolItem("Hasil Poll", "icons8_checkmark_24px", () => { GetPollResults f = new GetPollResults(this); this.Hide(); f.Show(); });
+                AddToolItem("AI Setup", "icons8_natural_user_interface_2_24px", () => { AiSettingsForm f = new AiSettingsForm(this); this.Hide(); f.Show(); });
+                AddToolItem("WA Health", "icons8_refresh_shield_24px", () => { HealthForm f = new HealthForm(this); this.Hide(); f.Show(); });
                 AddSideCaption("APLIKASI");
-                var bSesi = AddSideButton("Sesi WhatsApp", "icons8_connected_24px", false);
-                var bAkun = AddSideButton("Kelola Akun", "icons8_verified_account_24px", false);
-                var bSum = AddSideButton("Ringkasan Harian", "icons8_documents_24px", false);
-                var bSet = AddSideButton("Pengaturan", "icons8_settings_24px", false);
-
-                bDash.Click += (s, e) => { try { tabMain.SelectedIndex = 2; } catch (Exception) { } RefreshSidebarState(); };
-                bSingle.Click += (s, e) => { try { tabMain.SelectedIndex = 0; } catch (Exception) { } RefreshSidebarState(); };
-                bGroup.Click += (s, e) => { try { tabMain.SelectedIndex = 1; } catch (Exception) { } RefreshSidebarState(); };
-                bGmap.Click += (s, e) => OpenTool(() => { GmExtractorForm f = new GmExtractorForm(this); this.Hide(); f.Show(); });
-                bFilter.Click += (s, e) => OpenTool(() => { NumberFilter f = new NumberFilter(this); this.Hide(); f.Show(); });
-                bGrab.Click += (s, e) => OpenTool(() => { ContactGrabber f = new ContactGrabber(this); this.Hide(); f.Show(); });
-                bMembers.Click += (s, e) => OpenTool(() => { GetGroupMember f = new GetGroupMember(this); this.Hide(); f.Show(); });
-                bJoiner.Click += (s, e) => OpenTool(() => { GroupsJoiner f = new GroupsJoiner(this); this.Hide(); f.Show(); });
-                bReply.Click += (s, e) => OpenTool(() => { WaAutoReplyBot.WaAutoReplyForm f = new WaAutoReplyBot.WaAutoReplyForm(this); this.Hide(); f.Show(); });
-                bSched.Click += (s, e) => OpenTool(() => { AllSchedules f = new AllSchedules(this); this.Hide(); f.Show(); });
-                bSesi.Click += (s, e) => { try { materialButton35_Click(s, e); } catch (Exception) { } RefreshSidebarState(); };
-                bAkun.Click += (s, e) => { try { materialButton34_Click(s, e); } catch (Exception) { } RefreshSidebarState(); };
-                bSum.Click += (s, e) => { try { materialButton32_Click(s, e); } catch (Exception) { } RefreshSidebarState(); };
-                bSet.Click += (s, e) => { try { materialButton31_Click_1(s, e); } catch (Exception) { } RefreshSidebarState(); };
-
-                sideTabBtns = new Button[] { bDash, bSingle, bGroup };
+                AddActionItem("Sesi WhatsApp", "icons8_connected_24px", (s, e) => { try { materialButton35_Click(s, e); } catch (Exception) { } });
+                AddActionItem("Kelola Akun", "icons8_verified_account_24px", (s, e) => { try { materialButton34_Click(s, e); } catch (Exception) { } });
+                AddActionItem("Ringkasan Harian", "icons8_documents_24px", (s, e) => { try { materialButton32_Click(s, e); } catch (Exception) { } });
+                AddActionItem("Tutorial", "icons8_help_24px", (s, e) => { try { TutorialForm t = new TutorialForm(); t.Show(); } catch (Exception) { } });
+                AddActionItem("Pengaturan", "icons8_settings_24px", (s, e) => { try { materialButton31_Click_1(s, e); } catch (Exception) { } });
 
                 this.Controls.Add(sideNav);
 
@@ -130,29 +135,6 @@ namespace WASender
             catch (Exception) { }
         }
 
-        private void OpenTool(Action open)
-        {
-            try { MarkToolActive(); } catch (Exception) { }
-            try { open(); } catch (Exception ex) { try { MessageBox.Show(ex.Message, Strings.Error, MessageBoxButtons.OK, MessageBoxIcon.Error); } catch (Exception) { } }
-            try { RefreshSidebarState(); } catch (Exception) { }
-        }
-
-        private void MarkToolActive()
-        {
-            try
-            {
-                foreach (Control c in sideFlow.Controls)
-                {
-                    try
-                    {
-                        if (c is Panel && c.Tag as string == "navrow") c.BackColor = Color.Transparent;
-                    }
-                    catch (Exception) { }
-                }
-            }
-            catch (Exception) { }
-        }
-
         private void AddSideCaption(string text)
         {
             try
@@ -162,51 +144,82 @@ namespace WASender
                 c.Font = new Font("Segoe UI", 7.5f, FontStyle.Bold);
                 c.ForeColor = Color.FromArgb(0x8B, 0x94, 0xA7);
                 c.Width = sideNav.Width - 24;
-                c.Height = 26;
+                c.Height = 24;
                 c.TextAlign = ContentAlignment.BottomLeft;
-                c.Margin = new Padding(14, 2, 0, 2);
+                c.Margin = new Padding(14, 4, 0, 2);
                 sideFlow.Controls.Add(c);
             }
             catch (Exception) { }
         }
 
-        private Button AddSideButton(string text, string iconName, bool isTab)
+        private void AddTabItem(string text, int tabIdx, string iconName)
+        {
+            try
+            {
+                Button b = AddSideRow(text, iconName);
+                b.Tag = "tab:" + tabIdx;
+                b.Click += (s, e) => { try { tabMain.SelectedIndex = tabIdx; } catch (Exception) { } RefreshSidebarState(); };
+                try { b.Parent.Tag = "navrow-tab:" + text; } catch (Exception) { }
+            }
+            catch (Exception) { }
+        }
+
+        private void AddToolItem(string text, string iconName, Action open)
+        {
+            try
+            {
+                Button b = AddSideRow(text, iconName);
+                b.Click += (s, e) =>
+                {
+                    try
+                    {
+                        MarkToolActive(b);
+                        try { open(); }
+                        catch (Exception ex) { try { MessageBox.Show(ex.Message, Strings.Error, MessageBoxButtons.OK, MessageBoxIcon.Error); } catch (Exception) { } }
+                    }
+                    catch (Exception) { }
+                    RefreshSidebarState();
+                };
+            }
+            catch (Exception) { }
+        }
+
+        private void AddActionItem(string text, string iconName, Action<object, EventArgs> act)
+        {
+            try
+            {
+                Button b = AddSideRow(text, iconName);
+                b.Click += (s, e) => { try { act(s, e); } catch (Exception) { } RefreshSidebarState(); };
+            }
+            catch (Exception) { }
+        }
+
+        private Button AddSideRow(string text, string iconName)
         {
             var row = new Panel();
             row.Tag = "navrow";
-            row.Width = sideNav.Width - 16;
-            row.Height = 46;
-            row.Margin = new Padding(8, 1, 8, 1);
+            row.Width = sideNav.Width - 14;
+            row.Height = 42;
+            row.Margin = new Padding(7, 1, 7, 1);
             row.BackColor = Color.Transparent;
 
             var bar = new Panel();
             bar.Width = 4;
             bar.Dock = DockStyle.Left;
             bar.BackColor = Color.Transparent;
-            bar.Tag = isTab ? "tabbar" : "bar";
+            bar.Tag = "bar";
             row.Controls.Add(bar);
 
-            var tile = new Panel();
-            tile.Width = 32; tile.Height = 32;
-            tile.Left = 12; tile.Top = 7;
-            tile.BackColor = Color.FromArgb(0xE8, 0xF5, 0xF3);
-            try { tile.Region = new Region(RoundedRect(new Rectangle(0, 0, 32, 32), 8)); } catch (Exception) { }
             var img = new PictureBox();
-            img.Dock = DockStyle.Fill;
+            img.Width = 22; img.Height = 22;
+            img.Left = 14; img.Top = 10;
             img.SizeMode = PictureBoxSizeMode.Zoom;
             img.BackColor = Color.Transparent;
-            try
-            {
-                object o = Properties.Resources.ResourceManager.GetObject(iconName);
-                if (o is Bitmap) img.Image = (Bitmap)o;
-            }
-            catch (Exception) { }
-            tile.Controls.Add(img);
-            row.Controls.Add(tile);
+            try { img.Image = WhiteIcon(Properties.Resources.ResourceManager.GetObject(iconName)); } catch (Exception) { }
+            row.Controls.Add(img);
 
             var b = new Button();
             b.Text = text;
-            b.Tag = isTab ? (object)text : null;
             b.FlatStyle = FlatStyle.Flat;
             b.FlatAppearance.BorderSize = 0;
             b.FlatAppearance.MouseOverBackColor = Theme.NavyLight;
@@ -215,27 +228,53 @@ namespace WASender
             b.Font = new Font("Segoe UI", 10f, FontStyle.Regular);
             b.TextAlign = ContentAlignment.MiddleLeft;
             b.Cursor = Cursors.Hand;
-            b.Left = 50; b.Top = 0;
-            b.Width = row.Width - 50; b.Height = 46;
+            b.Left = 44; b.Top = 0;
+            b.Width = row.Width - 44; b.Height = 42;
             b.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             row.Controls.Add(b);
 
             row.Click += (s, e) => { try { b.PerformClick(); } catch (Exception) { } };
+            img.Click += (s, e) => { try { b.PerformClick(); } catch (Exception) { } };
             sideFlow.Controls.Add(row);
-            if (isTab) { try { row.Tag = "navrow-tab:" + text; } catch (Exception) { } }
             return b;
         }
 
-        private static GraphicsPath RoundedRect(Rectangle r, int radius)
+        /// <summary>Hitam/transparan -> putih solid dgn alpha asli. Ikon gelap jadi putih modern di navy.</summary>
+        private static Bitmap WhiteIcon(object o)
         {
-            var p = new GraphicsPath();
-            int d = radius * 2;
-            p.AddArc(r.X, r.Y, d, d, 180, 90);
-            p.AddArc(r.Right - d, r.Y, d, d, 270, 90);
-            p.AddArc(r.Right - d, r.Bottom - d, d, d, 0, 90);
-            p.AddArc(r.X, r.Bottom - d, d, d, 90, 90);
-            p.CloseFigure();
-            return p;
+            try
+            {
+                if (!(o is Bitmap)) return null;
+                Bitmap src = (Bitmap)o;
+                Bitmap dst = new Bitmap(src.Width, src.Height);
+                float[][] m = {
+                    new float[] {0,0,0,0,0},
+                    new float[] {0,0,0,0,0},
+                    new float[] {0,0,0,0,0},
+                    new float[] {1,1,1,1,0},
+                    new float[] {0,0,0,0,1}};
+                using (Graphics g = Graphics.FromImage(dst))
+                using (ImageAttributes ia = new ImageAttributes())
+                {
+                    ia.SetColorMatrix(new ColorMatrix(m));
+                    g.DrawImage(src, new Rectangle(0, 0, dst.Width, dst.Height), 0, 0, src.Width, src.Height, GraphicsUnit.Pixel, ia);
+                }
+                return dst;
+            }
+            catch (Exception) { return null; }
+        }
+
+        private void MarkToolActive(Button b)
+        {
+            try
+            {
+                foreach (Control c in sideFlow.Controls)
+                {
+                    try { if (c is Panel && (c.Tag as string) == "navrow") c.BackColor = Color.Transparent; } catch (Exception) { }
+                }
+                try { if (b != null && b.Parent != null) b.Parent.BackColor = Theme.NavyLight; } catch (Exception) { }
+            }
+            catch (Exception) { }
         }
 
         private void RefreshSidebarState()
@@ -245,7 +284,6 @@ namespace WASender
                 if (sideFlow == null) return;
                 int idx = -1;
                 try { idx = tabMain.SelectedIndex; } catch (Exception) { }
-                string[] tabNames = new string[] { "Dashboard", "Bulk Sender", "Group Sender" };
                 foreach (Control c in sideFlow.Controls)
                 {
                     try
@@ -261,7 +299,7 @@ namespace WASender
                             try
                             {
                                 if (k is Button) { k.ForeColor = active ? Color.White : Color.FromArgb(0xC7, 0xCD, 0xDC); k.Font = new Font("Segoe UI", 10f, active ? FontStyle.Bold : FontStyle.Regular); }
-                                if (k is Panel && (k.Tag as string) == "tabbar") k.BackColor = active ? Theme.Primary : Color.Transparent;
+                                if (k is Panel && (k.Tag as string) == "bar") k.BackColor = active ? Theme.Primary : Color.Transparent;
                             }
                             catch (Exception) { }
                         }
