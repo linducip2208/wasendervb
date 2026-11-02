@@ -33,7 +33,7 @@ namespace WASender
                 sideNav.Name = "sideNavEnterprise";
                 sideNav.Width = 232;
                 sideNav.Dock = DockStyle.Left;
-                sideNav.BackColor = Theme.Navy;
+                sideNav.BackColor = Color.White;
                 sideNav.Padding = new Padding(0, 20, 0, 10);
 
                 try { CenterTopBrand(); } catch (Exception) { }
@@ -179,7 +179,7 @@ namespace WASender
             row.Width = sideNav.Width - 14;
             row.Height = 48;
             row.Margin = new Padding(7, 1, 7, 1);
-            row.BackColor = Theme.Navy;
+            row.BackColor = Color.White;
             Button b = null;
 
             var bar = new Panel();
@@ -192,8 +192,8 @@ namespace WASender
             var em = new Label();
             em.Text = string.IsNullOrEmpty(iconName) ? "•" : iconName;
             em.Font = new Font("Segoe UI Emoji", 15f, FontStyle.Regular);
-            em.ForeColor = Color.White;
-            em.BackColor = Theme.Navy;
+            em.ForeColor = Theme.Navy;
+            em.BackColor = Color.White;
             em.Left = 10; em.Top = 8; em.Width = 30; em.Height = 32;
             em.TextAlign = ContentAlignment.MiddleCenter;
             row.Controls.Add(em);
@@ -202,9 +202,9 @@ namespace WASender
             b.Text = text;
             b.FlatStyle = FlatStyle.Flat;
             b.FlatAppearance.BorderSize = 0;
-            b.FlatAppearance.MouseOverBackColor = Theme.NavyLight;
-            b.BackColor = Theme.Navy;
-            b.ForeColor = Color.FromArgb(0xC7, 0xCD, 0xDC);
+            b.FlatAppearance.MouseOverBackColor = Color.FromArgb(0xF1, 0xF5, 0xF9);
+            b.BackColor = Color.White;
+            b.ForeColor = Theme.TextPrimary;
             b.Font = new Font("Segoe UI", 10f, FontStyle.Regular);
             b.TextAlign = ContentAlignment.MiddleLeft;
             b.Cursor = Cursors.Hand;
@@ -331,9 +331,9 @@ namespace WASender
             {
                 foreach (Control c in sideFlow.Controls)
                 {
-                    try { if (c is Panel && (c.Tag as string) == "navrow") c.BackColor = Theme.Navy; } catch (Exception) { }
+                    try { if (c is Panel && (c.Tag as string) == "navrow") c.BackColor = Color.White; } catch (Exception) { }
                 }
-                try { if (b != null && b.Parent != null) b.Parent.BackColor = Theme.NavyLight; } catch (Exception) { }
+                try { if (b != null && b.Parent != null) b.Parent.BackColor = Theme.PrimaryLight; } catch (Exception) { }
             }
             catch (Exception) { }
         }
@@ -354,12 +354,12 @@ namespace WASender
                         string nm = tag.Substring("navrow-tab:".Length);
                         int want = nm == "Dashboard" ? 2 : (nm == "Bulk Sender" ? 0 : (nm == "Group Sender" ? 1 : -1));
                         bool active = (want >= 0 && want == idx);
-                        c.BackColor = active ? Theme.NavyLight : Theme.Navy;
+                        c.BackColor = active ? Theme.PrimaryLight : Color.White;
                         foreach (Control k in c.Controls)
                         {
                             try
                             {
-                                if (k is Button) { k.ForeColor = active ? Color.White : Color.FromArgb(0xC7, 0xCD, 0xDC); k.Font = new Font("Segoe UI", 10f, active ? FontStyle.Bold : FontStyle.Regular); }
+                                if (k is Button) { k.ForeColor = active ? Theme.PrimaryDark : Theme.TextPrimary; k.Font = new Font("Segoe UI", 10f, active ? FontStyle.Bold : FontStyle.Regular); }
                                 if (k is Panel && (k.Tag as string) == "bar") k.BackColor = active ? Theme.Primary : Color.Transparent;
                             }
                             catch (Exception) { }
