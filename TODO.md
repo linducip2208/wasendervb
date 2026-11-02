@@ -16,11 +16,14 @@ Aturan main: tidak ada tombol/menu palsu, tidak ada data dummy, tiap langkah ter
 - [ ] Header standar semua form (ditunda: butuh edit Designer ×62, risiko tanpa uji klik)
 
 ## Fase 2 — Shell Aplikasi (WaSenderForm.cs + .Designer.cs)
-- [x] Sidebar navy permanen + versi + active-state + breadcrumb (`WaSenderForm.Sidebar.cs`, 0 edit Designer)
+- [x] Sidebar terang permanen (bg putih + teks navy + ikon emoji unik) + versi + active-state + breadcrumb (`WaSenderForm.Sidebar.cs`, 0 edit Designer)
+- [x] Hamburger drawer bawaan dimatikan (satu-satunya navigasi = sidebar)
+- [x] Brand pindah tengah atas title bar + top padding menu
+- [x] Tema hijau → indigo (title, tombol, tab, grid)
 - [x] Anchor fix `tabMain` + `MinimumSize` (resize/DPI)
-- [x] Dashboard WebView2 + hero + stat live + search + kartu berdeskripsi
+- [x] Dashboard WebView2 + hero + stat live + search + kartu (ikon emoji, tanpa tofu FA)
 - [x] Indikator online license.pandusolusi.com (pojok kanan atas)
-- [ ] Rapikan top bar (kepadatan tombol) — BUTUH UJI VISUAL, tunggu screenshot user
+- [x] Anti-jendela-ganda lintas sidebar+dashboard (`ToolWindows`, by Type)
 - [x] Navigasi antar modul konsisten (sidebar memanggil handler existing)
 
 ## Fase 3 — Google Maps Extractor (jalur AKTIF: NewUI + Browser.cs)
@@ -42,7 +45,9 @@ Aturan main: tidak ada tombol/menu palsu, tidak ada data dummy, tiap langkah ter
 - [x] Toolbar composer (B/I/emoji/variabel/karakter) semua tab pesan
 - [x] Keterangan spintax
 - [x] Panel "Ringkasan Campaign" sebelum Start (total, estimasi waktu, batas harian) — `CampaignSummaryForm`, fail-open, dari `ValidateControls`/`ValidateControlsGroup`
-- [ ] Riwayat campaign (butuh tabel DB baru — disain dulu, jangan asal tambah)
+- [x] Riwayat Pengiriman read-only dari `wa_monitor.db` (`CampaignHistoryForm`, tanpa ubah schema) — padanan jujur Campaign Manager
+- [ ] Riwayat campaign per-nama (butuh tabel DB baru — disain dulu, jangan asal tambah)
+- [ ] Template Pesan (butuh storage + integrasi composer — scope fitur baru, tunggu persetujuan)
 
 ## Fase 6 — Modul-modul lain (satu per satu, terverifikasi build)
 - [x] General Settings: seksi Anti-Ban + sembunyikan Chrome path mati
@@ -54,10 +59,26 @@ Aturan main: tidak ada tombol/menu palsu, tidak ada data dummy, tiap langkah ter
 
 ## Fase 7 — Verifikasi & Rilis
 - [x] Build Release 0 error (MSBuild) — tiap perubahan
-- [x] Installer Inno Setup + tes install senyap (42 DLL, tanpa profil/chromedriver)
-- [ ] Tes runtime fitur ( BUTUH USER: kirim media, GMap, aktivasi) — log/error dikirim ke saya
+- [x] Build Debug 0 error — terverifikasi ulang
+- [x] Installer Inno Setup + tes install senyap (tanpa profil/chromedriver)
+- [x] Audit wiring: 0 tombol mati di 63 form (semua ada handler Click)
+- [x] Smoke test: app start, jendela utama tampil, crash.log tidak nambah
+- [ ] Tes runtime fitur ( BUTUH USER: kirim media/video, GMap, init WA, multi-akun) — log/error dikirim ke saya
 - [ ] Screenshot aplikasi aktual — BUTUH USER (saya tidak bisa klik GUI)
 - [ ] `docs/UIUX_FINAL_REPORT.md` + `docs/UIUX_BEFORE_AFTER.md` (tulis setelah visual final dikonfirmasi user)
+
+## Fase 8 — Stabilitas engine & init (sesi berjalan)
+- [x] Init WA gagal bersuara + sekali per form + tanpa freeze UI (`GetGroupMember`)
+- [x] Auto-init saat form dibuka (tanpa klik bila sesi sehat)
+- [x] `isListReady` benar-benar tunggu sinkron chat (dulu return instan palsu)
+- [x] Auto scroll-sync grup bila list kosong (tanpa buka chat manual)
+- [x] Probe diagnostik WPP (`ProbeGroupsApi`) + pesan penyebab kosong
+- [x] Retry baca grup 2x anti sinkronisasi lambat
+- [x] WebScrapper: User-Agent browser + hitung gagal + URL tanpa skema otomatis https + anti-null href + timeout 15 dtk
+- [x] SocialMediaExtractor: port WebView2 + parser SERP tanpa class usang + consent + CAPTCHA flow (butuh uji live Google)
+- [x] Singleton browser anti-disposed + sesi Load tersinkron (`ManageAccounts`)
+- [x] Video tanpa nama file diperbaiki 3 titik (`RunSingle`)
+- [ ] Hasil uji live user untuk semua di atas (menunggu laporan)
 
 ## Ditunda dengan alasan (jujur, bukan diabaikan)
 - Rewrite total WaSenderForm/Designer: risiko merusak 100+ event handler tanpa uji visual. Dilakukan bertahap per panel.
