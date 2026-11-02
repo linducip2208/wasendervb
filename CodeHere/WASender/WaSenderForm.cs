@@ -566,7 +566,6 @@ namespace WASender
             }
             catch (Exception) { }
             CHeckForActivation();
-            lblSection.Hide();
             LoadDocument();
             if (ScheduleId == "")
             {

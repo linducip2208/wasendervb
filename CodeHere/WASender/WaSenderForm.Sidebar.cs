@@ -120,9 +120,11 @@ namespace WASender
                 try
                 {
                     this.MinimumSize = new Size(1180, 720);
+                    try { tabMain.SelectedIndexChanged -= tabMain_SelectedIndexChanged; } catch (Exception) { }
                     tabMain.SelectedIndexChanged += (s, e) => { try { RefreshSidebarState(); } catch (Exception) { } };
                 }
                 catch (Exception) { }
+                try { tabMain.SelectedIndex = 2; } catch (Exception) { }
                 try
                 {
                     materialButton31.Visible = false;
@@ -203,6 +205,7 @@ namespace WASender
             row.Height = 42;
             row.Margin = new Padding(7, 1, 7, 1);
             row.BackColor = Color.Transparent;
+            Button b = null;
 
             var bar = new Panel();
             bar.Width = 4;
@@ -216,10 +219,27 @@ namespace WASender
             img.Left = 14; img.Top = 10;
             img.SizeMode = PictureBoxSizeMode.Zoom;
             img.BackColor = Color.Transparent;
-            try { img.Image = WhiteIcon(Properties.Resources.ResourceManager.GetObject(iconName)); } catch (Exception) { }
-            row.Controls.Add(img);
+            Bitmap iconBmp = null;
+            try { iconBmp = WhiteIcon(Properties.Resources.ResourceManager.GetObject(iconName)); } catch (Exception) { }
+            if (iconBmp != null)
+            {
+                img.Image = iconBmp;
+                row.Controls.Add(img);
+            }
+            else
+            {
+                var fb = new Label();
+                fb.Text = string.IsNullOrEmpty(text) ? "•" : text.Substring(0, 1).ToUpper();
+                fb.Font = new Font("Segoe UI", 13f, FontStyle.Bold);
+                fb.ForeColor = Color.White;
+                fb.BackColor = Color.Transparent;
+                fb.Left = 14; fb.Top = 6; fb.Width = 24; fb.Height = 28;
+                fb.TextAlign = ContentAlignment.MiddleCenter;
+                fb.Click += (s, e) => { try { b.PerformClick(); } catch (Exception) { } };
+                row.Controls.Add(fb);
+            }
 
-            var b = new Button();
+            b = new Button();
             b.Text = text;
             b.FlatStyle = FlatStyle.Flat;
             b.FlatAppearance.BorderSize = 0;
@@ -240,26 +260,22 @@ namespace WASender
             return b;
         }
 
-        /// <summary>Hitam/transparan -> putih solid dgn alpha asli. Ikon gelap jadi putih modern di navy.</summary>
+        /// <summary>Hitam/berwarna -&gt; putih solid dgn alpha asli. Pixel-loop: anti-gagal utk semua format PNG.</summary>
         private static Bitmap WhiteIcon(object o)
         {
             try
             {
-                if (!(o is Bitmap)) return null;
-                Bitmap src = (Bitmap)o;
-                Bitmap dst = new Bitmap(src.Width, src.Height);
-                float[][] m = {
-                    new float[] {0,0,0,0,0},
-                    new float[] {0,0,0,0,0},
-                    new float[] {0,0,0,0,0},
-                    new float[] {1,1,1,1,0},
-                    new float[] {0,0,0,0,1}};
+                Bitmap src = o as Bitmap;
+                if (src == null) return null;
+                Bitmap dst = new Bitmap(src.Width, src.Height, PixelFormat.Format32bppArgb);
                 using (Graphics g = Graphics.FromImage(dst))
-                using (ImageAttributes ia = new ImageAttributes())
-                {
-                    ia.SetColorMatrix(new ColorMatrix(m));
-                    g.DrawImage(src, new Rectangle(0, 0, dst.Width, dst.Height), 0, 0, src.Width, src.Height, GraphicsUnit.Pixel, ia);
-                }
+                    g.DrawImage(src, 0, 0, src.Width, src.Height);
+                for (int y = 0; y < dst.Height; y++)
+                    for (int x = 0; x < dst.Width; x++)
+                    {
+                        Color p = dst.GetPixel(x, y);
+                        if (p.A > 0) dst.SetPixel(x, y, Color.FromArgb(p.A, 255, 255, 255));
+                    }
                 return dst;
             }
             catch (Exception) { return null; }
