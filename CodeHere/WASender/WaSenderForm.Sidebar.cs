@@ -209,7 +209,7 @@ namespace WASender
             var row = new Panel();
             row.Tag = "navrow";
             row.Width = sideNav.Width - 14;
-            row.Height = 42;
+            row.Height = 48;
             row.Margin = new Padding(7, 1, 7, 1);
             row.BackColor = Theme.Navy;
             Button b = null;
@@ -222,8 +222,8 @@ namespace WASender
             row.Controls.Add(bar);
 
             var img = new PictureBox();
-            img.Width = 22; img.Height = 22;
-            img.Left = 14; img.Top = 10;
+            img.Width = 26; img.Height = 26;
+            img.Left = 12; img.Top = 11;
             img.SizeMode = PictureBoxSizeMode.Zoom;
             img.BackColor = Color.Transparent;
             Bitmap iconBmp = null;
@@ -240,7 +240,7 @@ namespace WASender
                 fb.Font = new Font("Segoe UI", 13f, FontStyle.Bold);
                 fb.ForeColor = Color.White;
                 fb.BackColor = Theme.Navy;
-                fb.Left = 14; fb.Top = 6; fb.Width = 24; fb.Height = 28;
+                fb.Left = 12; fb.Top = 6; fb.Width = 28; fb.Height = 32;
                 fb.TextAlign = ContentAlignment.MiddleCenter;
                 fb.Click += (s, e) => { try { b.PerformClick(); } catch (Exception) { } };
                 row.Controls.Add(fb);
@@ -256,8 +256,8 @@ namespace WASender
             b.Font = new Font("Segoe UI", 10f, FontStyle.Regular);
             b.TextAlign = ContentAlignment.MiddleLeft;
             b.Cursor = Cursors.Hand;
-            b.Left = 44; b.Top = 0;
-            b.Width = row.Width - 44; b.Height = 42;
+            b.Left = 46; b.Top = 0;
+            b.Width = row.Width - 46; b.Height = 48;
             b.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             row.Controls.Add(b);
 
