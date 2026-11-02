@@ -50,7 +50,7 @@ namespace WASender
                 var cell = grid.DefaultCellStyle;
                 cell.Font = CellFont();
                 cell.ForeColor = Theme.TextPrimary;
-                cell.SelectionBackColor = Color.FromArgb(0xB2, 0xDF, 0xDB);
+                cell.SelectionBackColor = Color.FromArgb(0xC5, 0xCA, 0xE9);
                 cell.SelectionForeColor = Theme.TextPrimary;
             }
             catch (System.Exception) { }

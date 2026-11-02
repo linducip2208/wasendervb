@@ -86,7 +86,7 @@ namespace WASender
             dataGridView9.Columns[3].Visible = false;
             dataGridView10.Columns[3].Visible = false;
 
-            materialSkinManager = Utils.SetColorScheme(materialSkinManager, this, Model.ColorSchemeenum.Green);
+            materialSkinManager = Utils.SetColorScheme(materialSkinManager, this, Model.ColorSchemeenum.Indigo);
             ApplyFontAwesomeIcons();
 
             buttonsModelList1 = new List<ButtonHolderModel>();

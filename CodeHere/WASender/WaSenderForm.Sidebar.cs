@@ -21,6 +21,7 @@ namespace WASender
             {
                 if (sideNav != null) return;
                 try { this.DrawerShowIconsWhenHidden = false; } catch (Exception) { }
+                try { this.DrawerTabControl = null; } catch (Exception) { }
                 try
                 {
                     foreach (Control pg in tabMain.TabPages)
@@ -40,16 +41,16 @@ namespace WASender
                 brand.Height = 62;
                 brand.BackColor = Color.Transparent;
                 var pic = new PictureBox();
-                pic.Width = 40; pic.Height = 40;
-                pic.Left = 14; pic.Top = 8;
+                pic.Width = 32; pic.Height = 32;
+                pic.Left = 16; pic.Top = 12;
                 pic.SizeMode = PictureBoxSizeMode.Zoom;
-                try { pic.Image = Icon.ToBitmap(); } catch (Exception) { }
+                try { pic.Image = DimAlpha(Icon.ToBitmap(), 0.85f); } catch (Exception) { }
                 brand.Controls.Add(pic);
                 var nm = new Label();
                 nm.Text = "WASender";
-                nm.Font = new Font("Segoe UI", 14f, FontStyle.Bold);
+                nm.Font = new Font("Segoe UI", 13f, FontStyle.Bold);
                 nm.ForeColor = Color.White;
-                nm.Left = 62; nm.Top = 6; nm.Width = 155; nm.Height = 26;
+                nm.Left = 58; nm.Top = 8; nm.Width = 155; nm.Height = 24;
                 nm.BackColor = Color.Transparent;
                 brand.Controls.Add(nm);
                 string vstr = "6.1";
@@ -58,10 +59,16 @@ namespace WASender
                 vs.Text = "v" + vstr + "  Enterprise";
                 vs.Font = new Font("Segoe UI", 8.5f, FontStyle.Regular);
                 vs.ForeColor = Color.FromArgb(0x8B, 0x94, 0xA7);
-                vs.Left = 62; vs.Top = 32; vs.Width = 155; vs.Height = 18;
+                vs.Left = 58; vs.Top = 32; vs.Width = 155; vs.Height = 18;
                 vs.BackColor = Color.Transparent;
                 brand.Controls.Add(vs);
                 sideNav.Controls.Add(brand);
+
+                var spacer = new Panel();
+                spacer.Dock = DockStyle.Top;
+                spacer.Height = 12;
+                spacer.BackColor = Color.Transparent;
+                sideNav.Controls.Add(spacer);
 
                 sideFlow = new FlowLayoutPanel();
                 sideFlow.Dock = DockStyle.Fill;
@@ -274,7 +281,31 @@ namespace WASender
                     for (int x = 0; x < dst.Width; x++)
                     {
                         Color p = dst.GetPixel(x, y);
-                        if (p.A > 0) dst.SetPixel(x, y, Color.FromArgb(p.A, 255, 255, 255));
+                        if (p.A > 0)
+                        {
+                            int a = (int)(p.A * 0.65);
+                            dst.SetPixel(x, y, Color.FromArgb(a, 255, 255, 255));
+                        }
+                    }
+                return dst;
+            }
+            catch (Exception) { return null; }
+        }
+
+        /// <summary>Redupkan gambar (skala alpha), warna asli dipertahankan. Untuk logo brand.</summary>
+        private static Bitmap DimAlpha(Bitmap src, float factor)
+        {
+            try
+            {
+                if (src == null) return null;
+                Bitmap dst = new Bitmap(src.Width, src.Height, PixelFormat.Format32bppArgb);
+                using (Graphics g = Graphics.FromImage(dst))
+                    g.DrawImage(src, 0, 0, src.Width, src.Height);
+                for (int y = 0; y < dst.Height; y++)
+                    for (int x = 0; x < dst.Width; x++)
+                    {
+                        Color p = dst.GetPixel(x, y);
+                        if (p.A > 0) dst.SetPixel(x, y, Color.FromArgb((int)(p.A * factor), p.R, p.G, p.B));
                     }
                 return dst;
             }

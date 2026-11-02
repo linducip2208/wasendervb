@@ -9,10 +9,10 @@ namespace WASender
     /// </summary>
     public static class Theme
     {
-        // Primary: emerald ala WhatsApp
-        public static readonly Color Primary = Color.FromArgb(0x00, 0x96, 0x88);
-        public static readonly Color PrimaryDark = Color.FromArgb(0x00, 0x77, 0x6E);
-        public static readonly Color PrimaryLight = Color.FromArgb(0xE0, 0xF2, 0xF1);
+        // Primary: indigo enterprise (ganti hijau atas permintaan pengguna)
+        public static readonly Color Primary = Color.FromArgb(0x30, 0x3F, 0x9F);
+        public static readonly Color PrimaryDark = Color.FromArgb(0x28, 0x35, 0x93);
+        public static readonly Color PrimaryLight = Color.FromArgb(0xE8, 0xEA, 0xF6);
 
         // Sidebar: deep navy
         public static readonly Color Navy = Color.FromArgb(0x1A, 0x23, 0x38);
