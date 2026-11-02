@@ -121,6 +121,7 @@ namespace WASender
 
         int retryAttempt = 0;
         string lastInitError = "";
+        bool initErrorShown = false;
         public async void timerInitChecker_Tick(object sender, EventArgs e)
         {
             if (generalSettingsModel.browserType == 1)
@@ -175,13 +176,17 @@ namespace WASender
                         retryAttempt = 0;
                         timerInitChecker.Stop();
                         ChangeInitStatus(InitStatusEnum.Unable);
-                        try
+                        if (!initErrorShown)
                         {
-                            string why = string.IsNullOrEmpty(lastInitError) ? "-" : lastInitError;
-                            MessageBox.Show("Gagal membaca sesi WhatsApp yang aktif.\n\nPastikan: 1) buka menu Sesi WhatsApp, 2) sudah login (tanpa QR), 3) satu tab terbuka.\n\nDetail teknis: " + why,
-                                Strings.Error, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                            initErrorShown = true;
+                            try
+                            {
+                                string why = string.IsNullOrEmpty(lastInitError) ? "-" : lastInitError;
+                                MessageBox.Show("Gagal membaca sesi WhatsApp yang aktif.\n\nPastikan: 1) buka menu Sesi WhatsApp, 2) sudah login (tanpa QR), 3) satu tab terbuka.\n\nDetail teknis: " + why,
+                                    Strings.Error, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                            }
+                            catch (Exception) { }
                         }
-                        catch (Exception) { }
                     }
                     else
                     {
@@ -223,7 +228,7 @@ namespace WASender
             //materialButton2.Visible = false;
             try
             {
-                if (initStatusEnum != InitStatusEnum.Initialised && generalSettingsModel != null && generalSettingsModel.browserType == 2)
+                if (browser == null && initStatusEnum != InitStatusEnum.Initialised && generalSettingsModel != null && generalSettingsModel.browserType == 2)
                     initWABrowser();
             }
             catch (Exception) { }
